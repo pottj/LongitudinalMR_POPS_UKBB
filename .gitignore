@@ -47,3 +47,9 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# other stuff
+SourceFile_HPC.R
+scripts/*.html
+scripts/*.out
+results/*

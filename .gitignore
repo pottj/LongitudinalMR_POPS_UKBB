@@ -50,6 +50,9 @@ rsconnect/
 
 # other stuff
 SourceFile_HPC.R
+SourceFile_laptop.R
 scripts/*.html
 scripts/*.out
 results/*
+data/IndividualLevelData/*
+

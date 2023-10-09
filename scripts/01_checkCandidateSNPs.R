@@ -39,8 +39,9 @@ data = fread("../temp/gwas-association-downloaded_2023-09-22-EFO_0004344.tsv")
 #' Reduce to relevant columns
 #' 
 names(data)
-data = data[,c(2:4,9:15,22,27,31,28)]
-names(data) = c("PMID","Author1","Date","SampleSize_init","SampleSize_rep","cytoband","chr","pos","genes_reported","genes_mapped","rsID","EAF","BETA","pval")
+data = data[,c(2:4,9:15,22,21,27,31,28)]
+names(data) = c("PMID","Author1","Date","SampleSize_init","SampleSize_rep","cytoband","chr","pos","genes_reported","genes_mapped","rsID","EA","EAF","BETA","pval")
+data[,EA := gsub(".*[-]","",EA)]
 
 #' Reformat some columns
 #'
@@ -79,17 +80,82 @@ data[, table(duplicated(rsID))]
 setorder(data,-SampleSize_init)
 data = data[!duplicated(rsID)]
 
+#' Check for allele frequency
+data[,min(EAF)]
+data = data[EAF>=0.005,]
+data = data[EAF<=0.995,]
+
 #' Check remaining cytobands
 #' 
 test = data[,.N, by=cytoband]
 table(test$N)
 
-#' There are 206 unique entries, of which 107 only occur once. There are some loci with multiple SNPs - here I keep all those SNPs, and select later the best-associated in the POPs analysis. 
+#' There are 205 unique entries, of which 107 only occur once. There are some loci with multiple SNPs - here I keep all those SNPs, and select later the best-associated in the POPs analysis. 
 #' 
+#' # Get SNP ID from UK Biobank ### 
+#' ***
+#' Jasmine asked for ID in style of CHR#:POS:REF:ALT, e.g. chr3:159837169:T:G. 
+#' 
+#' REF = Effect allele (also sometimes called risk allele, reference allele, effect allele, coded allele, etc.)
+#' 
+#' ALT = Non-effect allele (also some times called alternate allele, the other allele etc.)
+#' 
+#' Here, I use as REF the risk allele as given in the GWAS catalog data. The ALT allele is the not-given allele as listed in the dbSNP database. I remove all tri-allelic SNPs to make my life easier. 
+#'  
+library(SNPlocs.Hsapiens.dbSNP150.GRCh38)
+snps = SNPlocs.Hsapiens.dbSNP150.GRCh38
+my_rsids = data$rsID
+my_snps = snpsById(snps, my_rsids)
+dummy1 = my_snps@elementMetadata@listData$alleles_as_ambig
+dummy2 = my_snps@elementMetadata@listData$RefSNP_id
+dummy = data.table::data.table(ID = dummy2, coding = dummy1)
+
+#' - R = A or G	
+#' - K = G or T	
+#' - S = G or C
+#' - Y = C or T	
+#' - M = A or C	
+#' - W = A or T
+
+dummy[coding == "R", a1 := "A"]
+dummy[coding == "R", a2 := "G"]
+
+dummy[coding == "K", a1 := "G"]
+dummy[coding == "K", a2 := "T"]
+
+dummy[coding == "S", a1 := "G"]
+dummy[coding == "S", a2 := "C"]
+
+dummy[coding == "Y", a1 := "C"]
+dummy[coding == "Y", a2 := "T"]
+
+dummy[coding == "M", a1 := "A"]
+dummy[coding == "M", a2 := "C"]
+
+dummy[coding == "W", a1 := "A"]
+dummy[coding == "W", a2 := "T"]
+
+dummy = dummy[!is.na(a2)]
+data = data[rsID %in% dummy$ID,]
+stopifnot(data$rsID == dummy$ID)
+table(data$EA == dummy$a1, data$EA == dummy$a2)
+
+data[,OA := dummy$a2]
+data[,OA2 := dummy$a1]
+data[OA == EA, OA := OA2]
+data[,OA2 := NULL]
+table(data$EA == data$OA)
+
+data[, chr_pos_REF_ALT := paste0("chr",chr,":",pos,":",EA,":",OA)]
+data = data[,c(1:12,16,17,13:15)]
+
 #' # Save ####
 #' ***
 outFile = paste0("../results/01_SNPList_BirthWeight_",tag,".txt")
 fwrite(data, file = outFile)
+
+outFile2 = paste0("../results/01_SNPList_BirthWeight_SNPList_",tag,".txt")
+write.table(data$chr_pos_REF_ALT, file = outFile2,col.names = F,row.names = F, quote = F)
 
 #' # Session Info ####
 #' ***

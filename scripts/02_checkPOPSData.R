@@ -27,10 +27,11 @@
 #' 
 #' # Initialize ####
 #' ***
+#' 
 rm(list = ls())
 time0<-Sys.time()
 
-source("../SourceFile_laptop.R")
+source("../SourceFile_HPC.R")
 .libPaths()
 
 tag = format(Sys.time(), "%Y-%m-%d")
@@ -50,186 +51,157 @@ names(data)[c(15,40,65)]
 names(data)[c(15,40,65)] = c("an_scan2_ga","an_scan3_ga","an_scan4_ga")
 
 
-#' # Reorganize data ####
+#' # Re-organize data ####
 #' ***
-#' I want a long format, with each row being the data from 1 individual at 1 specific time point. 
+#' The data was already filtered by Ulla Sovio for. Exclusion criteria were: 
 #' 
-#' - time 1: pre-pregnancy (mothers weight only)
-#' - time 2: scan 2
-#' - time 3: scan 3
-#' - time 4: scan 4
-#' - time 5: post-birth (birth weight)
+#' - No biometry available at any time point,
+#' - No information on the mode of delivery,
+#' - Preterm birth,
+#' - Non-cephalic presentation at delivery,
+#' - Prelabor CD,
+#' - Antepartum stillbirth, or
+#' - Preexisting diabetes.
 #' 
-#' To make the melting easier, I rename the columns for pre-pregnancy weight, and birth weight
+#' Gestational diabetes might affect fetal growth and will be used as covariable only. 
 #' 
-setnames(data,"an_weight","an_scan1_weight")
-setnames(data,"pn_ga_wk","an_scan5_ga")
-setnames(data,"pn_bw","an_scan5_efw")
-setnames(data,"pn_bwpct","an_scan5_efw_centileHadlock")
-
+#' Right now, I have all data in one table. I want to split the data a bit: 
+#' 
+#' - longitudinal exposure data: data per scan (26 parameters)
+#' - outcome data: data at birth (sex, GA, birth weight, caesarean section)
+#' - covariable data: more information about mother and partner (height, weight, presentation at birth, gestational diabetes)
+#' 
+#' Big goal: Understand the data I got (each parameter!)
+#' 
+#' ## Longitudinal exposure data ####
+#' ***
 myVariables = names(data)[grepl("an_scan2",names(data))]
 
 dumTab = foreach(i = 1:length(myVariables))%do%{
-  #i=1
+  #i=12
   myVar = myVariables[i]
-  myVars = c(myVar,gsub("2","3",myVar),gsub("2","4",myVar))
-  if(i==1) myVars = c("an_scan1_weight",myVars)
-  if(i==10) myVars = c(myVars,"an_scan5_ga")
-  if(i==11) myVars = c(myVars,"an_scan5_efw")
-  if(i==15) myVars = c(myVars,"an_scan5_efw_centileHadlock")
+  myVars = c(myVar,gsub("scan2","scan3",myVar),gsub("scan2","scan4",myVar))
   dummy = myVars
   dummy
 }
 names(dumTab) = gsub("an_scan2_","",myVariables)
 
-data2 <- melt(data,
-              # ID variables - all the variables to keep but not split apart on
-              id.vars=names(data)[c(1:3,5,87)],
-              # The source columns
-              measure.vars=dumTab[c(1:11,13:15,22:23,26)],
-              # Name of the destination column that will identify the original
-              # column that the measurement came from
-              variable.name="scan"
-)
+myTab_X <- melt(data,
+              id.vars=names(data)[c(1,87,90,96)],
+              measure.vars=dumTab,
+              variable.name="scan")
+myTab_X = myTab_X[,c(1:5,15,6:14,16:31)]
 
-#' # Plotting ####
+for(i in 1:(length(myVariables)-1)){
+  #i=2
+  message("Working on variable: ",names(myTab_X)[i+6])
+  myVar = names(myTab_X)[i+6]
+  myTab_X[,value := get(myVar)]
+  
+  ggp1  = ggplot(myTab_X, aes(x=ga, y=value, col=pn_sex) ) +
+    geom_point()+
+    labs(x="Gestational Week",y=myVar, color="Babys sex") +
+    theme(legend.position = "none") + theme_classic() +
+    geom_smooth(method = "loess",
+                formula = y ~ x)
+  print(ggp1)
+  
+  ggp2 = ggplot(myTab_X, aes(x=ga, y=value, col=pn_sex, group=POPSID))+
+    geom_line(show.legend = TRUE) + 
+    labs(x="Gestational Week",y=myVar, color="Babys sex") +
+    theme(legend.position = "none") + theme_classic()
+  print(ggp2)
+  
+  ggp3  = ggplot(myTab_X, aes(x=ga, y=value, col=as.factor(pn_emcsall)) ) +
+    geom_point()+
+    labs(x="Gestational Week",y=myVar, color="Emergency CS") +
+    theme(legend.position = "none") + theme_classic() +
+    geom_smooth(method = "loess",
+                formula = y ~ x)
+  print(ggp3)
+  
+  ggp4 = ggplot(myTab_X, aes(x=ga, y=value, col=as.factor(pn_emcsall), group=POPSID))+
+    geom_line(show.legend = TRUE) + 
+    labs(x="Gestational Week",y=myVar, color="Emergency CS") +
+    theme(legend.position = "none") + theme_classic()
+  print(ggp4)
+  
+  myTab_X[!is.na(value),interaction.plot(x.factor = scan,
+                                         trace.factor = pn_sex,
+                                         response = value,
+                                         xlab = "#Scan",
+                                         ylab = paste0("Mean of ",myVar),
+                                         col = c("blue","red"),
+                                         trace.label = "Babys sex")]
+  myTab_X[!is.na(value),interaction.plot(x.factor = scan,
+                                         trace.factor = as.factor(pn_emcsall),
+                                         response = value,
+                                         xlab = "#Scan",
+                                         ylab = paste0("Mean of ",myVar),
+                                         col = c("darkgreen","purple"),
+                                         trace.label = "Emergency CS")]
+  
+}
+
+save(myTab_X,file = "../data/IndividualLevelData/02_LongitudinalExposure.RData")
+
+#' ## Outcome data ####
 #' ***
+myTab_Y = copy(data)
+myTab_Y = myTab_Y[,!grepl("an_scan",names(data)),with=F]
+
+myTab_Y = myTab_Y[,c(1:3,20:22,4:19,23:24)]
+
+#' Check if there are any pre-term CS
+myTab_Y[,table(pn_elcs)]
+
+#' Check if there are non-cephalic presentations at birth 
+myTab_Y[,table(pt_presdel)]
+
+#' Okay, a lot of entries are NA. Those without NA look ok. 
 #' 
-#' ## EFW ####
+#' Check gestational diabetes 
+myTab_Y[,table(pn_gdm_diet_medication,is.na(pn_gdm_ga))]
+
+#' Okay, there are 2 women with GDM with no GA of diagnosis. Maybe not that critical
 #' 
-ggp<-ggplot(data2, aes(ga, efw) ) +
-  geom_segment(aes(x = 20.00000, y = 405.1557, xend = 22.57143, yend = 1192.0366, colour = "red"))+
-  geom_segment(aes(x = 22.57143, y = 1192.0366, xend = 36.14286, yend = 3828.4207, colour = "red"))+
-  geom_segment(aes(x = 36.14286, y = 3828.4207, xend = 41.29000, yend = 4580.0000, colour = "red"))+
+myTab_Y[,boxplot(pn_gdm_ga)]
+
+#' Check height of parents
+ggp5  = ggplot(myTab_Y, aes(x=an_height, y=an_height_partner, col=pn_sex) ) +
   geom_point()+
-  geom_point(data=data2[POPSID==211], 
-             aes(x=ga,y=efw), 
-             color='red',
-             size=3)+
-  scale_colour_manual(values=c("red"),label="211")+
-  labs(x="Gestational Week",y="Estimated fetal weight", color="POPSID") +
+  labs(x="Height Mother",y="Height Partner", color="Babys sex") +
+  theme(legend.position = "none") + theme_classic() +
   geom_smooth(method = "loess",
               formula = y ~ x)
-ggp
+print(ggp5)
 
-plot1 = ggplot()+
-  geom_line(aes(y=efw, 
-                x=ga, 
-                group=POPSID, 
-                colour=pn_sex), 
-            data=data2, 
-            show.legend = TRUE) + 
-  labs(color="Baby sex") +
-  theme(legend.position = "none") + theme_classic()
-plot1
-
-#' ## Femur length ####
-#' 
-ggp<-ggplot(data2, aes(ga, fl) ) +
-  geom_segment(aes(x = 20.00000, y = 35, xend = 22.57143, yend = 51, colour = "red"))+
-  geom_segment(aes(x = 22.57143, y = 51, xend = 36.14286, yend = 73, colour = "red"))+
+#' Check height of mother vs birth weight
+ggp6  = ggplot(myTab_Y, aes(x=an_height, y=pn_bw, col=pn_sex) ) +
   geom_point()+
-  geom_point(data=data2[POPSID==211], 
-             aes(x=ga,y=fl), 
-             color='red',
-             size=3)+
-  scale_colour_manual(values=c("red"),label="211")+
-  labs(x="Gestational Week",y="Femur length", color="POPSID") +
+  labs(x="Height Mother",y="Birth Weight", color="Babys sex") +
+  theme(legend.position = "none") + theme_classic() +
   geom_smooth(method = "loess",
               formula = y ~ x)
-ggp
+print(ggp6)
 
-plot1 = ggplot()+
-  geom_line(aes(y=fl, 
-                x=ga, 
-                group=POPSID, 
-                colour=pn_sex), 
-            data=data2, 
-            show.legend = TRUE) + 
-  labs(color="Baby sex") +
-  theme(legend.position = "none") + theme_classic()
-plot1
-
-#' ## Head circumference ####
-#' 
-ggp<-ggplot(data2, aes(ga, hc) ) +
-  geom_segment(aes(x = 20.00000, y = 185, xend = 22.57143, yend = 267, colour = "red"))+
-  geom_segment(aes(x = 22.57143, y = 267, xend = 36.14286, yend = 344, colour = "red"))+
+ggp7  = ggplot(myTab_Y, aes(x=an_height, y=pn_bw, col=as.factor(pn_emcsall)) ) +
   geom_point()+
-  geom_point(data=data2[POPSID==211], 
-             aes(x=ga,y=hc), 
-             color='red',
-             size=3)+
-  scale_colour_manual(values=c("red"),label="211")+
-  labs(x="Gestational Week",y="Head circumference", color="POPSID") +
+  labs(x="Height Mother",y="Birth Weight", color="Emergency CS") +
+  theme(legend.position = "none") + theme_classic() +
   geom_smooth(method = "loess",
               formula = y ~ x)
-ggp
+print(ggp7)
 
-plot1 = ggplot()+
-  geom_line(aes(y=hc, 
-                x=ga, 
-                group=POPSID, 
-                colour=pn_sex), 
-            data=data2, 
-            show.legend = TRUE) + 
-  labs(color="Baby sex") +
-  theme(legend.position = "none") + theme_classic()
-plot1
-
-#' ## Abdominal circumference ####
-#' 
-ggp<-ggplot(data2, aes(ga, ac) ) +
-  geom_segment(aes(x = 20.00000, y = 163, xend = 22.57143, yend = 244, colour = "red"))+
-  geom_segment(aes(x = 22.57143, y = 244, xend = 36.14286, yend = 364, colour = "red"))+
+ggp8  = ggplot(myTab_Y, aes(x=an_height_partner, y=pn_bw, col=as.factor(pn_emcsall)) ) +
   geom_point()+
-  geom_point(data=data2[POPSID==211], 
-             aes(x=ga,y=ac), 
-             color='red',
-             size=3)+
-  scale_colour_manual(values=c("red"),label="211")+
-  labs(x="Gestational Week",y="Abdominal circumference", color="POPSID") +
+  labs(x="Height Partner",y="Birth Weight", color="Emergency CS") +
+  theme(legend.position = "none") + theme_classic() +
   geom_smooth(method = "loess",
               formula = y ~ x)
-ggp
+print(ggp8)
 
-plot1 = ggplot()+
-  geom_line(aes(y=ac, 
-                x=ga, 
-                group=POPSID, 
-                colour=pn_sex), 
-            data=data2, 
-            show.legend = TRUE) + 
-  labs(color="Baby sex") +
-  theme(legend.position = "none") + theme_classic()
-plot1
-
-#' ## Biparietal diameter ####
-#' 
-ggp<-ggplot(data2, aes(ga, bpd) ) +
-  geom_segment(aes(x = 20.00000, y = 50, xend = 22.57143, yend = 70, colour = "red"))+
-  geom_segment(aes(x = 22.57143, y = 70, xend = 36.14286, yend = 97, colour = "red"))+
-  geom_point()+
-  geom_point(data=data2[POPSID==211], 
-             aes(x=ga,y=bpd), 
-             color='red',
-             size=3)+
-  scale_colour_manual(values=c("red"),label="211")+
-  labs(x="Gestational Week",y="Biparietal diameter", color="POPSID") +
-  geom_smooth(method = "loess",
-              formula = y ~ x)
-ggp
-
-plot1 = ggplot()+
-  geom_line(aes(y=bpd, 
-                x=ga, 
-                group=POPSID, 
-                colour=pn_sex), 
-            data=data2, 
-            show.legend = TRUE) + 
-  labs(color="Baby sex") +
-  theme(legend.position = "none") + theme_classic()
-plot1
+save(myTab_Y,file = "../data/IndividualLevelData/02_Outcome.RData")
 
 #' # Session Info ####
 #' ***

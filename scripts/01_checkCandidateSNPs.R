@@ -34,7 +34,7 @@ tag = gsub("-","",tag)
 #' ***
 #' Complete download of all associations listed for birth weight (EFO ID: EFO_0004344) on Friday, 22/09/2023. 
 #' 
-data = fread("../temp/gwas-association-downloaded_2023-09-22-EFO_0004344.tsv")
+data = fread("../data/gwas-association-downloaded_2023-09-22-EFO_0004344.tsv")
 
 #' Reduce to relevant columns
 #' 
@@ -147,7 +147,8 @@ data[,OA2 := NULL]
 table(data$EA == data$OA)
 
 data[, chr_pos_REF_ALT := paste0("chr",chr,":",pos,":",EA,":",OA)]
-data = data[,c(1:12,16,17,13:15)]
+data[, chr_pos_ALT_REF := paste0("chr",chr,":",pos,":",OA,":",EA)]
+data = data[,c(1:12,16,17,18,13:15)]
 
 #' # Save ####
 #' ***
@@ -155,7 +156,9 @@ outFile = paste0("../results/01_SNPList_BirthWeight_",tag,".txt")
 fwrite(data, file = outFile)
 
 outFile2 = paste0("../results/01_SNPList_BirthWeight_SNPList_",tag,".txt")
-write.table(data$chr_pos_REF_ALT, file = outFile2,col.names = F,row.names = F, quote = F)
+list = c(data$chr_pos_REF_ALT,data$chr_pos_ALT_REF)
+table(duplicated(list))
+write.table(list, file = outFile2,col.names = F,row.names = F, quote = F)
 
 #' # Session Info ####
 #' ***

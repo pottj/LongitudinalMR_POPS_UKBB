@@ -56,5 +56,6 @@ results/*
 scripts/*.html
 scripts/*.out
 slurm/*
-temp/* 
+temp/*
 _archive/
+helperfunctions/

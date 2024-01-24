@@ -1,5 +1,5 @@
 #' ---
-#' title: "Check candidate SNPs"
+#' title: "Check candidate SNPs from GWAS Catalog"
 #' subtitle: "Longitudinal MVMR in POPS"
 #' author: "Janne Pott"
 #' date: "Last compiled on `r format(Sys.time(), '%d %B, %Y')`"
@@ -27,7 +27,7 @@ source("../SourceFile_HPC.R")
 .libPaths()
 
 tag = format(Sys.time(), "%Y-%m-%d")
-tag = gsub("2023-","23-",tag)
+tag = gsub("2024-","24-",tag)
 tag = gsub("-","",tag)
 
 #' # Load GWAS Catalog data ####
@@ -64,7 +64,7 @@ data[chr=="X",chr:="23"]
 data[,chr := as.numeric(chr)]
 
 data[,EAF:= as.numeric(EAF)]
-hist(data$EAF)
+summary(data$EAF)
 
 #' Filter for complete SNP information (chr, pos, EAF, rsID)
 #' 
@@ -102,7 +102,6 @@ table(test$N)
 #' 
 #' Here, I use as REF the risk allele as given in the GWAS catalog data. The ALT allele is the not-given allele as listed in the dbSNP database. I remove all tri-allelic SNPs to make my life easier. 
 #'  
-library(SNPlocs.Hsapiens.dbSNP150.GRCh38)
 snps = SNPlocs.Hsapiens.dbSNP150.GRCh38
 my_rsids = data$rsID
 my_snps = snpsById(snps, my_rsids)
@@ -152,13 +151,16 @@ data = data[,c(1:12,16,17,18,13:15)]
 
 #' # Save ####
 #' ***
-outFile = paste0("../results/01_SNPList_BirthWeight_",tag,".txt")
-fwrite(data, file = outFile)
+outFile1 = paste0("../results/01_Prep_01_1_SNPList_GWASCatalog_",tag,".RData")
+save(data, file = outFile1)
 
-outFile2 = paste0("../results/01_SNPList_BirthWeight_SNPList_",tag,".txt")
+outFile2 = paste0("../results/01_Prep_01_1_SNPList_GWASCatalog_IDonly_",tag,".txt")
 list = c(data$chr_pos_REF_ALT,data$chr_pos_ALT_REF)
 table(duplicated(list))
 write.table(list, file = outFile2,col.names = F,row.names = F, quote = F)
+
+outFile3 = paste0(POPS_SNP_data,"01_Prep_01_1_SNPList_GWASCatalog_IDonly_",tag,".txt")
+write.table(list, file = outFile3,col.names = F,row.names = F, quote = F)
 
 #' # Session Info ####
 #' ***

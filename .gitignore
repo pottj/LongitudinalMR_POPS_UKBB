@@ -50,7 +50,7 @@ rsconnect/
 
 # other stuff
 SourceFile_HPC.R
-data/IndividualLevelData/*
+data/*
 documents/*
 results/*
 scripts/*.html

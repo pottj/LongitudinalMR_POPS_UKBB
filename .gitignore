@@ -50,12 +50,10 @@ rsconnect/
 
 # other stuff
 SourceFile_HPC.R
-data/*
-documents/*
-results/*
-scripts/*.html
-scripts/*.out
-slurm/*
-temp/*
 _archive/
-helperfunctions/
+_archive2/
+temp/
+data/
+results/
+*.html
+*.out

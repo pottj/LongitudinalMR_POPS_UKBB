@@ -52,6 +52,7 @@ rsconnect/
 SourceFile_HPC.R
 _archive/
 _archive2/
+archive/
 temp/
 data/
 results/

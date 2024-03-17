@@ -1,0 +1,189 @@
+MVMR_jp_POPS_top20 = function(data_exposure,exposure_name, data_outcome, outcome_name,getPlot,flag,SNPSets,corTab,corTab_threshold){
+  #debug
+  # data_exposure=copy(myAssocs_X_long2)
+  # data_outcome=copy(myAssocs_Y2)
+  # exposure_name=myExposure
+  # outcome_name=myOutcome
+  # flag=myDumID3
+  # getPlot=T
+  # SNPSets = "distinct"
+  # corTab = copy(LDTab)
+  # corTab_threshold = 0.1
+  
+  data_GX = copy(data_exposure)
+  data_GX = data_GX[phenotype == exposure_name,]
+  
+  # do some priority pruning
+  mySNPs = unique(data_GX[,SNP])
+  corTab= corTab[SNP1 %in% mySNPs & SNP2 %in% mySNPs,]
+  corTab= corTab[value>corTab_threshold]
+  corTab[,SNP2 := as.character(SNP2)]
+  
+  data_GX2 = copy(data_GX)
+  data_GX2 = data_GX2[SNP %in% mySNPs]
+  setorder(data_GX2,pval)
+  data_GX3 = data_GX2[!duplicated(SNP),]
+  
+  data_GX3[,indep := NA]
+  while(sum(is.na(data_GX3$indep))!=0){
+    mySNPs2 = data_GX3[is.na(indep),SNP]
+    mySNP2 = mySNPs2[1]
+    cor2 = corTab[SNP1 %in% mySNP2 | SNP2 %in% mySNP2]
+    if(dim(cor2)[1]==0){
+      data_GX3[SNP == mySNP2,indep := T]
+    }else{
+      mySNPs3 = unique(c(cor2$SNP1,cor2$SNP2))
+      mySNPs3 = mySNPs3[!is.element(mySNPs3,mySNP2)]
+      data_GX3[SNP %in% mySNPs3,indep := F]
+      data_GX3[SNP == mySNP2,indep := T]
+    }
+  }
+  table(data_GX3$indep, data_GX3$type)
+  
+  # update my associated SNP list
+  mySNPs = unique(data_GX3[indep==T,SNP])
+  data_GX = data_GX[SNP %in% mySNPs,]
+  
+  setorder(data_GX,pval)
+  data_GX[,flag1 := FALSE]
+  data_GX[,type2 := ""]
+  types = unique(data_GX$type)
+  
+  if(SNPSets == "overlap"){
+    # overlaps allowed
+    for(i in 1:length(types)){
+      # i=1
+      mySNPs1 = data_GX[type == types[i],SNP]
+      mySNPs1 = mySNPs1[1:20]
+      data_GX[SNP %in% mySNPs1,flag1 := TRUE]
+      data_GX[SNP %in% mySNPs1,type2 := paste0(type2,types[i],sep=", ")]
+    }
+    data_GX = data_GX[flag1==T,]
+  }else if(SNPSets == "distinct"){
+    # no overlaps, selecting the first 20 SNPs with no overlap
+    dummy2 = data_GX[,min(pval),by=SNP]
+    dummy2[,dumID2 := paste(SNP,V1,sep="__")]
+    data_GX[,dumID2 := paste(SNP,pval,sep="__")]
+    dummy3 = data_GX[dumID2 %in% dummy2$dumID2,]
+    setorder(dummy3,pval)
+    
+    for(i in 1:length(types)){
+      # i=1
+      mySNPs1 = dummy3[type == types[i],SNP]
+      mySNPs1 = mySNPs1[1:20]
+      data_GX[SNP %in% mySNPs1,flag1 := TRUE]
+      data_GX[SNP %in% mySNPs1,type2 := paste0(type2,types[i],sep=", ")]
+    }
+    data_GX = data_GX[flag1==T,]
+  }
+  
+  data_GX_wide = dcast(data_GX, dumID + SNP ~ type, value.var=c("beta","SE","tval","pval"))
+  
+  types = unique(data_GX$type)
+  types = types[order(types)]
+  SNPs_per_type = c()
+  for(i in 1:length(types)){
+    dum1 = dim(data_GX[pval<0.05 & type == types[i]])[1]
+    SNPs_per_type = c(SNPs_per_type,dum1)
+  }
+  
+  data_GY = copy(data_outcome)
+  data_GY = data_GY[phenotype == outcome_name,]
+  data_GY = data_GY[SNP %in% data_GX_wide$SNP,]
+  matched = match(data_GX_wide$SNP,data_GY$SNP)
+  data_GY = data_GY[matched,]
+  stopifnot(data_GX_wide$SNP == data_GY$SNP)
+  
+  filt1 = grepl("beta",names(data_GX_wide))
+  data_beta = copy(data_GX_wide)
+  data_beta = data_beta[,filt1,with=F]
+  filt2 = grepl("SE",names(data_GX_wide))
+  data_SE = copy(data_GX_wide)
+  data_SE = data_SE[,filt2,with=F]
+  types = gsub("beta_","",names(data_GX_wide)[filt1])
+  
+  mvmr_obj = mr_mvinput(bx = as.matrix(data_beta),
+                          bxse = as.matrix(data_SE),
+                          by = data_GY$beta_mean, 
+                          byse = data_GY$SE_mean,
+                          exposure = types,
+                          outcome = outcome_name)
+  
+  res2 = mr_mvivw(mvmr_obj)    
+  res3 = data.table(setting = rep("multivariate",length(types)),
+					exposure = rep(exposure_name,length(types)),
+                    exposure_type = c(res2@Exposure),
+                    outcome = rep(res2@Outcome,length(types)),
+                    NR_SNPs_total = rep(dim(data_GY)[1],length(types)),
+					          NR_SNPs_type = SNPs_per_type,
+					          beta_IVW = c(res2@Estimate),
+                    SE_IVW = c(res2@StdError),
+                    pval_IVW = c(res2@Pvalue),
+                    HeteroStat = rep(res2@Heter.Stat[1],length(types)),
+                    HeteroStat_pval = rep(res2@Heter.Stat[2],length(types)))
+  
+  dumTab1 = foreach(i = 1:length(types))%do%{
+    # i=1
+    filt1 = grepl(types[i],data_GX$type2)
+    SNPs = unique(data_GX[filt1,SNP])
+    filt2 = is.element(data_GY$SNP,SNPs)
+    
+    mr_obj = mr_input(bx = as.matrix(data_beta)[filt2,i],
+                      bxse = as.matrix(data_SE)[filt2,i],
+                      by = data_GY$beta_mean[filt2],
+                      byse = data_GY$SE_mean[filt2],
+                      exposure = types[i],
+                      outcome = outcome_name,)
+    res2 = mr_ivw(mr_obj)
+    res4 = data.table(setting = "univariate",
+                      exposure = exposure_name,
+                      exposure_type = res2@Exposure,
+                      outcome = res2@Outcome,
+                      NR_SNPs_total = dim(data_GY[filt2,])[1],
+                      NR_SNPs_type = dim(data_GY[filt2,])[1],
+                      beta_IVW = res2@Estimate,
+                      SE_IVW = res2@StdError,
+                      pval_IVW = res2@Pvalue,
+                      HeteroStat = res2@Heter.Stat[1],
+                      HeteroStat_pval = res2@Heter.Stat[2])
+	  res4
+  }
+  res4 = rbindlist(dumTab1)
+    
+    
+  if(getPlot==T){
+	# make a plot
+    plotData = copy(data_GX)
+    matched = match(plotData$SNP,data_GY$SNP)
+    plotData[,myY := data_GY[matched,beta_mean]]
+    
+    matched = match(plotData$SNP,data_GX3$SNP)
+    plotData[,myColor := data_GX3[matched,type]]
+    
+    data_hline_multi = data.table(type = res3$exposure_type,
+                             line = res3$beta_IVW)
+    data_hline_uni = data.table(type = res4$exposure_type,
+                              line = res4$beta_IVW)
+      
+    myPlot = ggplot(data = plotData, aes(x = beta, y = myY, color = as.factor(myColor))) + 
+        geom_point() +
+        facet_wrap(~type,scales = "free")+        
+        geom_abline(data = data_hline_multi, aes(slope = line,intercept=0,linetype="multivariate")) +
+        geom_abline(data = data_hline_uni, aes(slope = line,intercept=0,linetype="univariate")) +
+        scale_linetype_manual("IVW estimate",values=c("univariate"=2,"multivariate"=1)) +
+        labs(x=paste0("SNP effect on ",exposure_name), 
+             y=paste0("SNP effect on ",outcome_name),
+             color="Lowest pval in ")
+    
+	#filename1 = paste0("../figures/08_7_MVMR_top20_",flag,"_",exposure_name,"_",outcome_name,"_",tag,".tiff")
+	#tiff(filename = filename1,width = 2250, height = 1125, res=200, compression = 'lzw')
+	print(myPlot)
+	#dev.off()
+  }
+  
+  res = rbind(res3,res4,fill=T)
+  res[,ID := flag]
+  return(res)
+  
+}
+

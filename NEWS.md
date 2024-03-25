@@ -2,7 +2,26 @@
 
 Here I want to track my progress
 
-## 17/03/2024
+## 2024/03/22
+
+**Simulation**
+
+Okay, I updated the simulations and get my simulation evaluation done. But there are still some open questions
+
+1) why is it performing so badly in shared + age for Y3 & Y4? It is kind of inverse. But I checked the code and it is alright. 
+2) I thought about rerunning the simulation with checking in the gamlss analyses also mean + var, and slope + var (in addition to mean + slope + var). But how would I interpret these results? Are they helpful at all?
+3) Should I run some comparison to the "classic" time-varying MVMR with get beta_GX at first time point and at the last time point and then estimate the causal effect with those 2 exposures? Would this be interesting? 
+
+**Real data**
+
+There are some creepy problems with the real data analysis: The gamlss algorithm does not converge, but still gives estimates. In some cases, this is obviously wrong, e.g. hc_cm in the main analysis, where almost all SNPs have pval==0. I want to run some sort of check here, to see how much I can trust the results. 
+
+- idea 1: rerun with 200 iteration steps (default is 20) --> still in queue
+- idea 2: rerun without time in the sigma model --> should then be rather similar to LMM, might be bad for the absolut values (those with increasing variance) --> still in queue
+
+In the mean time, I just run the MVMR scripts as they are available.
+
+## 2024/03/17
 
 Updated the repositories structure
 

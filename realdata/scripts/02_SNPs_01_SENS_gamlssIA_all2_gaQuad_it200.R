@@ -16,8 +16,8 @@
 #' Here, I want to estimate the SNP effects in a **gamlssIA** model for all relevant exposures:
 #' 
 #' - Population: **all2** 
-#' - Age: **scan number** 
-#' - Growth: **linear** 
+#' - Age: **ga** 
+#' - Growth: **quadratic** 
 #' 
 #' # Initialize ####
 #' ***
@@ -75,8 +75,18 @@ myTab_X[,ga2 := ga^2]
 #' # Get effects ####
 #' ***
 names(myTab_X)
-myExposures=names(myTab_X)[c(12:15,18,38,23,24:26,29,30)]
+myExposures=names(myTab_X)[c(18,38)]
 myExposures
+
+#' Filter for significant SNPs from the previous run (I want to check that they are good!)
+load("../results/02_SNPs_01_MAIN_Assocs_exposure_gamlssIA_all2_gaQuad_240318.RData")
+myAssocs_X_gamlssIA = myAssocs_X_gamlssIA[phenotype %in% myExposures,]
+myAssocs_X_gamlssIA = myAssocs_X_gamlssIA[pval_mean<1e-6 | pval_slope<1e-6,]
+mySNPs = unique(myAssocs_X_gamlssIA$SNP)
+pvar = pvar[ID %in% mySNPs,]
+geno_mat = geno_mat[,colnames(geno_mat) %in% mySNPs]
+
+#' Now start the loop
 
 dumTab1 = foreach(j=1:length(myExposures))%do%{
   #j=5
@@ -93,8 +103,8 @@ dumTab1 = foreach(j=1:length(myExposures))%do%{
   #data1 = data1[!is.na(ancestry),]
   
   # set time parameter
-  data1[,time := as.numeric(scan)]
-  # data1[,time := ga]
+  # data1[,time := as.numeric(scan)]
+  data1[,time := ga]
   # data1[,time := scale(ga)]
   # data1[,ga2 := scale(ga2)]
   
@@ -122,17 +132,18 @@ dumTab1 = foreach(j=1:length(myExposures))%do%{
     
     mod2 = gamlss(myX ~ myG + pn_sex + an_heightZ + an_smokstat + time +
                     (myG + pn_sex + an_heightZ + an_smokstat):time + 
-                    #ga2 + 
+                    ga2 + 
                     PC1 + PC2 + PC3 + PC4 + PC5 + random(x = as.factor(POPSID)),   
                   sigma.formula = ~myG + time, 
-                  data = na.omit(data2), family = "NO")
+                  data = na.omit(data2), family = "NO",
+                  control = gamlss.control(n.cyc = 200))
     
     dummy2 = summary(mod2)
     dummy2 = dummy2[grepl("myG",rownames(dummy2)),]
     
     res1 = data.table(regression = "gamlssIA",
-                      age = "scan",
-                      growth = "linear",
+                      age = "ga",
+                      growth = "quad",
                       population = "all2",
                       SNP = mySNP_info$ID,
                       phenotype = myExposure,
@@ -152,6 +163,7 @@ dumTab1 = foreach(j=1:length(myExposures))%do%{
     res1
   }
   myAssocs_X = rbindlist(dumTab2)
+  save(myAssocs_X,file=paste0("../temp/02_SNPAssocs_",myExposure,".RData"))
   myAssocs_X
 }
 myAssocs_X_gamlssIA = rbindlist(dumTab1)
@@ -159,7 +171,7 @@ myAssocs_X_gamlssIA
 
 myAssocs_X_gamlssIA[,table(pval_mean<0.05,pval_var<0.05,phenotype)]
 
-save(myAssocs_X_gamlssIA,file=paste0("../results/02_SNPs_04_SENS_Assocs_exposure_gamlssIA_all2_scanLin_",tag,".RData"))
+save(myAssocs_X_gamlssIA,file=paste0("../results/02_SNPs_01_SENS_Assocs_exposure_gamlssIA_all2_gaQuad_it200_",tag,".RData"))
 
 #' # Session Info ####
 #' ***

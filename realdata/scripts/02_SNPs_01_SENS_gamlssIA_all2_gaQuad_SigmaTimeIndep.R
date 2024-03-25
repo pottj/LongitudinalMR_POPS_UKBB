@@ -16,7 +16,7 @@
 #' Here, I want to estimate the SNP effects in a **gamlssIA** model for all relevant exposures:
 #' 
 #' - Population: **all2** 
-#' - Age: **scan number** 
+#' - Age: **ga** 
 #' - Growth: **quadratic** 
 #' 
 #' # Initialize ####
@@ -79,7 +79,7 @@ myExposures=names(myTab_X)[c(12:15,18,38,23,24:26,29,30)]
 myExposures
 
 dumTab1 = foreach(j=1:length(myExposures))%do%{
-  #j=5
+  #j=6
   myExposure = myExposures[j]
   message("Working on exposure ",myExposure)
   
@@ -93,8 +93,8 @@ dumTab1 = foreach(j=1:length(myExposures))%do%{
   #data1 = data1[!is.na(ancestry),]
   
   # set time parameter
-  data1[,time := as.numeric(scan)]
-  # data1[,time := ga]
+  # data1[,time := as.numeric(scan)]
+  data1[,time := ga]
   # data1[,time := scale(ga)]
   # data1[,ga2 := scale(ga2)]
   
@@ -124,14 +124,15 @@ dumTab1 = foreach(j=1:length(myExposures))%do%{
                     (myG + pn_sex + an_heightZ + an_smokstat):time + 
                     ga2 + 
                     PC1 + PC2 + PC3 + PC4 + PC5 + random(x = as.factor(POPSID)),   
-                  sigma.formula = ~myG + time, 
-                  data = na.omit(data2), family = "NO")
+                  sigma.formula = ~myG, 
+                  data = na.omit(data2), family = "NO",
+                  control = gamlss.control(n.cyc = 200))
     
     dummy2 = summary(mod2)
     dummy2 = dummy2[grepl("myG",rownames(dummy2)),]
     
     res1 = data.table(regression = "gamlssIA",
-                      age = "scan",
+                      age = "ga",
                       growth = "quad",
                       population = "all2",
                       SNP = mySNP_info$ID,
@@ -152,6 +153,7 @@ dumTab1 = foreach(j=1:length(myExposures))%do%{
     res1
   }
   myAssocs_X = rbindlist(dumTab2)
+  save(myAssocs_X,file=paste0("../temp/02_SNPAssocs_",myExposure,".RData"))
   myAssocs_X
 }
 myAssocs_X_gamlssIA = rbindlist(dumTab1)
@@ -159,7 +161,7 @@ myAssocs_X_gamlssIA
 
 myAssocs_X_gamlssIA[,table(pval_mean<0.05,pval_var<0.05,phenotype)]
 
-save(myAssocs_X_gamlssIA,file=paste0("../results/02_SNPs_04_SENS_Assocs_exposure_gamlssIA_all2_scanQuad_",tag,".RData"))
+save(myAssocs_X_gamlssIA,file=paste0("../results/02_SNPs_01_SENS_Assocs_exposure_gamlssIA_all2_gaQuad_SigmaTimeIndep_",tag,".RData"))
 
 #' # Session Info ####
 #' ***

@@ -29,8 +29,8 @@ tag = gsub("-","",tag)
 #' # Load data ####
 #' ***
 myMVMR_files = list.files(path = "../results/",pattern = "04_MVMR")
-myMVMR_files
-myMVMR_files = myMVMR_files[c(1,2,5)]
+myMVMR_files = myMVMR_files[grepl("240325",myMVMR_files)]
+myMVMR_files = myMVMR_files[c(1,2,5,7,8)]
 
 dumTab1 = foreach(i=1:length(myMVMR_files))%do%{
   #i=1
@@ -50,20 +50,22 @@ MVMR1[outcome == "pn_bw", outcome := "BW"]
 
 MVMR1[ID == "sens_GBR3", ID := "sensitivity - GBR3"]
 MVMR1[ID == "sens_LMM", ID := "sensitivity - LMM"]
+MVMR1[ID == "sens_it200", ID := "sensitivity - 200 iterations"]
+MVMR1[ID == "sens_SigmaTimeIndep", ID := "sensitivity - no time effect on sigma"]
 
 #' # Create Forest Plots ###
 #' ***
 myExposures = unique(MVMR1$exposure)
 
 dumTab1 = foreach(i=1:length(myExposures))%do%{
-  #i=1
+  #i=4
   MVMR2 = copy(MVMR1)
   MVMR2 = MVMR2[exposure == myExposures[i],]
   
   myExposureTypes = unique(MVMR2$exposure_type)
   
   dumTab2 = foreach(j=1:length(myExposureTypes))%do%{
-    #j=1
+    #j=2
     MVMR3 = copy(MVMR2)
     MVMR3 = MVMR3[exposure_type == myExposureTypes[j],]
     MVMR3[,rank := 2]
@@ -114,8 +116,8 @@ dumTab1 = foreach(i=1:length(myExposures))%do%{
     
     plot(p2)
     
-    filename = paste0("../results/_figures/ForestPlots_",myExposures[i],"_",myExposureTypes[j],"_BW.png")
-    png(filename = filename,width = 1700, height = 1000, res=200)
+    filename = paste0("../results/_figures/05_1_ForestPlots_",myExposures[i],"_",myExposureTypes[j],"_BW.png")
+    png(filename = filename,width = 2000, height = 1500, res=200)
     plot(p2)
     dev.off()
     

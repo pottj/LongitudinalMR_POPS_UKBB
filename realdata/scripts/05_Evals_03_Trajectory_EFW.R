@@ -37,13 +37,13 @@ loaded2
 #' # Get plot data ####
 #' ***
 names(myTab_X)
-myTab_X =myTab_X[,c(1,2,4,5,6,18)]
+myTab_X =myTab_X[,c(1,2,4,5,6,18,23,24)]
 dummy = myTab_X[!is.na(efwcomb),.N,by=POPSID]
 myTab_X = myTab_X[POPSID %in% dummy[N>=2,POPSID]]
 
 names(myTab_Y)
 myTab_Y[,scan := 4]
-myTab_Y =myTab_Y[,c(1,9,18,55,10,12)]
+myTab_Y =myTab_Y[,c(1,9,18,55,10,12,16,15)]
 names(myTab_Y) = names(myTab_X)
 myTab_Y = myTab_Y[POPSID %in% myTab_X$POPSID]
 
@@ -55,6 +55,9 @@ plotData[,myShape := as.factor(myShape)]
 
 #' # Do plotting ####
 #' ***
+#' ## Absolute values ####
+plotData[,sd(efwcomb/1000,na.rm=T),by=scan]
+
 ggp1  = ggplot(plotData, aes(x=ga, y=efwcomb/1000,  
                              group=POPSID,shape=myShape)) +
   #facet_wrap(~pn_emcsall,scales = "free_y")+
@@ -74,9 +77,90 @@ ggp1
 
 #' I really dont know how to get rid of the black color.
 #' 
-png(file=paste0("../results/_figures/05_3_Trajectory_EFW.png"),
+png(file=paste0("../results/_figures/05_3_Trajectory_EFW_abs.png"),
     width=1500,height=1200,res = 200)
 print(ggp1)
+dev.off()
+
+#' ## Log-transformed values
+plotData[,sd(log(efwcomb/1000),na.rm=T),by=scan]
+
+ggp2  = ggplot(plotData, aes(x=ga, y=log(efwcomb/1000),  
+                             group=POPSID,shape=myShape)) +
+  #facet_wrap(~pn_emcsall,scales = "free_y")+
+  geom_line(aes(alpha=0.01,col=as.factor(pn_emcsall))) + 
+  geom_point(aes(colour = "black",fill = as.factor(pn_emcsall)))+
+  labs(x="Gestational Week", y="Weight (log-transformed)", 
+       fill="eCS?",shape="",color="eCS?") +
+  scale_shape_manual(values=c(21,24),
+                     labels = c("estimated \nfetal weight","birth weight"))+
+  scale_fill_manual(values = c("steelblue","darkred"),
+                    labels = c("no", "yes"))+
+  scale_colour_manual(values = c("steelblue","darkred","black"),
+                      labels = c("no", "yes","idk"))+
+  theme(legend.position = "none") + theme_classic()+ 
+  guides(alpha="none",fill="none")
+ggp2
+
+#' I really dont know how to get rid of the black color.
+#' 
+png(file=paste0("../results/_figures/05_3_Trajectory_EFW_log.png"),
+    width=1500,height=1200,res = 200)
+print(ggp2)
+dev.off()
+
+#' ## Z-scores ####
+plotData[,sd(efwcombZv2,na.rm=T),by=scan]
+
+ggp3  = ggplot(plotData, aes(x=ga, y=efwcombZv2,  
+                             group=POPSID,shape=myShape)) +
+  #facet_wrap(~pn_emcsall,scales = "free_y")+
+  geom_line(aes(alpha=0.01,col=as.factor(pn_emcsall))) + 
+  geom_point(aes(colour = "black",fill = as.factor(pn_emcsall)))+
+  labs(x="Gestational Week", y="Weight (GA-adjusted Z-scores)", 
+       fill="eCS?",shape="",color="eCS?") +
+  scale_shape_manual(values=c(21,24),
+                     labels = c("estimated \nfetal weight","birth weight"))+
+  scale_fill_manual(values = c("steelblue","darkred"),
+                    labels = c("no", "yes"))+
+  scale_colour_manual(values = c("steelblue","darkred","black"),
+                      labels = c("no", "yes","idk"))+
+  theme(legend.position = "none") + theme_classic()+ 
+  guides(alpha="none",fill="none")
+ggp3
+
+#' I really dont know how to get rid of the black color.
+#' 
+png(file=paste0("../results/_figures/05_3_Trajectory_EFW_ZScores.png"),
+    width=1500,height=1200,res = 200)
+print(ggp3)
+dev.off()
+
+#' ## Centiles ####
+plotData[,sd(efwcombv2_cent,na.rm=T),by=scan]
+
+ggp4  = ggplot(plotData, aes(x=ga, y=efwcombv2_cent,  
+                             group=POPSID,shape=myShape)) +
+  #facet_wrap(~pn_emcsall,scales = "free_y")+
+  geom_line(aes(alpha=0.01,col=as.factor(pn_emcsall))) + 
+  geom_point(aes(colour = "black",fill = as.factor(pn_emcsall)))+
+  labs(x="Gestational Week", y="Weight (GA-adjusted Centiles)", 
+       fill="eCS?",shape="",color="eCS?") +
+  scale_shape_manual(values=c(21,24),
+                     labels = c("estimated \nfetal weight","birth weight"))+
+  scale_fill_manual(values = c("steelblue","darkred"),
+                    labels = c("no", "yes"))+
+  scale_colour_manual(values = c("steelblue","darkred","black"),
+                      labels = c("no", "yes","idk"))+
+  theme(legend.position = "none") + theme_classic()+ 
+  guides(alpha="none",fill="none")
+ggp4
+
+#' I really dont know how to get rid of the black color.
+#' 
+png(file=paste0("../results/_figures/05_3_Trajectory_EFW_Centiles.png"),
+    width=1500,height=1200,res = 200)
+print(ggp4)
 dev.off()
 
 #' # Session Info ####

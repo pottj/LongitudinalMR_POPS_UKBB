@@ -36,6 +36,7 @@ load("../results/_tables/Simulation_complete.RData")
 dumTab = copy(myTab)
 dumTab = dumTab[Sim_growth=="quad"]
 dumTab = dumTab[!grepl("Y1",outcome),]
+dumTab = dumTab[!grepl("bin",outcome),]
 
 dumTab[,type := "mean"]
 
@@ -71,6 +72,27 @@ png(filename = filename,width = 2800, height = 1600, res=200)
 print(plot5)
 dev.off()
 
+dumTab4[,dumID3 := paste(type, outcome,sep=" - ")]
+dumTab4[,dumID4 := paste(Sim_age, Sim_reg, sep=" - ")]
+
+plot6 = ggplot(dumTab4[dumID3 %in% c("mean - Y2","slope - Y3","mean - Y4","slope - Y4")], 
+               aes(x = Sim_SNPset,y=bias_X1, color = dumID4)) +
+  facet_wrap(~ dumID3,scales = "free") +
+  geom_hline(yintercept = 0,color="grey") +
+  geom_point(position=position_dodge(0.5),size=3) +
+  geom_errorbar(aes(ymin=bias_X1-1.96*bias_SE_X1, ymax=bias_X1+1.96*bias_SE_X1), width=.2,
+                position=position_dodge(0.5)) +
+  theme_bw(base_size = 15) + 
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  #theme(axis.text.x = element_text(angle = 45)) +
+  xlab("SNP sets") + ylab("Bias") +
+  labs(color = "Scenario")
+plot6
+
+filename = paste0("../results/_figures/MainFig2_Bias_releventCombis.png")
+png(filename = filename,width = 2000, height = 1500, res=200)
+print(plot6)
+dev.off()
 
 #' # Session Info ####
 #' ***

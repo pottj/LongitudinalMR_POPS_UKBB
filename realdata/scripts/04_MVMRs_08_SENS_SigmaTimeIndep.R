@@ -107,7 +107,7 @@ dumTab2 = foreach(j = 1:length(myExposures))%dorng%{
   # filter data
   myAssocs_X_long2 = copy(myAssocs_X_long)
   myAssocs_X_long2 = myAssocs_X_long2[phenotype == myExposure,]
-  myAssocs_X_long2[,dumID := "sens_it200"]
+  myAssocs_X_long2[,dumID := "sens_SigmaTimeIndep"]
     
   dumTab3 = foreach(k = 1:length(myOutcomes))%do%{
       #k=1
@@ -120,7 +120,7 @@ dumTab2 = foreach(j = 1:length(myExposures))%dorng%{
                            data_outcome = myAssocs_Y2,
                            exposure_name = myExposure, 
                            outcome_name = myOutcome,
-                           flag = "sens_it200",
+                           flag = "sens_SigmaTimeIndep",
                            GX_pval_treshold = 0.05,
                            getPlot = F,
                            corTab = LDTab,
@@ -130,7 +130,7 @@ dumTab2 = foreach(j = 1:length(myExposures))%dorng%{
                            data_outcome = myAssocs_Y2,
                            exposure_name = myExposure, 
                            outcome_name = myOutcome,
-                           flag = "sens_it200",
+                           flag = "sens_SigmaTimeIndep",
                            GX_pval_treshold = 1e-6,
                            getPlot = F,
                            corTab = LDTab,
@@ -140,7 +140,7 @@ dumTab2 = foreach(j = 1:length(myExposures))%dorng%{
                                  data_outcome = myAssocs_Y2,
                                  exposure_name = myExposure, 
                                  outcome_name = myOutcome,
-                                 flag = "sens_it200",
+                                 flag = "sens_SigmaTimeIndep",
                                  SNPSets = "overlap",
                                  getPlot = F,
                                  corTab = LDTab,
@@ -150,7 +150,7 @@ dumTab2 = foreach(j = 1:length(myExposures))%dorng%{
                                  data_outcome = myAssocs_Y2,
                                  exposure_name = myExposure, 
                                  outcome_name = myOutcome,
-                                 flag = "sens_it200",
+                                 flag = "sens_SigmaTimeIndep",
                                  SNPSets = "distinct",
                                  getPlot = F,
                                  corTab = LDTab,
@@ -170,7 +170,7 @@ dumTab2 = foreach(j = 1:length(myExposures))%dorng%{
 }
 
 MVMR_results = rbindlist(dumTab2,fill = T)
-save(MVMR_results,file = paste0("../results/04_MVMR_07_SENS_SigmaTimeIndep_",tag,".RData"))
+save(MVMR_results,file = paste0("../results/04_MVMR_08_SENS_SigmaTimeIndep_",tag,".RData"))
 
 #' # Session Info ####
 #' ***

@@ -13,7 +13,7 @@
 #'
 #' # Introduction ####
 #' ***
-#' Here, I want to estimate the SNP effects in a **linear mixed** model for all relevant exposures:
+#' Here, I want to estimate the SNP effects in a **gamlssIA** model for all relevant exposures:
 #' 
 #' - Population: **all2** 
 #' - Age: **ga** 
@@ -75,11 +75,11 @@ myTab_X[,ga2 := ga^2]
 #' # Get effects ####
 #' ***
 names(myTab_X)
-myExposures=names(myTab_X)[c(12:15,18,38,23,24:26,29,30)]
+myExposures=names(myTab_X)[c(18,38,23,24)]
 myExposures
 
 dumTab1 = foreach(j=1:length(myExposures))%do%{
-  #j=5
+  #j=6
   myExposure = myExposures[j]
   message("Working on exposure ",myExposure)
   
@@ -113,42 +113,55 @@ dumTab1 = foreach(j=1:length(myExposures))%do%{
     
     data2 = copy(data1)
     data2[,myG := mySNP[matched]]
+
+    myCols = names(data2)[c(1,2,6,32:36,39:41,43:46)]
+    colsOut<-setdiff(colnames(data2),myCols)
+    data2[,get("colsOut"):=NULL]
+    setcolorder(data2,myCols)
+    data3 = na.omit(data2)
     
-    mod1 = lmer(myX ~ myG + pn_sex + an_heightZ + an_smokstat + time +
-                  (myG + pn_sex + an_heightZ + an_smokstat):time + 
-                  ga2 + 
-                  (1|POPSID) + PC1 + PC2 + PC3 + PC4 + PC5, data = data2)
+    mod2 = gamlss(myX ~ myG + pn_sex + an_heightZ + an_smokstat + time +
+                    (myG + pn_sex + an_heightZ + an_smokstat):time + 
+                    ga2 + 
+                    PC1 + PC2 + PC3 + PC4 + PC5 + random(x = as.factor(POPSID)),   
+                  sigma.formula = ~myG, 
+                  data = na.omit(data2), family = "NO",
+                  control = gamlss.control(n.cyc = 200))
     
-    dummy1 = summary(mod1)$coef
-    dummy1 = dummy1[grepl("myG",rownames(dummy1)),]
+    dummy2 = summary(mod2)
+    dummy2 = dummy2[grepl("myG",rownames(dummy2)),]
     
-    res1 = data.table(regression = "linMixed",
+    res1 = data.table(regression = "gamlssIA",
                       age = "ga",
                       growth = "quad",
                       population = "all2",
                       SNP = mySNP_info$ID,
                       phenotype = myExposure,
-                      sampleSize = length(unique(mod1@frame$POPSID)),
-                      beta_mean = dummy1[1,1],
-                      SE_mean = dummy1[1,2],
-                      tval_mean = dummy1[1,3],
-                      beta_slope = dummy1[2,1],
-                      SE_slope = dummy1[2,2],
-                      tval_slope = dummy1[2,3])
-    res1[,pval_mean := pnorm(-abs(beta_mean/SE_mean))*2]
-    res1[,pval_slope := pnorm(-abs(beta_slope/SE_slope))*2]
-    res1 = res1[,c(1:10,14,11:13,15)]
+                      sampleSize = length(unique(data3$POPSID)),
+                      beta_mean = dummy2[1,1],
+                      SE_mean = dummy2[1,2],
+                      tval_mean = dummy2[1,3],
+                      pval_mean = dummy2[1,4],
+                      beta_slope = dummy2[2,1],
+                      SE_slope = dummy2[2,2],
+                      tval_slope = dummy2[2,3],
+                      pval_slope = dummy2[2,4],
+                      beta_var = dummy2[3,1],
+                      SE_var = dummy2[3,2],
+                      tval_var = dummy2[3,3],
+                      pval_var = dummy2[3,4])
     res1
   }
   myAssocs_X = rbindlist(dumTab2)
+  save(myAssocs_X,file=paste0("../temp/02_SNPAssocs_04_",myExposure,".RData"))
   myAssocs_X
 }
-myAssocs_X_linearMixed = rbindlist(dumTab1)
-myAssocs_X_linearMixed
+myAssocs_X_gamlssIA = rbindlist(dumTab1)
+myAssocs_X_gamlssIA
 
-myAssocs_X_linearMixed[,table(pval_mean<0.05,pval_slope<0.05,phenotype)]
+myAssocs_X_gamlssIA[,table(pval_mean<0.05,pval_var<0.05,phenotype)]
 
-save(myAssocs_X_linearMixed,file=paste0("../results/02_SNPs_02_SENS_Assocs_exposure_linMixed_all2_gaQuad_",tag,".RData"))
+save(myAssocs_X_gamlssIA,file=paste0("../results/02_SNPs_04_SENS_SigmaTimeIndep_",tag,".RData"))
 
 #' # Session Info ####
 #' ***

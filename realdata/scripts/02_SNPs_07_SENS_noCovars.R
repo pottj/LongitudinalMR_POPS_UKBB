@@ -15,7 +15,7 @@
 #' ***
 #' Here, I want to estimate the SNP effects in a **gamlssIA** model for all relevant exposures:
 #' 
-#' - Population: **all3** 
+#' - Population: **all2** 
 #' - Age: **ga** 
 #' - Growth: **quadratic** 
 #' 
@@ -75,7 +75,7 @@ myTab_X[,ga2 := ga^2]
 #' # Get effects ####
 #' ***
 names(myTab_X)
-myExposures=names(myTab_X)[c(12:15,18,38,23,24:26,29,30)]
+myExposures=names(myTab_X)[c(18,38,23,24)]
 myExposures
 
 dumTab1 = foreach(j=1:length(myExposures))%do%{
@@ -88,8 +88,8 @@ dumTab1 = foreach(j=1:length(myExposures))%do%{
   
   # filter data for 2 or more time points per sample
   dummy = data1[!is.na(myX),.N,by=POPSID]
-  #data1 = data1[POPSID %in% dummy[N>=2,POPSID]]
-  data1 = data1[POPSID %in% dummy[N==3,POPSID]]
+  data1 = data1[POPSID %in% dummy[N>=2,POPSID]]
+  #data1 = data1[POPSID %in% dummy[N==3,POPSID]]
   #data1 = data1[!is.na(ancestry),]
   
   # set time parameter
@@ -120,9 +120,7 @@ dumTab1 = foreach(j=1:length(myExposures))%do%{
     setcolorder(data2,myCols)
     data3 = na.omit(data2)
     
-    mod2 = gamlss(myX ~ myG + pn_sex + an_heightZ + an_smokstat + time +
-                    (myG + pn_sex + an_heightZ + an_smokstat):time + 
-                    ga2 + 
+    mod2 = gamlss(myX ~ myG*time + ga2 + 
                     PC1 + PC2 + PC3 + PC4 + PC5 + random(x = as.factor(POPSID)),   
                   sigma.formula = ~myG + time, 
                   data = na.omit(data2), family = "NO")
@@ -133,7 +131,7 @@ dumTab1 = foreach(j=1:length(myExposures))%do%{
     res1 = data.table(regression = "gamlssIA",
                       age = "ga",
                       growth = "quad",
-                      population = "all3",
+                      population = "all2",
                       SNP = mySNP_info$ID,
                       phenotype = myExposure,
                       sampleSize = length(unique(data3$POPSID)),
@@ -152,6 +150,7 @@ dumTab1 = foreach(j=1:length(myExposures))%do%{
     res1
   }
   myAssocs_X = rbindlist(dumTab2)
+  save(myAssocs_X,file=paste0("../temp/02_SNPAssocs_07_",myExposure,".RData"))
   myAssocs_X
 }
 myAssocs_X_gamlssIA = rbindlist(dumTab1)
@@ -159,7 +158,7 @@ myAssocs_X_gamlssIA
 
 myAssocs_X_gamlssIA[,table(pval_mean<0.05,pval_var<0.05,phenotype)]
 
-save(myAssocs_X_gamlssIA,file=paste0("../results/02_SNPs_03_SENS_Assocs_exposure_gamlssIA_all3_gaQuad_",tag,".RData"))
+save(myAssocs_X_gamlssIA,file=paste0("../results/02_SNPs_07_SENS_noCovars_",tag,".RData"))
 
 #' # Session Info ####
 #' ***

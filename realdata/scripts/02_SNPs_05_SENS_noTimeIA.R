@@ -75,7 +75,7 @@ myTab_X[,ga2 := ga^2]
 #' # Get effects ####
 #' ***
 names(myTab_X)
-myExposures=names(myTab_X)[c(12:15,18,38,23,24:26,29,30)]
+myExposures=names(myTab_X)[c(18,38,23,24)]
 myExposures
 
 dumTab1 = foreach(j=1:length(myExposures))%do%{
@@ -121,12 +121,12 @@ dumTab1 = foreach(j=1:length(myExposures))%do%{
     data3 = na.omit(data2)
     
     mod2 = gamlss(myX ~ myG + pn_sex + an_heightZ + an_smokstat + time +
-                    (myG + pn_sex + an_heightZ + an_smokstat):time + 
+                    (pn_sex + an_heightZ + an_smokstat):time + 
                     ga2 + 
                     PC1 + PC2 + PC3 + PC4 + PC5 + random(x = as.factor(POPSID)),   
-                  sigma.formula = ~myG, 
+                  sigma.formula = ~myG + time, 
                   data = na.omit(data2), family = "NO",
-                  control = gamlss.control(n.cyc = 200))
+                  control = gamlss.control(n.cyc = 20))
     
     dummy2 = summary(mod2)
     dummy2 = dummy2[grepl("myG",rownames(dummy2)),]
@@ -142,18 +142,14 @@ dumTab1 = foreach(j=1:length(myExposures))%do%{
                       SE_mean = dummy2[1,2],
                       tval_mean = dummy2[1,3],
                       pval_mean = dummy2[1,4],
-                      beta_slope = dummy2[2,1],
-                      SE_slope = dummy2[2,2],
-                      tval_slope = dummy2[2,3],
-                      pval_slope = dummy2[2,4],
-                      beta_var = dummy2[3,1],
-                      SE_var = dummy2[3,2],
-                      tval_var = dummy2[3,3],
-                      pval_var = dummy2[3,4])
+                      beta_var = dummy2[2,1],
+                      SE_var = dummy2[2,2],
+                      tval_var = dummy2[2,3],
+                      pval_var = dummy2[2,4])
     res1
   }
   myAssocs_X = rbindlist(dumTab2)
-  save(myAssocs_X,file=paste0("../temp/02_SNPAssocs_",myExposure,".RData"))
+  save(myAssocs_X,file=paste0("../temp/02_SNPAssocs_05_",myExposure,".RData"))
   myAssocs_X
 }
 myAssocs_X_gamlssIA = rbindlist(dumTab1)
@@ -161,7 +157,7 @@ myAssocs_X_gamlssIA
 
 myAssocs_X_gamlssIA[,table(pval_mean<0.05,pval_var<0.05,phenotype)]
 
-save(myAssocs_X_gamlssIA,file=paste0("../results/02_SNPs_01_SENS_Assocs_exposure_gamlssIA_all2_gaQuad_SigmaTimeIndep_",tag,".RData"))
+save(myAssocs_X_gamlssIA,file=paste0("../results/02_SNPs_05_SENS_noTimeIA_",tag,".RData"))
 
 #' # Session Info ####
 #' ***

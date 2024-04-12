@@ -75,7 +75,7 @@ myTab_X[,ga2 := ga^2]
 #' # Get effects ####
 #' ***
 names(myTab_X)
-myExposures=names(myTab_X)[c(12:15,18,38,23,24:26,29,30)]
+myExposures=names(myTab_X)[c(18,38,23,24)]
 myExposures
 
 dumTab1 = foreach(j=1:length(myExposures))%do%{
@@ -152,6 +152,7 @@ dumTab1 = foreach(j=1:length(myExposures))%do%{
     res1
   }
   myAssocs_X = rbindlist(dumTab2)
+  save(myAssocs_X,file=paste0("../temp/02_SNPAssocs_02_",myExposure,".RData"))
   myAssocs_X
 }
 myAssocs_X_gamlssIA = rbindlist(dumTab1)
@@ -159,7 +160,7 @@ myAssocs_X_gamlssIA
 
 myAssocs_X_gamlssIA[,table(pval_mean<0.05,pval_var<0.05,phenotype)]
 
-save(myAssocs_X_gamlssIA,file=paste0("../results/02_SNPs_03_SENS_Assocs_exposure_gamlssIA_GBR3_gaQuad_",tag,".RData"))
+save(myAssocs_X_gamlssIA,file=paste0("../results/02_SNPs_02_SENS_GBR3_",tag,".RData"))
 
 #' # Session Info ####
 #' ***

@@ -56,6 +56,8 @@ archive/
 temp/
 data/
 results/
+simulation_test/
+simulation2/
 *.html
 *.out
 *.pdf

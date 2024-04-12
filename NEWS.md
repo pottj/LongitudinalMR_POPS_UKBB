@@ -2,6 +2,18 @@
 
 Here I want to track my progress
 
+## 2024/04/12
+
+Happy easter - did not track my progress for a while ...
+
+- included conditional F-statistics in the MVMR functions - was not pretty, because when too strong then it does not converge (not positive), and if too many instruments (real data) then it takes forever --> my solution: just use random 5% of all/nominal SNPs, then cond. F-statistics can be estimated, but they are kindof low
+- I gave my BSU together talk and generate figures ...
+- Tried again to get shared SNP set better simulated - currently under simulation_test (not tracked)
+- refined the sensitivity tests for the real data (LMM, GBR3, sigmaTimeIndep, noTimeIA, it200, and noCovars) - unfinished because slurm script still pending
+
+
+
+
 ## 2024/03/22
 
 **Simulation**

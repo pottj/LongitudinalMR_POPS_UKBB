@@ -13,7 +13,7 @@
 #' }
 #' @rdname GetAssociation
 #' @export
-GetAssociation = function(data,method,genotypes,dep_var_name,time_var_name,growth_var,getIA=F){
+GetAssociation = function(data,method,genotypes,dep_var_name,time_var_name,growth_var,getIA=T){
   # debug
   # genotypes = G
   # method = "linReg"
@@ -101,20 +101,35 @@ GetAssociation = function(data,method,genotypes,dep_var_name,time_var_name,growt
       data2[,mySNP := helper[matched,SNP]]
       data2[,myVar := get(dep_var_name)]
       
-      if(growth_var == "linear"){
+      if(growth_var == "linear" & getIA==T){
         modX_G = lmer(myVar ~ mySNP + time + (1|ID) + mySNP:time, data = data2)
-      }else if(growth_var != "linear"){
+      }else if(growth_var != "linear" & getIA==T){
         modX_G = lmer(myVar ~ mySNP + time + (1|ID) + mySNP:time + age2, data = data2)
+      }else if(growth_var == "linear" & getIA==F){
+        modX_G = lmer(myVar ~ mySNP + time + (1|ID), data = data2)
+      }else if(growth_var != "linear" & getIA==F){
+        modX_G = lmer(myVar ~ mySNP + time + (1|ID) + age2, data = data2)
       }
       dummy1 = summary(modX_G)$coef
       dummy1 = dummy1[grepl("mySNP",rownames(dummy1)),]
       
-      res = data.table(SNP = c(j,j),
-                       exposure = c("mean","slope"),
-                       beta = dummy1[,1],
-                       SE = dummy1[,2],
-                       tval = dummy1[,3])
-      res[,pval := pnorm(-abs(beta/SE))*2]
+      if(getIA==T){
+        res = data.table(SNP = c(j,j),
+                         exposure = c("mean","slope"),
+                         beta = dummy1[,1],
+                         SE = dummy1[,2],
+                         tval = dummy1[,3])
+        res[,pval := pnorm(-abs(beta/SE))*2]
+      }else if(getIA==F){
+        res = data.table(SNP = c(j),
+                         exposure = c("mean"),
+                         beta = dummy1[1],
+                         SE = dummy1[2],
+                         tval = dummy1[3])
+        res[,pval := pnorm(-abs(beta/SE))*2]
+      }
+        
+      
       res
     }
     
@@ -161,24 +176,42 @@ GetAssociation = function(data,method,genotypes,dep_var_name,time_var_name,growt
         data2[,mySNP := helper[matched,SNP]]
         data2[,myVar := get(dep_var_name)]
         
-        if(growth_var == "linear"){
+        if(growth_var == "linear" & getIA==T){
           modX_G = gamlss(myVar ~ mySNP*time + random(x = as.factor(ID)), 
                           sigma.formula = ~mySNP + time, 
                           data = data2, family = "NO")
-        }else if(growth_var != "linear"){
+        }else if(growth_var != "linear" & getIA==T){
           modX_G = gamlss(myVar ~ mySNP*time + age2 + random(x = as.factor(ID)), 
+                          sigma.formula = ~mySNP + time, 
+                          data = data2, family = "NO")
+        }else if(growth_var == "linear" & getIA==F){
+          modX_G = gamlss(myVar ~ mySNP + time + random(x = as.factor(ID)), 
+                          sigma.formula = ~mySNP + time, 
+                          data = data2, family = "NO")
+        }else if(growth_var != "linear" & getIA==F){
+          modX_G = gamlss(myVar ~ mySNP + time + age2 + random(x = as.factor(ID)), 
                           sigma.formula = ~mySNP + time, 
                           data = data2, family = "NO")
         }
         dummy1 = summary(modX_G)
         dummy1 = dummy1[grepl("mySNP",rownames(dummy1)),]
         
-        res = data.table(SNP = c(j,j,j),
-                         exposure = c("mean","slope","var"),
-                         beta = dummy1[,1],
-                         SE = dummy1[,2],
-                         tval = dummy1[,3],
-                         pval = dummy1[,4])
+        if(dim(dummy1)[1]==3){
+          res = data.table(SNP = c(j,j,j),
+                           exposure = c("mean","slope","var"),
+                           beta = dummy1[,1],
+                           SE = dummy1[,2],
+                           tval = dummy1[,3],
+                           pval = dummy1[,4])
+        }else if(dim(dummy1)[1]==2){
+          res = data.table(SNP = c(j,j),
+                           exposure = c("mean","var"),
+                           beta = dummy1[,1],
+                           SE = dummy1[,2],
+                           tval = dummy1[,3],
+                           pval = dummy1[,4])
+          
+        }
         res
     }
     

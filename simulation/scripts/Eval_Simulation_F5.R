@@ -47,7 +47,7 @@ dumTab = foreach(i = 1:dim(ToDoFile)[1])%do%{
   SimTab[exposure %in% c("slope"),exposure := "X2"]
   SimTab[exposure %in% c("var"),exposure := "X3"]
 
-  # filter bad MR runs (cond. F-Stat <0 for mean and slope)
+  # filter bad MR runs (cond. F-Stat <5 for mean and slope)
   SimTab[,dumID0 := paste(n_sim,type,sep="__")]
   dum1 = SimTab[exposure=="X1",mean(condFStats),by=dumID0]
   dum2 = SimTab[exposure=="X2",mean(condFStats),by=dumID0]
@@ -55,8 +55,8 @@ dumTab = foreach(i = 1:dim(ToDoFile)[1])%do%{
   dum1[grepl("Only",dumID0),dumID1 := gsub("mean","",dumID0)]
   dum2[,dumID1 := dumID0]
   dum2[grepl("Only",dumID0),dumID1 := gsub("Slope","",dumID0)]
-  dum1 = dum1[!is.na(V1) & V1>0,]
-  dum2 = dum2[!is.na(V1) & V1>0,]
+  dum1 = dum1[!is.na(V1) & V1>5,]
+  dum2 = dum2[!is.na(V1) & V1>5,]
   mySims = c(dum1[dumID1 %in% dum2$dumID1,dumID0],dum2[dumID1 %in% dum1$dumID1,dumID0])
   SimTab = SimTab[dumID0 %in% mySims,]
   SimTab[,table(type)]
@@ -236,13 +236,13 @@ for(i in 1:length(myOutcome_types)){
   
   dumTab2 = rbind(dumTab_X1,dumTab_X2,dumTab_X3)
   setorder(dumTab2,outcome)
-  dumMat = as.matrix(dumTab2[,2:9])
+  dumMat = as.matrix(dumTab2[,2:7])
   
   rownames(dumMat) = paste(dumTab2$outcome,rep(c("X1","X2","X3"),4),sep=" - ")
   colnames(dumMat) = gsub("_"," - ",colnames(dumMat))
   corrplot(dumMat, is.corr = FALSE,col.lim = c(0, 1),col = COL1('Reds'), addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
   
-  filename = paste0("../results/_figures/DetectionRates_condFStat0_",myOutcome_types[i],".png")
+  filename = paste0("../results/_figures/DetectionRates_condFStat5_",myOutcome_types[i],".png")
   png(filename = filename,width = 1600, height = 1600, res=200)
   corrplot(dumMat, is.corr = FALSE,col.lim = c(0, 1),col = COL1('Reds'), addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
   dev.off()
@@ -280,7 +280,7 @@ plot5 = ggplot(dumTab4,
   labs(color = "Outcome")
 plot5
 
-filename = paste0("../results/_figures/Bias_condFStat0_",myOutcome_types[1],".png")
+filename = paste0("../results/_figures/Bias_condFStat5_",myOutcome_types[1],".png")
 png(filename = filename,width = 2800, height = 1600, res=200)
 print(plot5)
 dev.off()
@@ -317,7 +317,7 @@ plot5 = ggplot(dumTab4,
   labs(color = "Outcome")
 plot5
 
-filename = paste0("../results/_figures/CorrectedEstimates_condFStat0_",myOutcome_types[1],".png")
+filename = paste0("../results/_figures/CorrectedEstimates_condFStat5_",myOutcome_types[1],".png")
 png(filename = filename,width = 2800, height = 1600, res=200)
 print(plot5)
 dev.off()
@@ -353,7 +353,7 @@ plot5 = ggplot(dumTab4,
   labs(color = "Outcome")
 plot5
 
-filename = paste0("../results/_figures/RawEstimates_condFStat0_",myOutcome_types[1],".png")
+filename = paste0("../results/_figures/RawEstimates_condFStat5_",myOutcome_types[1],".png")
 png(filename = filename,width = 2800, height = 1600, res=200)
 print(plot5)
 dev.off()
@@ -362,9 +362,9 @@ dev.off()
 #' ***
 #' I want to save the big table as for the supplemental data!
 #' 
-save(myTab,file="../results/_tables/Simulation_complete_F0.RData")
-save(myTab_meanOnly,file="../results/_tables/Simulation_meanOnly_F0.RData")
-save(myTab_slopeOnly,file="../results/_tables/Simulation_slopeOnly_F0.RData")
+save(myTab,file="../results/_tables/Simulation_complete_F5.RData")
+save(myTab_meanOnly,file="../results/_tables/Simulation_meanOnly_F5.RData")
+save(myTab_slopeOnly,file="../results/_tables/Simulation_slopeOnly_F5.RData")
 
 # excel_fn = paste0("../results/_tables/Simulation_complete.xlsx")
 # WriteXLS("myTab", 

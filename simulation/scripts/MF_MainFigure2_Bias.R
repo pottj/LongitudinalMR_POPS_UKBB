@@ -94,6 +94,28 @@ png(filename = filename,width = 2000, height = 1500, res=200)
 print(plot6)
 dev.off()
 
+dumTab4[,dumID5 := paste(type, Sim_SNPset,sep=" - ")]
+dumTab4[,dumID4 := paste(Sim_age, Sim_reg, sep=" - ")]
+
+plot6 = ggplot(dumTab4, 
+               aes(x = outcome,y=bias_X1, color = dumID4)) +
+  facet_wrap(~ dumID5,scales = "free") +
+  geom_hline(yintercept = 0,color="grey") +
+  geom_point(position=position_dodge(0.5),size=3) +
+  geom_errorbar(aes(ymin=bias_X1-1.96*bias_SE_X1, ymax=bias_X1+1.96*bias_SE_X1), width=.2,
+                position=position_dodge(0.5)) +
+  theme_bw(base_size = 15) + 
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  #theme(axis.text.x = element_text(angle = 45)) +
+  xlab("SNP sets") + ylab("Bias") +
+  labs(color = "Scenario")
+plot6
+
+filename = paste0("../results/_figures/MainFig2_Bias_releventCombis_v2.png")
+png(filename = filename,width = 2000, height = 1500, res=200)
+print(plot6)
+dev.off()
+
 #' # Session Info ####
 #' ***
 

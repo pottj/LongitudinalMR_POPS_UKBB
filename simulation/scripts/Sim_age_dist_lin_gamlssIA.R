@@ -474,62 +474,46 @@ SimTab = foreach(s = 1:n_sim)%dorng%{
   
   #' ## Step 7: Run MVMR ####
   #' ***
-  #' Here, parameter *MR_doCorrection* defines if the MVMR estimates for mean, sd, eigfunc1 and eigfunc2 should be corrected or not
   {
     #' Run analysis
     MR_analysis_A = MVMR_jp_sim(data_GX_long = myTab_SNPAssocs_A,
                                 data_GY_long = myTab_SNPAssocs_Y, 
                                 filterBadSNPs = MR_filterBadSNPs,
                                 filterBadSNPs_threshold = MR_filterBadSNPs_treshold)
-    # MR_analysis_Z = MVMR_jp_sim(data_GX_long = myTab_SNPAssocs_Z,
-    #                             data_GY_long = myTab_SNPAssocs_Y, 
-    #                             filterBadSNPs = MR_filterBadSNPs,
-    #                             filterBadSNPs_threshold = MR_filterBadSNPs_treshold)
-    # MR_analysis_C = MVMR_jp_sim(data_GX_long = myTab_SNPAssocs_C,
-    #                             data_GY_long = myTab_SNPAssocs_Y, 
-    #                             filterBadSNPs = MR_filterBadSNPs,
-    #                             filterBadSNPs_threshold = MR_filterBadSNPs_treshold)
-    MR_analysis_A[,type:="Absolute"]
-    # MR_analysis_Z[,type:="Z-score"]
-    # MR_analysis_C[,type:="Centiles"]
-    # MRTab = rbind(MR_analysis_A,MR_analysis_Z,MR_analysis_C)
+    MR_analysis_A[,type:="all"]
     MRTab = copy(MR_analysis_A)
     
-    #' Do some correction
-    # SD_A = myTabX_long[,sd(A),by=scan]
-    # SD_A_mean = mean(SD_A$V1)
-    # SD_Z = myTabX_long[,sd(Z),by=scan]
-    # SD_Z_mean = mean(SD_Z$V1)
-    # SD_C = myTabX_long[,sd(C),by=scan]
-    # SD_C_mean = mean(SD_C$V1)
-    
-    MRTab[,beta_IVW2 := beta_IVW]
-    # MRTab[type=="Z-score",beta_IVW2 := beta_IVW/SD_A_mean]
-    # MRTab[type=="Centiles",beta_IVW2 := beta_IVW*SD_C_mean/SD_A_mean]
-    MRTab[,SE_IVW2 := SE_IVW]
-    # MRTab[type=="Z-score",SE_IVW2 := SE_IVW/SD_A_mean]
-    # MRTab[type=="Centiles",SE_IVW2 := SE_IVW*SD_C_mean/SD_A_mean]
+    if(AssocModelX=="gamlssIA"){
+      MR_analysis_B = MVMR_jp_sim(data_GX_long = myTab_SNPAssocs_A[exposure!="slope",],
+                                  data_GY_long = myTab_SNPAssocs_Y, 
+                                  filterBadSNPs = MR_filterBadSNPs,
+                                  filterBadSNPs_threshold = MR_filterBadSNPs_treshold)
+      MR_analysis_C = MVMR_jp_sim(data_GX_long = myTab_SNPAssocs_A[exposure!="mean"],
+                                  data_GY_long = myTab_SNPAssocs_Y, 
+                                  filterBadSNPs = MR_filterBadSNPs,
+                                  filterBadSNPs_threshold = MR_filterBadSNPs_treshold)
+      
+      MR_analysis_B[,type:="meanOnly"]
+      MR_analysis_C[,type:="SlopeOnly"]
+      MRTab = rbind(MR_analysis_A,MR_analysis_B,MR_analysis_C,fill=T)
+      
+    }
 
-    mean_age_outcome = myTabY[,mean(age)]
-    MRTab[exposure=="slope" & outcome %in% c("Y3","Y4","Y3_bin","Y4_bin"),beta_IVW2 := beta_IVW2/mean_age_outcome]
-    MRTab[exposure=="slope" & outcome %in% c("Y3","Y4","Y3_bin","Y4_bin"),SE_IVW2 := SE_IVW2/mean_age_outcome]
     
-    # if(AssocModelY == "noTimeIA"){
-    #   MRTab[exposure=="slope" & outcome %in% c("Y5","Y6"),beta_IVW2 := beta_IVW2/mean_age_outcome]
-    #   MRTab[exposure=="slope" & outcome %in% c("Y5","Y6"),SE_IVW2 := SE_IVW2/mean_age_outcome]
-    # }else{
-    #   MRTab[exposure=="mean",beta_IVW2 := beta_IVW2 * mean_age_outcome]
-    #   MRTab[exposure=="mean",SE_IVW2 := SE_IVW2 * mean_age_outcome]
-    #   MRTab[exposure=="slope" & !(outcome %in% c("Y5","Y6")),beta_IVW2 := beta_IVW2*mean_age_outcome]
-    #   MRTab[exposure=="slope" & !(outcome %in% c("Y5","Y6")),SE_IVW2 := SE_IVW2*mean_age_outcome]
-    # }
+    #' Do some correction
+    MRTab[,beta_IVW2 := beta_IVW]
+    MRTab[,SE_IVW2 := SE_IVW]
+    
+    mean_age_outcome = myTabY[,mean(age)]
+    MRTab[exposure=="slope",beta_IVW2 := beta_IVW2/mean_age_outcome]
+    MRTab[exposure=="slope",SE_IVW2 := SE_IVW2/mean_age_outcome]
     
     #' Get some plots
     if((do_plotting == T & save_data_perSim==T) | s %in% counter){
       data_hlines = data.frame(exposure = unique(MRTab$exposure)[1:2],
                                mylines = c(Y_alpha))
-      ggp3 = ggplot(MRTab, aes(x=outcome, y=beta_IVW2 )) + 
-        facet_wrap(~exposure,scales = "free")+
+      ggp3 = ggplot(MRTab[!grepl("bin",outcome)], aes(x=outcome, y=beta_IVW2 )) + 
+        facet_wrap(~exposure+type,scales = "free")+
         geom_hline(data = data_hlines, aes(yintercept = mylines, col="red"), show.legend = FALSE) +
         geom_hline(yintercept = 0,col="black")+
         geom_point()+

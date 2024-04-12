@@ -30,15 +30,18 @@ tag = gsub("-","",tag)
 #' ***
 myMVMR_files = list.files(path = "../results/",pattern = "04_MVMR")
 myMVMR_files = myMVMR_files[grepl("240325",myMVMR_files)]
-myMVMR_files = myMVMR_files[c(1,2,5,7,8)]
+myMVMR_files = myMVMR_files[c(2,5,7,8)]
+myMVMR_files2 = list.files(path = "../temp/",pattern = "04_MVMR_01_MAIN_24")
+myMVMR_files = c(myMVMR_files2,myMVMR_files)
 
 dumTab1 = foreach(i=1:length(myMVMR_files))%do%{
   #i=1
-  loaded1 = load(paste0("../results/",myMVMR_files[i]))
+  if(i==1)  loaded1 = load(paste0("../temp/",myMVMR_files[i]))
+  if(i>1)  loaded1 = load(paste0("../results/",myMVMR_files[i]))
   tab = get(loaded1)
   tab
 }
-myTab = rbindlist(dumTab1)
+myTab = rbindlist(dumTab1,fill=T)
 myTab[,table(exposure,threshold,ID)]
 
 #' # Filter data ####
@@ -58,14 +61,14 @@ MVMR1[ID == "sens_SigmaTimeIndep", ID := "sensitivity - no time effect on sigma"
 myExposures = unique(MVMR1$exposure)
 
 dumTab1 = foreach(i=1:length(myExposures))%do%{
-  #i=4
+  #i=6
   MVMR2 = copy(MVMR1)
   MVMR2 = MVMR2[exposure == myExposures[i],]
   
   myExposureTypes = unique(MVMR2$exposure_type)
   
   dumTab2 = foreach(j=1:length(myExposureTypes))%do%{
-    #j=2
+    #j=1
     MVMR3 = copy(MVMR2)
     MVMR3 = MVMR3[exposure_type == myExposureTypes[j],]
     MVMR3[,rank := 2]
@@ -91,18 +94,20 @@ dumTab1 = foreach(i=1:length(myExposures))%do%{
     myTicks = seq(min_data4, max_data4, by = round(range/5,2))
     
     setorder(data4,ID,rank)
+    data4 = data4[!grepl("suggestive",threshold),]
+    data4[threshold == "nominal",threshold := "p<0.05, all SNPs"]
     
     dummy = data4$threshold
     dummy[is.na(dummy)] = "white"
-    dummy = gsub("nominal","lightgrey",dummy)
-    dummy = gsub("suggestive","lightsteelblue2",dummy)
+    dummy[grepl("no p-value filter",dummy)] = "lightgrey"
+    dummy[grepl("p<0.05",dummy)] = "lightsteelblue2"
     dummy = gsub("top20_overlap","lightgreen",dummy)
     dummy = gsub("top20_distinct","lightcoral",dummy)
     tm1<- forest_theme(core=list(bg_params=list(fill = dummy)))
     
     myXlab = paste0(myExposures[i]," (",myExposureTypes[j],") on birthweight")
     
-    p2<- forest(data4[,c(15,18,19)],
+    p2<- forest(data4[,c(16,19,20)],
                 est = data4$beta_IVW,
                 lower = data4$lowerCI95, 
                 upper = data4$upperCI95,

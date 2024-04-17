@@ -149,7 +149,7 @@ myAssocs_X_linearMixed
 
 myAssocs_X_linearMixed[,table(pval_mean<0.05,pval_slope<0.05,phenotype)]
 
-save(myAssocs_X_gamlssIA,file=paste0("../results/02_SNPs_03_SENS_LMM_",tag,".RData"))
+save(myAssocs_X_linearMixed,file=paste0("../results/02_SNPs_03_SENS_LMM_",tag,".RData"))
 
 #' # Session Info ####
 #' ***

@@ -58,6 +58,9 @@ data/
 results/
 simulation_test/
 simulation2/
+simulation/results_old/
 *.html
 *.out
 *.pdf
+SupplementalTables_*
+

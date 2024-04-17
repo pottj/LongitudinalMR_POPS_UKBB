@@ -77,7 +77,7 @@ ggp1
 
 #' I really dont know how to get rid of the black color.
 #' 
-png(file=paste0("../results/_figures/05_3_Trajectory_EFW_abs.png"),
+png(file=paste0("../results/_figures/SF_Trajectory_EFW_abs.png"),
     width=1500,height=1200,res = 200)
 print(ggp1)
 dev.off()
@@ -104,7 +104,7 @@ ggp2
 
 #' I really dont know how to get rid of the black color.
 #' 
-png(file=paste0("../results/_figures/05_3_Trajectory_EFW_log.png"),
+png(file=paste0("../results/_figures/SF_Trajectory_EFW_log.png"),
     width=1500,height=1200,res = 200)
 print(ggp2)
 dev.off()
@@ -131,7 +131,7 @@ ggp3
 
 #' I really dont know how to get rid of the black color.
 #' 
-png(file=paste0("../results/_figures/05_3_Trajectory_EFW_ZScores.png"),
+png(file=paste0("../results/_figures/SF_Trajectory_EFW_ZScores.png"),
     width=1500,height=1200,res = 200)
 print(ggp3)
 dev.off()
@@ -158,7 +158,7 @@ ggp4
 
 #' I really dont know how to get rid of the black color.
 #' 
-png(file=paste0("../results/_figures/05_3_Trajectory_EFW_Centiles.png"),
+png(file=paste0("../results/_figures/SF_Trajectory_EFW_Centiles.png"),
     width=1500,height=1200,res = 200)
 print(ggp4)
 dev.off()

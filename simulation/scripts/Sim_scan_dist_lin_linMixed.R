@@ -54,7 +54,7 @@
   SNPs_centering = F
   SNPs_Correct_ASs = T
   
-  X_beta_mean = c(0.2,0.2)
+  X_beta_mean = c(-0.2,0.02)
   X_beta_sd = c(0.05,0.05)
   X_mean_random = c(0,1)
   X_var_random = c(1,0.25)
@@ -197,27 +197,33 @@ SimTab = foreach(s = 1:n_sim)%dorng%{
   {
     #' Get SNP effect 
     if(length(unique(SNPs_classes))==2){
-      X_beta01 = rnorm(sum(SNPs_classes=="A"), X_beta_mean[1], X_beta_sd[1])
-      X_beta11 = rnorm(sum(SNPs_classes=="B"), X_beta_mean[2], X_beta_sd[2])
+      CoVarMatrix_SNPs = diag(x=X_beta_sd,nrow = 2)
+      REff_SNPs = MASS::mvrnorm(SNPs_NR, 
+                                mu=X_beta_mean, 
+                                Sigma=(CoVarMatrix_SNPs)^2)
       filtA = SNPs_classes == "A"
-      filtB = SNPs_classes == "B"
-      AS_factor = c(2,2)        
+      filtB = SNPs_classes == "B"  
+      AS_factor = c(2,2)  
       
     }else{
-      X_beta01 = rnorm(SNPs_NR, X_beta_mean[1], X_beta_sd[1])
-      X_beta11 = rnorm(SNPs_NR, X_beta_mean[2], X_beta_sd[2])
+      CoVarMatrix_SNPs = diag(x=X_beta_sd,nrow = 2)
+      CoVarMatrix_SNPs[1,2] = 0.05
+      CoVarMatrix_SNPs[2,1] = 0.05
+      REff_SNPs = MASS::mvrnorm(SNPs_NR, 
+                                mu=X_beta_mean, 
+                                Sigma=(CoVarMatrix_SNPs)^2)
       filtA = SNPs_classes == "A"
       filtB = SNPs_classes == "A"  
-      AS_factor = c(1,5)        
-
+      AS_factor = c(1,3)  
+      
     }
     
     #' Get scores
-    AS1 = G[,filtA] %*% X_beta01
+    AS1 = G[,filtA] %*% REff_SNPs[filtA,1]
     if(SNPs_Correct_ASs==T) AS1 = ((AS1 - mean(AS1))/sd(AS1))*AS_factor[1]
-    AS2 = exp(-0.5*G[,filtB]%*%X_beta11)
+    AS2 = exp(0.5*G[,filtB] %*% REff_SNPs[filtB,2])
     if(SNPs_Correct_ASs==T) AS2 = AS2*AS_factor[2]
-
+    
     #' Plot scores
     if((do_plotting == T & save_data_perSim==T) | s %in% counter){
       plotData = data.table(AS = c(AS1,AS2),
@@ -409,13 +415,13 @@ SimTab = foreach(s = 1:n_sim)%dorng%{
     myTabY[,Y4 := Y_alpha[1] * AS1 + Y_alpha[2] * AS2 * age + 
              rnorm(n=n_samples,mean = Y_mean_random,sd = sd(AS2)*sd(AS1))]
     
-    y_dummy = rbinom(n = n_samples, size = 1, prob = plogis(myTabY$Y1))
+    y_dummy = rbinom(n = n_samples, size = 1, prob = plogis(scale(myTabY$Y1)))
     myTabY[,Y1_bin := y_dummy]
-    y_dummy = rbinom(n = n_samples, size = 1, prob = plogis(myTabY$Y2))
+    y_dummy = rbinom(n = n_samples, size = 1, prob = plogis(scale(myTabY$Y2)))
     myTabY[,Y2_bin := y_dummy]
-    y_dummy = rbinom(n = n_samples, size = 1, prob = plogis(myTabY$Y3))
+    y_dummy = rbinom(n = n_samples, size = 1, prob = plogis(scale(myTabY$Y3)))
     myTabY[,Y3_bin := y_dummy]
-    y_dummy = rbinom(n = n_samples, size = 1, prob = plogis(myTabY$Y4))
+    y_dummy = rbinom(n = n_samples, size = 1, prob = plogis(scale(myTabY$Y4)))
     myTabY[,Y4_bin := y_dummy]
     
     #' Check AS association

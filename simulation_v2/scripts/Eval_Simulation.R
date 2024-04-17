@@ -29,16 +29,14 @@ mySims
 ToDoFile = data.table(NR = 1:length(mySims),
                       file = mySims)
 dummy = unlist(strsplit(mySims,"_"))
-ToDoFile[,age := dummy[seq(2,length(dummy),6)]]
-ToDoFile[,SNP := dummy[seq(3,length(dummy),6)]]
-ToDoFile[,growth := dummy[seq(4,length(dummy),6)]]
-ToDoFile[,regression := dummy[seq(5,length(dummy),6)]]
+ToDoFile[,tag := dummy[seq(2,length(dummy),4)]]
+ToDoFile[,SNP := dummy[seq(3,length(dummy),4)]]
 
 #' # Load files ####
 #' ***
 #' 
 dumTab = foreach(i = 1:dim(ToDoFile)[1])%do%{
-  #i=9
+  #i=1
   myRow = ToDoFile[i,]
   message("Working on ",myRow$file)
   load(paste0("../results/",myRow$file))
@@ -47,19 +45,23 @@ dumTab = foreach(i = 1:dim(ToDoFile)[1])%do%{
   SimTab[exposure %in% c("slope"),exposure := "X2"]
   SimTab[exposure %in% c("var"),exposure := "X3"]
 
-  # filter bad MR runs (cond. F-Stat <10 for mean and slope)
-  SimTab[,dumID0 := paste(n_sim,type,sep="__")]
-  dum1 = SimTab[exposure=="X1",mean(condFStats),by=dumID0]
-  dum2 = SimTab[exposure=="X2",mean(condFStats),by=dumID0]
-  dum1[,dumID1 := dumID0]
-  dum1[grepl("Only",dumID0),dumID1 := gsub("mean","",dumID0)]
-  dum2[,dumID1 := dumID0]
-  dum2[grepl("Only",dumID0),dumID1 := gsub("Slope","",dumID0)]
-  dum1 = dum1[!is.na(V1) & V1>10,]
-  dum2 = dum2[!is.na(V1) & V1>10,]
-  mySims = c(dum1[dumID1 %in% dum2$dumID1,dumID0],dum2[dumID1 %in% dum1$dumID1,dumID0])
-  SimTab = SimTab[dumID0 %in% mySims,]
-  SimTab[,table(type)]
+  # filter bad MR runs (cond. F-Stat <0 for mean and slope)
+  # SimTab[,dumID0 := paste(n_sim,type,sep="__")]
+  # dum1 = SimTab[exposure=="X1",mean(condFStats),by=dumID0]
+  # dum2 = SimTab[exposure=="X2",mean(condFStats),by=dumID0]
+  # dum3 = SimTab[exposure=="X3",mean(condFStats),by=dumID0]
+  # dum1[,dumID1 := dumID0]
+  # dum1[grepl("Only",dumID0),dumID1 := gsub("mean","",dumID0)]
+  # dum2[,dumID1 := dumID0]
+  # dum2[grepl("Only",dumID0),dumID1 := gsub("Slope","",dumID0)]
+  # dum3[,dumID1 := dumID0]
+  # dum3[grepl("Only",dumID0),dumID1 := gsub("Var","",dumID0)]
+  # dum1 = dum1[!is.na(V1) & V1>0,]
+  # dum2 = dum2[!is.na(V1) & V1>0,]
+  # dum3 = dum3[!is.na(V1) & V1>0,]
+  # mySims = c(dum1[dumID1 %in% dum2$dumID1,dumID0],dum2[dumID1 %in% dum1$dumID1,dumID0])
+  # SimTab = SimTab[dumID0 %in% mySims,]
+  # SimTab[,table(type)]
   
   x=length(unique(SimTab$n_sim))
   if(x<5){
@@ -143,14 +145,10 @@ dumTab = foreach(i = 1:dim(ToDoFile)[1])%do%{
     # add result to myRow
     tab1[,dumID := gsub("_bin","bin",dumID)]
     dummy = unlist(strsplit(tab1$dumID,"_"))
-    tab1[,exposure := dummy[seq(2,length(dummy),3)]]
-    tab1[,exposure_type := dummy[seq(1,length(dummy),3)]]
-    tab1[,outcome := dummy[seq(3,length(dummy),3)]]
-    
-    tab1[,Sim_growth := myRow$growth]
-    tab1[,Sim_age := myRow$age]
-    tab1[,Sim_reg := myRow$regression]
-    tab1[,Sim_SNPset := myRow$SNP]
+    tab1[,exposure := dummy[seq(3,length(dummy),4)]]
+    tab1[,outcome := dummy[seq(4,length(dummy),4)]]
+    tab1[,Sim_SNPset := dummy[seq(2,length(dummy),4)]]
+    tab1[,Sim_type := dummy[seq(1,length(dummy),4)]]
     
     if(length(unique(SimTab$comment))==1){  
       tab1[,Sim_comment := unique(SimTab$comment)]
@@ -163,11 +161,9 @@ dumTab = foreach(i = 1:dim(ToDoFile)[1])%do%{
       tab1[,Sim_comment := tab9_text[matched]]
     }
     
-    tab1_wide = dcast(tab1, Sim_growth + Sim_age + Sim_reg + Sim_SNPset + Sim_comment + exposure_type + outcome ~ exposure, 
+    tab1_wide = dcast(tab1, Sim_type + Sim_SNPset + Sim_comment + outcome ~ exposure, 
                       value.var = names(tab1)[2:17])
   }
-  
-    
   
   tab1_wide
   
@@ -179,44 +175,20 @@ myTab[,outcome_type := "continuous"]
 myTab[grepl("bin",outcome),outcome_type := "binary"]
 
 names(myTab)
-myTab = myTab[,c(1:7,56,
-                 11,14,17,20,23,26,29,32,35,38,41,44,47,50,53,
-                 12,15,18,21,24,27,30,33,36,39,42,45,48,51,54,
-                 13,16,19,22,25,28,31,34,37,40,43,46,49,52,55)]
+myTab = myTab[,c(1:5,53,
+                 11,14,17,20,23,26,29,32,35,38,41,44,47,50,
+                 12,15,18,21,24,27,30,33,36,39,42,45,48,51,
+                 13,16,19,22,25,28,31,34,37,40,43,46,49,52)]
 myTab
 myTab[grepl("p-value threshold = 0.05: 0",Sim_comment),Sim_comment := "p-value threshold = 1e-06"]
 
-myTab_meanOnly = copy(myTab)[exposure_type=="meanOnly"]
-myTab_slopeOnly = copy(myTab)[exposure_type=="SlopeOnly"]
-myTab = myTab[exposure_type == "all" | exposure_type == "Absolute",]
-
-myTab[, table(condFstats_NA_X1 == 0)]
-
-#' In the case of time = scan, SNP sets = distinct, and GX model = gamlss, there are NAs in the condidional statistics. The warning message in the MVMR analysis was "Conditional F statistics did not converge to positive values - should the sample sizes be larger?" 
-#' 
-
-myTab[, table(Sim_comment)]
-
-#' # Check: lin vs quad ####
-#' ***
-myTab_lin = copy(myTab)[Sim_growth=="lin",]
-myTab_quad = copy(myTab)[Sim_growth=="quad",]
-
-table(myTab_lin$N_sig_proc_X1 == myTab_quad$N_sig_proc_X1)
-myTab_lin[N_sig_proc_X1 != myTab_quad$N_sig_proc_X1,N_sig_proc_X1]
-myTab_quad[N_sig_proc_X1 != myTab_lin$N_sig_proc_X1,N_sig_proc_X1]
-
-table(myTab_lin$N_sig_proc_X2 == myTab_quad$N_sig_proc_X2)
-myTab_lin[N_sig_proc_X2 != myTab_quad$N_sig_proc_X2,N_sig_proc_X2]
-myTab_quad[N_sig_proc_X2 != myTab_lin$N_sig_proc_X2,N_sig_proc_X2]
-
-table(myTab_lin$N_sig_proc_X3 == myTab_quad$N_sig_proc_X3)
-myTab_lin[N_sig_proc_X3 != myTab_quad$N_sig_proc_X3,N_sig_proc_X3]
-myTab_quad[N_sig_proc_X3 != myTab_lin$N_sig_proc_X3,N_sig_proc_X3]
-
-#' Okay there are minimal differences, one simulation more or less significant in the MVMR. I will ignore from now on the linear simulations, and just use the quad ones. 
-#' 
-myTab2 = copy(myTab)[Sim_growth=="quad",]
+myTab = myTab[Sim_type != "sens6",]
+myTab[Sim_type == "main",Sim_type := "Main"]
+myTab[Sim_type == "sens1",Sim_type := "S1 - wrong time"]
+myTab[Sim_type == "sens2",Sim_type := "S2 - wrong growth"]
+myTab[Sim_type == "sens3",Sim_type := "S3 - no slope"]
+myTab[Sim_type == "sens4",Sim_type := "S4 - var time indep."]
+myTab[Sim_type == "sens5",Sim_type := "S5 - no var"]
 
 #' # Check 1: Detection rates ####
 #' ***
@@ -225,10 +197,10 @@ myOutcome_types = c("continuous","binary")
 
 for(i in 1:length(myOutcome_types)){
   #i=1
-  dumTab = copy(myTab2)
+  dumTab = copy(myTab)
   dumTab = dumTab[outcome_type==myOutcome_types[i],]
   
-  dumTab[,dumID1 := paste(Sim_SNPset,Sim_age,Sim_reg,sep="_")]
+  dumTab[,dumID1 := paste(Sim_type,Sim_SNPset,sep="_")]
   
   dumTab_X1 <- dcast(dumTab, outcome ~ dumID1, value.var="N_sig_proc_X1")
   dumTab_X2 <- dcast(dumTab, outcome ~ dumID1, value.var="N_sig_proc_X2")
@@ -236,42 +208,15 @@ for(i in 1:length(myOutcome_types)){
   
   dumTab2 = rbind(dumTab_X1,dumTab_X2,dumTab_X3)
   setorder(dumTab2,outcome)
-  dumMat = as.matrix(dumTab2[,2:8])
-  
-  rownames(dumMat) = paste(dumTab2$outcome,rep(c("X1","X2","X3"),4),sep=" - ")
+  dumMat = as.matrix(dumTab2[,2:13])
+  rownames(dumMat) = paste(dumTab2$outcome,rep(c("X1","X2","X3"),3),sep=" - ")
+  dumMat = dumMat[4:12,]
   colnames(dumMat) = gsub("_"," - ",colnames(dumMat))
-  corrplot(dumMat, is.corr = FALSE,col.lim = c(0, 1),col = COL1('Reds'), addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
+  corrplot(dumMat, is.corr = FALSE,col.lim = c(0, 1),col = COL1('Reds'), addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45,na.label = " ")
   
-  filename = paste0("../results/_figures/DetectionRates_condFstat10_",myOutcome_types[i],".png")
+  filename = paste0("../results/_figures/DetectionRates_condFStat0_",myOutcome_types[i],".png")
   png(filename = filename,width = 1600, height = 1600, res=200)
-  corrplot(dumMat, is.corr = FALSE,col.lim = c(0, 1),col = COL1('Reds'), addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
-  dev.off()
-}
-
-#' Okay, now I want to repeat that, but not plotting Y1 (no effect) and not the variability (no effect)
-#' 
-for(i in 1:length(myOutcome_types)){
-  #i=1
-  dumTab = copy(myTab2)
-  dumTab = dumTab[outcome_type==myOutcome_types[i],]
-  dumTab = dumTab[!grepl("Y1",outcome),]
-  
-  dumTab[,dumID1 := paste(Sim_SNPset,Sim_age,Sim_reg,sep="_")]
-  
-  dumTab_X1 <- dcast(dumTab, outcome ~ dumID1, value.var="N_sig_proc_X1")
-  dumTab_X2 <- dcast(dumTab, outcome ~ dumID1, value.var="N_sig_proc_X2")
-  
-  dumTab2 = rbind(dumTab_X1,dumTab_X2)
-  setorder(dumTab2,outcome)
-  dumMat = as.matrix(dumTab2[,2:8])
-  
-  rownames(dumMat) = paste(dumTab2$outcome,rep(c("X1","X2"),3),sep=" - ")
-  colnames(dumMat) = gsub("_"," - ",colnames(dumMat))
-  corrplot(dumMat, is.corr = FALSE,col.lim = c(0, 1),col = COL1('Reds'), addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
-  
-  filename = paste0("../results/_figures/DetectionRates_filteredY1X3_condFstat10_",myOutcome_types[i],".png")
-  png(filename = filename,width = 1600, height = 1600, res=200)
-  corrplot(dumMat, is.corr = FALSE,col.lim = c(0, 1),col = COL1('Reds'), addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
+  corrplot(dumMat, is.corr = FALSE,col.lim = c(0, 1),col = COL1('Reds'), addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45,na.label = " ")
   dev.off()
 }
 
@@ -279,7 +224,7 @@ for(i in 1:length(myOutcome_types)){
 #' ***
 #' I want to plot the bias - again per outcome but only for continuous ones (does not really make sense for binary outcomes)
 #' 
-dumTab = copy(myTab2)
+dumTab = copy(myTab)
 dumTab = dumTab[outcome_type==myOutcome_types[1],]
 dumTab[,type := "mean"]
 
@@ -288,14 +233,19 @@ dumTab2[,bias_X1 := bias_X2]
 dumTab2[,bias_SE_X1 := bias_SE_X2]
 dumTab2[,type := "slope"]
 
-dumTab4 = rbind(dumTab,dumTab2)
+dumTab3 = copy(dumTab)
+dumTab3[,bias_X1 := bias_X3]
+dumTab3[,bias_SE_X1 := bias_SE_X3]
+dumTab3[,type := "var"]
+
+dumTab4 = rbind(dumTab,dumTab2,dumTab3)
 dumTab4 = dumTab4[!is.na(bias_X1),]
 
-dumTab4[,dumID := paste(Sim_SNPset,Sim_age, Sim_reg, sep=" - ")]
+dumTab4[,dumID := paste(Sim_type,Sim_SNPset, sep=" - ")]
 
 plot5 = ggplot(dumTab4, 
                aes(x=dumID, y=bias_X1, color = outcome)) +
-  facet_wrap(~ type) +
+  facet_wrap(~ type,scales = "free") +
   geom_hline(yintercept = 0,color="grey") +
   geom_point(position=position_dodge(0.5),size=3) +
   geom_errorbar(aes(ymin=bias_X1-1.96*bias_SE_X1, ymax=bias_X1+1.96*bias_SE_X1), width=.2,
@@ -307,8 +257,8 @@ plot5 = ggplot(dumTab4,
   labs(color = "Outcome")
 plot5
 
-filename = paste0("../results/_figures/Bias_condFstat10_",myOutcome_types[1],".png")
-png(filename = filename,width = 2800, height = 1600, res=200)
+filename = paste0("../results/_figures/Bias_condFStat0_",myOutcome_types[1],".png")
+png(filename = filename,width = 3200, height = 1600, res=200)
 print(plot5)
 dev.off()
 
@@ -316,7 +266,7 @@ dev.off()
 #' ***
 #' I want to plot the corrected causal effect estimates - again per outcome!
 #' 
-dumTab = copy(myTab2)
+dumTab = copy(myTab)
 dumTab = dumTab[outcome_type==myOutcome_types[1],]
 dumTab[,type := "mean"]
 
@@ -325,14 +275,19 @@ dumTab2[,mean_betaIVW2_X1 := mean_betaIVW2_X2]
 dumTab2[,sd_betaIVW2_X1 := sd_betaIVW2_X2]
 dumTab2[,type := "slope"]
 
-dumTab4 = rbind(dumTab,dumTab2)
+dumTab3 = copy(dumTab)
+dumTab3[,mean_betaIVW2_X1 := mean_betaIVW2_X3]
+dumTab3[,sd_betaIVW2_X1 := sd_betaIVW2_X3]
+dumTab3[,type := "var"]
+
+dumTab4 = rbind(dumTab,dumTab2,dumTab3)
 dumTab4 = dumTab4[!is.na(mean_betaIVW2_X1),]
 
-dumTab4[,dumID := paste(Sim_SNPset,Sim_age, Sim_reg, sep=" - ")]
+dumTab4[,dumID := paste(Sim_type,Sim_SNPset, sep=" - ")]
 
 plot5 = ggplot(dumTab4, 
                aes(x=dumID, y=mean_betaIVW2_X1, color = outcome)) +
-  facet_wrap(~ type) +
+  facet_wrap(~ type,scales = "free") +
   geom_hline(yintercept = 0,color="grey") +
   geom_point(position=position_dodge(0.5),size=3) +
   geom_errorbar(aes(ymin=mean_betaIVW2_X1-1.96*sd_betaIVW2_X1, ymax=mean_betaIVW2_X1+1.96*sd_betaIVW2_X1), width=.2,
@@ -344,15 +299,15 @@ plot5 = ggplot(dumTab4,
   labs(color = "Outcome")
 plot5
 
-filename = paste0("../results/_figures/CorrectedEstimates_condFstat10_",myOutcome_types[1],".png")
-png(filename = filename,width = 2800, height = 1600, res=200)
+filename = paste0("../results/_figures/CorrectedEstimates_condFStat0_",myOutcome_types[1],".png")
+png(filename = filename,width = 3200, height = 1600, res=200)
 print(plot5)
 dev.off()
 
 #' # Check 4: raw estimate ####
 #' ***
 #' I want to plot the uncorrected causal effect estimates - again per outcome!
-dumTab = copy(myTab2)
+dumTab = copy(myTab)
 dumTab = dumTab[outcome_type==myOutcome_types[1],]
 dumTab[,type := "mean"]
 
@@ -361,10 +316,15 @@ dumTab2[,mean_betaIVW_X1 := mean_betaIVW_X2]
 dumTab2[,sd_betaIVW_X1 := sd_betaIVW_X2]
 dumTab2[,type := "slope"]
 
-dumTab4 = rbind(dumTab,dumTab2)
+dumTab3 = copy(dumTab)
+dumTab3[,mean_betaIVW_X1 := mean_betaIVW_X3]
+dumTab3[,sd_betaIVW_X1 := sd_betaIVW_X3]
+dumTab3[,type := "var"]
+
+dumTab4 = rbind(dumTab,dumTab2,dumTab3)
 dumTab4 = dumTab4[!is.na(mean_betaIVW_X1),]
 
-dumTab4[,dumID := paste(Sim_SNPset,Sim_age, Sim_reg, sep=" - ")]
+dumTab4[,dumID := paste(Sim_type,Sim_SNPset, sep=" - ")]
 
 plot5 = ggplot(dumTab4, 
                aes(x=dumID, y=mean_betaIVW_X1, color = outcome)) +
@@ -380,14 +340,14 @@ plot5 = ggplot(dumTab4,
   labs(color = "Outcome")
 plot5
 
-filename = paste0("../results/_figures/RawEstimates_condFstat10_",myOutcome_types[1],".png")
-png(filename = filename,width = 2800, height = 1600, res=200)
+filename = paste0("../results/_figures/RawEstimates_condFStat0_",myOutcome_types[1],".png")
+png(filename = filename,width = 3200, height = 1600, res=200)
 print(plot5)
 dev.off()
 
 #' # Check 5: conditional F-statistics ####
 #' ***
-dumTab = copy(myTab2)
+dumTab = copy(myTab)
 dumTab = dumTab[outcome_type==myOutcome_types[1],]
 dumTab[,type := "mean"]
 
@@ -406,7 +366,7 @@ dumTab3[,type := "var"]
 dumTab4 = rbind(dumTab,dumTab2,dumTab3)
 dumTab4 = dumTab4[!is.na(condFStats_median_X1),]
 
-dumTab4[,dumID := paste(Sim_SNPset,Sim_age, Sim_reg, sep=" - ")]
+dumTab4[,dumID := paste(Sim_type,Sim_SNPset, sep=" - ")]
 
 plot5 = ggplot(dumTab4[outcome=="Y2"], 
                aes(x=dumID, y=condFStats_median_X1)) +
@@ -423,7 +383,7 @@ plot5 = ggplot(dumTab4[outcome=="Y2"],
   xlab("Scenario") + ylab("Conditional F-Statistics")
 plot5
 
-filename = paste0("../results/_figures/CondFStats_condFstat10_",myOutcome_types[1],".png")
+filename = paste0("../results/_figures/CondFStats_condFStat0_",myOutcome_types[1],".png")
 png(filename = filename,width = 3200, height = 1600, res=200)
 print(plot5)
 dev.off()
@@ -432,9 +392,7 @@ dev.off()
 #' ***
 #' I want to save the big table as for the supplemental data!
 #' 
-save(myTab,file="../results/_tables/Simulation_complete_F10.RData")
-save(myTab_meanOnly,file="../results/_tables/Simulation_meanOnly_F10.RData")
-save(myTab_slopeOnly,file="../results/_tables/Simulation_slopeOnly_F10.RData")
+save(myTab,file="../results/_tables/Simulation_complete_F0.RData")
 
 # excel_fn = paste0("../results/_tables/Simulation_complete.xlsx")
 # WriteXLS("myTab", 

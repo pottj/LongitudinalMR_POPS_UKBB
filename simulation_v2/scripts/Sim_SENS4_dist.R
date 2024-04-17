@@ -1,6 +1,6 @@
 #' ---
 #' title: "Simulation Study"
-#' subtitle: "tba"
+#' subtitle: "Sensitivity 4 - distinct SNP sets"
 #' author: "Janne Pott"
 #' date: "Last compiled on `r format(Sys.time(), '%d %B, %Y')`"
 #' output: github_document
@@ -8,6 +8,20 @@
 #'
 #' # Introduction ####
 #' 
+#' **In simulation**
+#' 
+#' - Time: age
+#' - Growth: quadratic
+#' - SNP sets: distinct
+#' 
+#' **Regression model**: GAMLSS
+#' 
+#' - Time: age
+#' - Growth: quadratic
+#' - SNP x Time - interaction: TRUE
+#' - Sigma dependencies: SNP
+#' 
+#'
 #' # Initialize ####
 #' ***
 {
@@ -34,7 +48,7 @@
 {
   source("../../helperfunctions/SimulateSNP.R")
   source("../../helperfunctions/HWETest.R")
-  source("../../helperfunctions/GetAssociation_simulation.R")
+  source("../../helperfunctions/GetAssociation_simulation_v2.R")
   source("../../helperfunctions/MVMR_jp_simulation.R")
   
 }
@@ -44,7 +58,7 @@
 {
   n_samples = 3000
   n_times = 5
-  n_sim = 1000
+  n_sim = 100
   outfiles_dir = "results/"
   save_data_perSim = F
   do_plotting = F
@@ -75,14 +89,15 @@
 #' ## Specific settings ####
 #' These parameters change between the scenarios!
 {
-  outfiles_prefix = "Sim_age_dist_lin_gamlssIA"
+  outfiles_prefix = "Sim_SENS4_dist"
   
   set_time = "age"         # either age or scan
 
   SNPs_classes = c(rep("A",SNPs_NR/2),rep("B",SNPs_NR/2))
   #SNPs_classes = c(rep("A",SNPs_NR))
+  tag = "sens4_dist"
   
-  set_growth = "linear"     # either linear or quadradic
+  set_growth = "quadradic"     # either linear or quadradic
   
   AssocModelX = "gamlssIA"  # either linMixed or gamlssIA or gamlss
   
@@ -107,6 +122,7 @@ message("Fixed parameters:",
         "\n - number of SNPs: ",SNPs_NR)
 
 message("Scenario setting:", 
+        "\n - tag: ",tag,
         "\n - age in growth function: ", set_time,
         "\n - number of SNP sets: ",length(unique(SNPs_classes))," (1=shared; 2=distinct)",
         "\n - growth function: ",set_growth,
@@ -123,7 +139,7 @@ counter = seq(1,n_sim,n_sim/10)
 registerDoParallel(as.numeric(Sys.getenv("SLURM_CPUS_PER_TASK")))
 
 SimTab = foreach(s = 1:n_sim)%dorng%{
-#SimTab = foreach(s = 1:n_sim)%do%{
+  #SimTab = foreach(s = 1:n_sim)%do%{
   #s=1
   #message("Working on simulation ",s)
   
@@ -204,7 +220,7 @@ SimTab = foreach(s = 1:n_sim)%dorng%{
       filtA = SNPs_classes == "A"
       filtB = SNPs_classes == "B"  
       AS_factor = c(2,2)  
-      
+
     }else{
       CoVarMatrix_SNPs = diag(x=X_beta_sd,nrow = 2)
       CoVarMatrix_SNPs[1,2] = 0.05
@@ -229,21 +245,21 @@ SimTab = foreach(s = 1:n_sim)%dorng%{
       plotData = data.table(AS = c(AS1,AS2),
                             type = c(rep("AS1",n_samples),rep("AS2",n_samples)))
       plotData_mean = plotData[,median(AS),by=type]
-
+      
       ggp0 = ggplot(plotData, aes(x=AS)) +
         facet_wrap(~type,scales = "free") +
         geom_histogram(aes(y=after_stat(density)), colour="black", fill="white",bins=20)+
         geom_density(alpha=.2, fill="#FF6666") +
         geom_vline(data = plotData_mean, aes(xintercept=V1),
                    color="blue", linetype="dashed")
-
+      
       png(filename = paste0(outdir_sim, "02_AlleleScores.png"),
-           width = 1400, height = 700, res=125)
+          width = 1400, height = 700, res=125)
       print(ggp0)
       dev.off()
-
+      
     }
-
+    
   }
   
   #' ## Step 3: Simulate exposure X ####
@@ -323,12 +339,12 @@ SimTab = foreach(s = 1:n_sim)%dorng%{
       
       
       png(filename = paste0(outdir_sim, "03_TimeVsExposures_Age.png"),
-           width = 1400, height = 700, res=125)
+          width = 1400, height = 700, res=125)
       print(ggp1)
       dev.off()
       
       png(filename = paste0(outdir_sim, "03_TimeVsExposures_Scan.png"),
-           width = 1400, height = 700, res=125)
+          width = 1400, height = 700, res=125)
       print(ggp2)
       dev.off()
       
@@ -345,30 +361,64 @@ SimTab = foreach(s = 1:n_sim)%dorng%{
   #' ## Step 4: Get SNP-X association ####
   #' ***
   {
-    #' Get SNP association with the absolute values
-    myTab_SNPAssocs_A = GetAssociation(data = myTabX_long, 
-                                       method = AssocModelX, 
-                                       genotypes = G, 
-                                       dep_var_name = "A",
-                                       time_var_name = "age",
-                                       growth_var = set_growth)
-    
-    #' Get SNP association with the Z-scores
-    # myTab_SNPAssocs_Z = GetAssociation(data = myTabX_long, 
-    #                                    method = AssocModelX, 
-    #                                    genotypes = G, 
-    #                                    dep_var_name = "Z",
-    #                                    time_var_name = AssocModelX_time,
-    #                                    growth_var = set_growth)
-    
-    #' Get SNP association with the Centiles
-    # myTab_SNPAssocs_C = GetAssociation(data = myTabX_long, 
-    #                                    method = AssocModelX, 
-    #                                    genotypes = G, 
-    #                                    dep_var_name = "C",
-    #                                    time_var_name = AssocModelX_time,
-    #                                    growth_var = set_growth)
-    
+    if(grepl("main",tag)){
+      # Main model: time = age, quadratic growth, gamlssIA regression
+      myTab_SNPAssocs_A = GetAssociation_v2(data = myTabX_long, 
+                                         method = AssocModelX, 
+                                         genotypes = G, 
+                                         dep_var_name = "A",
+                                         time_var_name = "age",
+                                         growth_var = set_growth, getIA = T)
+    }else if(grepl("sens1",tag)){
+      # sensitivity model 1: time = scan, quadratic growth, gamlssIA regression
+      myTab_SNPAssocs_A = GetAssociation_v2(data = myTabX_long, 
+                                         method = AssocModelX, 
+                                         genotypes = G, 
+                                         dep_var_name = "A",
+                                         time_var_name = "scan",
+                                         growth_var = set_growth, getIA = T)
+    }else if(grepl("sens2",tag)){
+      # sensitivity model 2: time = age, linear growth, gamlssIA regression
+      myTab_SNPAssocs_A = GetAssociation_v2(data = myTabX_long, 
+                                         method = AssocModelX, 
+                                         genotypes = G, 
+                                         dep_var_name = "A",
+                                         time_var_name = "age",
+                                         growth_var = "linear", getIA = T)
+    }else if(grepl("sens3",tag)){
+      # sensitivity model 3: time = age, quadratic growth, gamlss without SNP x time interaction 
+      myTab_SNPAssocs_A = GetAssociation_v2(data = myTabX_long, 
+                                         method = AssocModelX, 
+                                         genotypes = G, 
+                                         dep_var_name = "A",
+                                         time_var_name = "age",
+                                         growth_var = set_growth, getIA = F)
+    }else if(grepl("sens4",tag)){
+      # sensitivity model 4: time = age, quadratic growth, gamlss with time-independent sigma function
+      myTab_SNPAssocs_A = GetAssociation_v2(data = myTabX_long, 
+                                         method = AssocModelX, 
+                                         genotypes = G, 
+                                         dep_var_name = "A",
+                                         time_var_name = "age",
+                                         growth_var = set_growth, getIA = T,sigmaCovars = "SNP")
+    }else if(grepl("sens5",tag)){
+      # sensitivity model 5: time = age, quadratic growth, gamlss with SNP-independent sigma function
+      myTab_SNPAssocs_A = GetAssociation_v2(data = myTabX_long, 
+                                            method = AssocModelX, 
+                                            genotypes = G, 
+                                            dep_var_name = "A",
+                                            time_var_name = "age",
+                                            growth_var = set_growth, getIA = T,sigmaCovars = "time")
+    }else if(grepl("sens6",tag)){
+      # sensitivity model 6: time = age, quadratic growth, linear mixed model
+      myTab_SNPAssocs_A = GetAssociation_v2(data = myTabX_long, 
+                                         method = "linMixed", 
+                                         genotypes = G, 
+                                         dep_var_name = "A",
+                                         time_var_name = "age",
+                                         growth_var = set_growth, getIA = T)
+    }
+
     #' Check 1: are the SNPs distinct or not? 
     # myTab_SNPAssocs_A[,table(exposure, pval<5e-8)]
     # myTab_SNPAssocs_A[SNP<11, table(exposure, pval<5e-8)]
@@ -378,14 +428,9 @@ SimTab = foreach(s = 1:n_sim)%dorng%{
     #' Check 2: are the t-values/betas correlated or not?
     # cor.test(myTab_SNPAssocs_A[exposure=="mean",beta],
     #          myTab_SNPAssocs_A[exposure=="slope",beta])
-    # cor.test(myTab_SNPAssocs_A[exposure=="mean",tval],
-    #          myTab_SNPAssocs_A[exposure=="slope",tval])
-    # 
-    # cor.test(myTab_SNPAssocs_A[exposure=="mean" & SNP<11,tval],
-    #          myTab_SNPAssocs_A[exposure=="slope" & SNP<11,tval])
-    # cor.test(myTab_SNPAssocs_A[exposure=="mean" & SNP>=11,tval],
-    #          myTab_SNPAssocs_A[exposure=="slope" & SNP>=11,tval])
-    
+    # cor.test(myTab_SNPAssocs_A[exposure=="mean",beta],
+    #          myTab_SNPAssocs_A[exposure=="var",beta])
+
     #' Save data
     if(save_data_perSim == T | s %in% counter){
       save(myTab_SNPAssocs_A,
@@ -451,13 +496,13 @@ SimTab = foreach(s = 1:n_sim)%dorng%{
   {
     #' Get associations
     myVars = names(myTabY)[-c(1,2)]
-
+    
     myTab_SNPAssocs = foreach(i = 1:length(myVars))%do%{
       #i=1
       myMethod = "linReg" 
       if(grepl("_bin",myVars[i])==T) myMethod = "glm"
       
-      myTab_GY1 = GetAssociation(data = myTabY, 
+      myTab_GY1 = GetAssociation_v2(data = myTabY, 
                                  method = myMethod, 
                                  genotypes = G, 
                                  dep_var_name = myVars[i],
@@ -486,26 +531,9 @@ SimTab = foreach(s = 1:n_sim)%dorng%{
                                 data_GY_long = myTab_SNPAssocs_Y, 
                                 filterBadSNPs = MR_filterBadSNPs,
                                 filterBadSNPs_threshold = MR_filterBadSNPs_treshold)
-    MR_analysis_A[,type:="all"]
+    MR_analysis_A[,type:=tag]
     MRTab = copy(MR_analysis_A)
-    
-    if(AssocModelX=="gamlssIA"){
-      MR_analysis_B = MVMR_jp_sim(data_GX_long = myTab_SNPAssocs_A[exposure!="slope",],
-                                  data_GY_long = myTab_SNPAssocs_Y, 
-                                  filterBadSNPs = MR_filterBadSNPs,
-                                  filterBadSNPs_threshold = MR_filterBadSNPs_treshold)
-      MR_analysis_C = MVMR_jp_sim(data_GX_long = myTab_SNPAssocs_A[exposure!="mean"],
-                                  data_GY_long = myTab_SNPAssocs_Y, 
-                                  filterBadSNPs = MR_filterBadSNPs,
-                                  filterBadSNPs_threshold = MR_filterBadSNPs_treshold)
       
-      MR_analysis_B[,type:="meanOnly"]
-      MR_analysis_C[,type:="SlopeOnly"]
-      MRTab = rbind(MR_analysis_A,MR_analysis_B,MR_analysis_C,fill=T)
-      
-    }
-
-    
     #' Do some correction
     MRTab[,beta_IVW2 := beta_IVW]
     MRTab[,SE_IVW2 := SE_IVW]
@@ -518,8 +546,8 @@ SimTab = foreach(s = 1:n_sim)%dorng%{
     if((do_plotting == T & save_data_perSim==T) | s %in% counter){
       data_hlines = data.frame(exposure = unique(MRTab$exposure)[1:2],
                                mylines = c(Y_alpha))
-      ggp3 = ggplot(MRTab[!grepl("bin",outcome)], aes(x=outcome, y=beta_IVW2 )) + 
-        facet_wrap(~exposure+type,scales = "free")+
+      ggp3 = ggplot(MRTab[!grepl("bin",outcome)], aes(x=outcome, y=beta_IVW2,shape=type )) + 
+        facet_wrap(~exposure,scales = "free")+
         geom_hline(data = data_hlines, aes(yintercept = mylines, col="red"), show.legend = FALSE) +
         geom_hline(yintercept = 0,col="black")+
         geom_point()+

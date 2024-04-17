@@ -13,8 +13,15 @@
 #' - only use quadratic growth
 #' - only use mean and slope
 #' - only use Y2, Y3, and Y4
-#' - only the continuous outcomes
+#' - only bias for the continuous outcomes
 #' - only use GAMLSS
+#' 
+#' What are the columns I want? 
+#' 
+#' - scenario
+#' - outcome
+#' - bias, SE, power cont, power bin, Fstat of mean
+#' - bias, SE, power cont, power bin, Fstat of slope
 #' 
 #' # Initialize ####
 #' ***
@@ -30,7 +37,7 @@ tag = gsub("-","",tag)
 
 #' # Load data ####
 #' ***
-load("../results/_tables/Simulation_complete.RData")
+load("../results/_tables/Simulation_complete_F0.RData")
 
 #' # Get table ####
 #' ***
@@ -40,57 +47,42 @@ myTab2 = myTab2[outcome %in% c("Y2","Y3","Y4")]
 myTab2 = myTab2[Sim_reg == "gamlssIA",]
 myTab2[,dumID := paste(Sim_SNPset,Sim_age,sep="_")]
 
-# I need to transform the data
-myTab3 = data.table(dumID = rep(unique(myTab2$dumID),2),
-                    type = rep(c("mean","slope"),each=4),
-                    P_Y2 = c(myTab2[outcome=="Y2",N_sig_proc_X1],
-                             myTab2[outcome=="Y2",N_sig_proc_X2]),
-                    B_Y2 = c(myTab2[outcome=="Y2",bias_X1],
-                             myTab2[outcome=="Y2",bias_X2]),
-                    SE_BY2 = c(myTab2[outcome=="Y2",bias_SE_X1],
-                               myTab2[outcome=="Y2",bias_SE_X2]),
-                    P_Y3 = c(myTab2[outcome=="Y3",N_sig_proc_X1],
-                             myTab2[outcome=="Y3",N_sig_proc_X2]),
-                    B_Y3 = c(myTab2[outcome=="Y3",bias_X1],
-                             myTab2[outcome=="Y3",bias_X2]),
-                    SE_BY3 = c(myTab2[outcome=="Y3",bias_SE_X1],
-                               myTab2[outcome=="Y3",bias_SE_X2]),
-                    P_Y4 = c(myTab2[outcome=="Y4",N_sig_proc_X1],
-                             myTab2[outcome=="Y4",N_sig_proc_X2]),
-                    B_Y4 = c(myTab2[outcome=="Y4",bias_X1],
-                             myTab2[outcome=="Y4",bias_X2]),
-                    SE_BY4 = c(myTab2[outcome=="Y4",bias_SE_X1],
-                               myTab2[outcome=="Y4",bias_SE_X2]))
+names(myTab2)
+myTab2 = myTab2[,c(2,4,7, 11,12,10,10, 26,27,25,25)]
+names(myTab2)[c(7,11)] = c("N_sig_proc_X1_bin","N_sig_proc_X2_bin")
 
-myTab3[,B_Y2 := round(B_Y2,3)]
-myTab3[,B_Y3 := round(B_Y3,3)]
-myTab3[,B_Y4 := round(B_Y4,3)]
+myTab3 = copy(myTab)
+myTab3 = myTab3[Sim_growth=="quad"]
+myTab3 = myTab3[outcome %in% c("Y2bin","Y3bin","Y4bin")]
+myTab3 = myTab3[Sim_reg == "gamlssIA",]
 
-myTab3[,SE_BY2 := round(SE_BY2,3)]
-myTab3[,SE_BY3 := round(SE_BY3,3)]
-myTab3[,SE_BY4 := round(SE_BY4,3)]
+myTab2[,N_sig_proc_X1_bin := myTab3$N_sig_proc_X1]
+myTab2[,N_sig_proc_X2_bin := myTab3$N_sig_proc_X2]
 
-myTab3[,P_Y2 := 100*P_Y2]
-myTab3[,P_Y3 := 100*P_Y3]
-myTab3[,P_Y4 := 100*P_Y4]
+myTab2[,N_sig_proc_X1_bin := N_sig_proc_X1_bin * 100]
+myTab2[,N_sig_proc_X2_bin := N_sig_proc_X2_bin * 100]
+myTab2[,N_sig_proc_X1 := N_sig_proc_X1 * 100]
+myTab2[,N_sig_proc_X2 := N_sig_proc_X2 * 100]
 
-#' Change order of rows
-setorder(myTab3,dumID)
-setnames(myTab3,"dumID","set")
+myTab2[,bias_X1 := round(bias_X1,3)]
+myTab2[,bias_X2 := round(bias_X2,3)]
 
-myTab3[c(1,3,5,7),set := gsub("_.*","",set)]
-myTab3[c(2,4,6,8),set := gsub(".*_","",set)]
+myTab2[,bias_SE_X1 := round(bias_SE_X1,3)]
+myTab2[,bias_SE_X2 := round(bias_SE_X2,3)]
 
-#' I will still have to make a few changes in the latex file (e.g. math mode for Y2, Y3, and Y4). 
-#' 
+myTab2[,N_sig_proc_X1 := round(N_sig_proc_X1,1)]
+myTab2[,N_sig_proc_X2 := round(N_sig_proc_X2,1)]
+myTab2[,N_sig_proc_X1_bin := round(N_sig_proc_X1_bin,1)]
+myTab2[,N_sig_proc_X2_bin := round(N_sig_proc_X2_bin,1)]
+
 #' # Save table ####
 #' ***   
-print(xtable(myTab3, type = "latex",digits = 3),file = "../results/_tables/Simulation_mainTable1.tex")
+print(xtable(myTab2, type = "latex",digits = 3),file = "../results/_tables/Simulation_mainTable1.tex")
 
-save(myTab3,file="../results/_tables/Simulation_mainTable1.RData")
+save(myTab2,file="../results/_tables/Simulation_mainTable1.RData")
 
 excel_fn = paste0("../results/_tables/Simulation_mainTable1.xlsx")
-WriteXLS("myTab3", 
+WriteXLS("myTab2", 
          ExcelFileName=excel_fn, 
          SheetNames="Sim_main", 
          AutoFilter=T, 

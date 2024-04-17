@@ -248,6 +248,33 @@ for(i in 1:length(myOutcome_types)){
   dev.off()
 }
 
+#' Okay, now I want to repeat that, but not plotting Y1 (no effect) and not the variability (no effect)
+#' 
+for(i in 1:length(myOutcome_types)){
+  #i=1
+  dumTab = copy(myTab2)
+  dumTab = dumTab[outcome_type==myOutcome_types[i],]
+  dumTab = dumTab[!grepl("Y1",outcome),]
+  
+  dumTab[,dumID1 := paste(Sim_SNPset,Sim_age,Sim_reg,sep="_")]
+  
+  dumTab_X1 <- dcast(dumTab, outcome ~ dumID1, value.var="N_sig_proc_X1")
+  dumTab_X2 <- dcast(dumTab, outcome ~ dumID1, value.var="N_sig_proc_X2")
+  
+  dumTab2 = rbind(dumTab_X1,dumTab_X2)
+  setorder(dumTab2,outcome)
+  dumMat = as.matrix(dumTab2[,2:9])
+  
+  rownames(dumMat) = paste(dumTab2$outcome,rep(c("X1","X2"),3),sep=" - ")
+  colnames(dumMat) = gsub("_"," - ",colnames(dumMat))
+  corrplot(dumMat, is.corr = FALSE,col.lim = c(0, 1),col = COL1('Reds'), addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
+  
+  filename = paste0("../results/_figures/DetectionRates_filteredY1X3_condFStat0_",myOutcome_types[i],".png")
+  png(filename = filename,width = 1600, height = 1600, res=200)
+  corrplot(dumMat, is.corr = FALSE,col.lim = c(0, 1),col = COL1('Reds'), addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
+  dev.off()
+}
+
 #' # Check 2: Bias ####
 #' ***
 #' I want to plot the bias - again per outcome but only for continuous ones (does not really make sense for binary outcomes)
@@ -268,7 +295,7 @@ dumTab4[,dumID := paste(Sim_SNPset,Sim_age, Sim_reg, sep=" - ")]
 
 plot5 = ggplot(dumTab4, 
                aes(x=dumID, y=bias_X1, color = outcome)) +
-  facet_wrap(~ type,scales = "free") +
+  facet_wrap(~ type) +
   geom_hline(yintercept = 0,color="grey") +
   geom_point(position=position_dodge(0.5),size=3) +
   geom_errorbar(aes(ymin=bias_X1-1.96*bias_SE_X1, ymax=bias_X1+1.96*bias_SE_X1), width=.2,
@@ -305,7 +332,7 @@ dumTab4[,dumID := paste(Sim_SNPset,Sim_age, Sim_reg, sep=" - ")]
 
 plot5 = ggplot(dumTab4, 
                aes(x=dumID, y=mean_betaIVW2_X1, color = outcome)) +
-  facet_wrap(~ type,scales = "free") +
+  facet_wrap(~ type) +
   geom_hline(yintercept = 0,color="grey") +
   geom_point(position=position_dodge(0.5),size=3) +
   geom_errorbar(aes(ymin=mean_betaIVW2_X1-1.96*sd_betaIVW2_X1, ymax=mean_betaIVW2_X1+1.96*sd_betaIVW2_X1), width=.2,
@@ -355,6 +382,49 @@ plot5
 
 filename = paste0("../results/_figures/RawEstimates_condFStat0_",myOutcome_types[1],".png")
 png(filename = filename,width = 2800, height = 1600, res=200)
+print(plot5)
+dev.off()
+
+#' # Check 5: conditional F-statistics ####
+#' ***
+dumTab = copy(myTab2)
+dumTab = dumTab[outcome_type==myOutcome_types[1],]
+dumTab[,type := "mean"]
+
+dumTab2 = copy(dumTab)
+dumTab2[,condFStats_median_X1 := condFStats_median_X2]
+dumTab2[,condFStats_1stQ_X1 := condFStats_1stQ_X2]
+dumTab2[,condFStats_3rdQ_X1 := condFStats_3rdQ_X2]
+dumTab2[,type := "slope"]
+
+dumTab3 = copy(dumTab)
+dumTab3[,condFStats_median_X1 := condFStats_median_X3]
+dumTab3[,condFStats_1stQ_X1 := condFStats_1stQ_X3]
+dumTab3[,condFStats_3rdQ_X1 := condFStats_3rdQ_X3]
+dumTab3[,type := "var"]
+
+dumTab4 = rbind(dumTab,dumTab2,dumTab3)
+dumTab4 = dumTab4[!is.na(condFStats_median_X1),]
+
+dumTab4[,dumID := paste(Sim_SNPset,Sim_age, Sim_reg, sep=" - ")]
+
+plot5 = ggplot(dumTab4[outcome=="Y2"], 
+               aes(x=dumID, y=condFStats_median_X1)) +
+  facet_wrap(~ type,scales = "free") +
+  geom_hline(yintercept = 0,color="grey") +
+  geom_hline(yintercept = 10,color="red",linetype = "dashed") +
+  geom_point(position=position_dodge(0.5),size=3) +
+  geom_errorbar(aes(ymin=condFStats_1stQ_X1, 
+                    ymax=condFStats_3rdQ_X1), width=.2,
+                position=position_dodge(0.5)) +
+  theme_bw(base_size = 15) + 
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  #theme(axis.text.x = element_text(angle = 45)) +
+  xlab("Scenario") + ylab("Conditional F-Statistics")
+plot5
+
+filename = paste0("../results/_figures/CondFStats_condFStat0_",myOutcome_types[1],".png")
+png(filename = filename,width = 3200, height = 1600, res=200)
 print(plot5)
 dev.off()
 

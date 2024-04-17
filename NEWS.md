@@ -2,6 +2,15 @@
 
 Here I want to track my progress
 
+## 2024/04/17
+
+I updated the simulation: now the SNPs are more correlated (r2 = -0.6), but still not as perfect as in real data. But when I keep increasing the covariance, I cannot use mvrnorm, because the covariance matrix cannot be solved anymore. I also added several sensitivity checks (what happens when we use the wrong model?). 
+
+The real data was not so much updated, I just added some more plots. 
+
+I wrote the first draft and sent it out to Steve, Jessica, Ulla and Gordon (Abstract submitted to MR Conference in Bristol). I will also meet with Jessica and Marco again to discuss some open problems with gamlss (is it really better or is the default of 20 iteration just not good enough?)
+
+
 ## 2024/04/12
 
 Happy easter - did not track my progress for a while ...
@@ -10,9 +19,6 @@ Happy easter - did not track my progress for a while ...
 - I gave my BSU together talk and generate figures ...
 - Tried again to get shared SNP set better simulated - currently under simulation_test (not tracked)
 - refined the sensitivity tests for the real data (LMM, GBR3, sigmaTimeIndep, noTimeIA, it200, and noCovars) - unfinished because slurm script still pending
-
-
-
 
 ## 2024/03/22
 

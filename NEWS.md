@@ -2,6 +2,46 @@
 
 Here I want to track my progress
 
+## 2024/05/24
+
+Yes, it has been again too long since I tracked anything here. 
+
+### Simulation
+
+I decided to restructure my simulation. In the **main simulation**, I want to focus on GAMLSS as longitudinal GWAS model of the exposure, real age as time parameter, quadratic growth, negative correlation between the SNP effects of the mean and the slope, with one shared SNP set for mean and slope, and a distinct SNP set for the variability effect. To have good power, I simulate 10,000 samples and 15 time points. 
+
+I have decided on 12 scenarios: 
+
+| Scenario | AS used to simulate $X$   | $\theta_1$ | $\theta_2$ | $\theta_3$ |
+| :------- | :------------------------ | :--------- | :--------- | :--------- |
+| 1        | $AS_1$ and $AS_2$         | 0.3        | 0.3        | 0          |
+| 2        | $AS_1$ and $AS_2$         | 1.2        | 0.3        | 0          |
+| 3        | $AS_1$ and $AS_2$         | 1.2        | 0.3        | 1          |
+| 4        | $AS_1$ and $AS_2$         | 1.2        | 0          | 1          |
+| 5        | $AS_1$, $AS_2$ and $AS_3$ | 0.3        | 0.3        | 0          |
+| 6        | $AS_1$, $AS_2$ and $AS_3$ | 1.2        | 0.3        | 0          |
+| 7        | $AS_1$, $AS_2$ and $AS_3$ | 1.2        | 0.3        | 1          |
+| 8        | $AS_1$, $AS_2$ and $AS_3$ | 1.2        | 0          | 1          |
+| 9        | $AS_1$ and $AS_3$         | 0.3        | 0.3        | 0          |
+| 10       | $AS_1$ and $AS_3$         | 1.2        | 0.3        | 0          |
+| 11       | $AS_1$ and $AS_3$         | 1.2        | 0.3        | 1          |
+| 12       | $AS_1$ and $AS_3$         | 1.2        | 0          | 1          |
+
+Later, I will run some sensitivity simulations:
+
+1) positive correlation between the mean and slope effect
+2) no correlation between the mean and slope effect
+3) using LMM instead of GAMLSS (only scenarios 1-4)
+4) assuming one shared SNP set for all mean, slope and variability
+5) assuming three distinct SNP sets for mean, slope and variability
+6) using visit as time parameter
+7) reducing sample size and time points to POPS size (3,000 samples, 5 time points)
+8) using binary outcomes instead of continuous ones
+
+### Real data
+
+I also started on rerunning the real data analysis, using the genome-wide significant results from the EGG consortium. This results in 100 candidate SNPs, which might make writing-up a bit more simpler. 
+
 ## 2024/04/17
 
 I updated the simulation: now the SNPs are more correlated (r2 = -0.6), but still not as perfect as in real data. But when I keep increasing the covariance, I cannot use mvrnorm, because the covariance matrix cannot be solved anymore. I also added several sensitivity checks (what happens when we use the wrong model?). 

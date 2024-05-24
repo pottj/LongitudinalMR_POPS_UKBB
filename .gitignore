@@ -63,4 +63,8 @@ simulation/results_old/
 *.out
 *.pdf
 SupplementalTables_*
+simulation_v2/
+simulation_v3/
+simulation_v4/
+realdata_v2/
 

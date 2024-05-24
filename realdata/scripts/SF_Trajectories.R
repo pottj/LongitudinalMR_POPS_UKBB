@@ -58,7 +58,7 @@ plotData[,myShape := as.factor(myShape)]
 #' ## Absolute values ####
 plotData[,sd(efwcomb/1000,na.rm=T),by=scan]
 
-ggp1  = ggplot(plotData, aes(x=ga, y=efwcomb/1000,  
+ggp1  = ggplot(plotData[scan!=4,], aes(x=ga, y=efwcomb/1000,  
                              group=POPSID,shape=myShape)) +
   #facet_wrap(~pn_emcsall,scales = "free_y")+
   geom_line(aes(alpha=0.01,col=as.factor(pn_emcsall))) + 
@@ -71,8 +71,9 @@ ggp1  = ggplot(plotData, aes(x=ga, y=efwcomb/1000,
                     labels = c("no", "yes"))+
   scale_colour_manual(values = c("steelblue","darkred","black"),
                       labels = c("no", "yes","idk"))+
-  theme(legend.position = "none") + theme_classic()+ 
-  guides(alpha="none",fill="none")
+  theme(legend.position = "none") + theme_classic() +
+  theme(legend.position = "none")
+
 ggp1
 
 #' I really dont know how to get rid of the black color.
@@ -85,7 +86,7 @@ dev.off()
 #' ## Log-transformed values
 plotData[,sd(log(efwcomb/1000),na.rm=T),by=scan]
 
-ggp2  = ggplot(plotData, aes(x=ga, y=log(efwcomb/1000),  
+ggp2  = ggplot(plotData[scan!=4,], aes(x=ga, y=log(efwcomb/1000),  
                              group=POPSID,shape=myShape)) +
   #facet_wrap(~pn_emcsall,scales = "free_y")+
   geom_line(aes(alpha=0.01,col=as.factor(pn_emcsall))) + 
@@ -98,8 +99,8 @@ ggp2  = ggplot(plotData, aes(x=ga, y=log(efwcomb/1000),
                     labels = c("no", "yes"))+
   scale_colour_manual(values = c("steelblue","darkred","black"),
                       labels = c("no", "yes","idk"))+
-  theme(legend.position = "none") + theme_classic()+ 
-  guides(alpha="none",fill="none")
+  theme(legend.position = "none") + theme_classic() +
+  theme(legend.position = "none")
 ggp2
 
 #' I really dont know how to get rid of the black color.
@@ -112,7 +113,7 @@ dev.off()
 #' ## Z-scores ####
 plotData[,sd(efwcombZv2,na.rm=T),by=scan]
 
-ggp3  = ggplot(plotData, aes(x=ga, y=efwcombZv2,  
+ggp3  = ggplot(plotData[scan!=4,], aes(x=ga, y=efwcombZv2,  
                              group=POPSID,shape=myShape)) +
   #facet_wrap(~pn_emcsall,scales = "free_y")+
   geom_line(aes(alpha=0.01,col=as.factor(pn_emcsall))) + 
@@ -125,8 +126,8 @@ ggp3  = ggplot(plotData, aes(x=ga, y=efwcombZv2,
                     labels = c("no", "yes"))+
   scale_colour_manual(values = c("steelblue","darkred","black"),
                       labels = c("no", "yes","idk"))+
-  theme(legend.position = "none") + theme_classic()+ 
-  guides(alpha="none",fill="none")
+  theme(legend.position = "none") + theme_classic() +
+  theme(legend.position = "none")
 ggp3
 
 #' I really dont know how to get rid of the black color.
@@ -139,7 +140,7 @@ dev.off()
 #' ## Centiles ####
 plotData[,sd(efwcombv2_cent,na.rm=T),by=scan]
 
-ggp4  = ggplot(plotData, aes(x=ga, y=efwcombv2_cent,  
+ggp4  = ggplot(plotData[scan!=4,], aes(x=ga, y=efwcombv2_cent,  
                              group=POPSID,shape=myShape)) +
   #facet_wrap(~pn_emcsall,scales = "free_y")+
   geom_line(aes(alpha=0.01,col=as.factor(pn_emcsall))) + 
@@ -152,8 +153,8 @@ ggp4  = ggplot(plotData, aes(x=ga, y=efwcombv2_cent,
                     labels = c("no", "yes"))+
   scale_colour_manual(values = c("steelblue","darkred","black"),
                       labels = c("no", "yes","idk"))+
-  theme(legend.position = "none") + theme_classic()+ 
-  guides(alpha="none",fill="none")
+  theme(legend.position = "none") + theme_classic() +
+  theme(legend.position = "none")
 ggp4
 
 #' I really dont know how to get rid of the black color.

@@ -2,6 +2,30 @@
 
 Here I want to track my progress
 
+## 2024/05/31
+
+Okay, what did I do in the last week? 
+
+### Simulation
+
+I run the script to evaluate the main simulation and added some extra routines to create some nicer plots for my talk at the MR Conference in Bristol in June. 
+
+I also added and run all sensitivity simulation checks. This includes one for weak instruments, using MV GMM instead of MV IVW. 
+
+Because I feel quite good now about the simulation, I removed all the old files to the rds (GAMLSS out files are quite large, and are taking too much space away). This includes: 
+
+- simulation
+- simulation2
+- simulation_v2
+- simulation_v3
+- simulation_v4
+
+I only keep main, sensitivity and test (not tracked). 
+
+### Real data
+
+Everything is updated: I repeated all analyses with 100 independent SNPs from the EGG consortium data. I think about adding here the 2-sample approach. Maybe next week. 
+
 ## 2024/05/24
 
 Yes, it has been again too long since I tracked anything here. 
@@ -31,12 +55,14 @@ Later, I will run some sensitivity simulations:
 
 1) positive correlation between the mean and slope effect
 2) no correlation between the mean and slope effect
-3) using LMM instead of GAMLSS (only scenarios 1-4)
-4) assuming one shared SNP set for all mean, slope and variability
-5) assuming three distinct SNP sets for mean, slope and variability
-6) using visit as time parameter
-7) reducing sample size and time points to POPS size (3,000 samples, 5 time points)
-8) using binary outcomes instead of continuous ones
+3) using GAMLSS but estimating only mean and slope effect
+4) using GAMLSS but estimating only mean and variability effect
+5) assuming one shared SNP set for all mean, slope and variability
+6) assuming three distinct SNP sets for mean, slope and variability
+7) using visit as time parameter
+8) reducing sample size and time points to POPS size (3,000 samples, 5 time points)
+9) using binary outcomes instead of continuous ones
+10) using mvmr_gmm to correct for weak instrument bias
 
 ### Real data
 

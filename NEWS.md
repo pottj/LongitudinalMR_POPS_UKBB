@@ -2,6 +2,42 @@
 
 Here I want to track my progress
 
+## 2024/06/07
+
+Okay, what did I do in the last week? 
+
+### Simulation
+
+**Feedback Steve**: maybe focus on different values for $\theta_1$? 
+
+- CM1: $\theta_1 = 0.3 = \theta_2$ (as before)
+- CM2: $\theta_1 = 1.2$ (as before)
+- CM3: $\theta_1 = -1.2$ (new)
+- CM4: $\theta_1 = -0.3$ (new)
+ 
+START rerun simulation: 05/06/2024
+
+FINISH rerun simulation: 07/06/2024
+
+### Real data - EGG
+
+I noticed some error in my SNP annotation: when I checked the SNPs in script *01_Prep_02*, I sort by p-value to get the lead SNP per locus. But I forgot to reorder by chromosome and position. Hence, all the rsIDs were wrong in the GX and GY tables. I decided to rerun everything. 
+
+In addition, I added the 2-sample MVMR analyses using EGG and UKBB as 2nd sample for the outcome associations: 
+
+- **EGG consortium**: birth weight Z-scores, problematic as these are my candidate SNPs
+- **UKB raw**: downloaded from Neale lab, self-reported birth weight in kg
+- **UKB irnt**: downloaded from Neale lab, self-reported birth weight, inverse-rank normal transformed (quantile-like)
+- **Sakaue et al.**: Cesarian section, GCST90018810 in the GWAS Catalog, Meta-analysis of UKB, FinnGen, and BioBank Japan
+- **UKB elective**: downloaded from Neale lab, delivery mode of own children being elective CS (against all other modes)
+- **UKB emergency**: downloaded from Neale lab, delivery mode of own children being emergency CS (against all other modes)
+
+**Conclusion**:
+
+- affirmative for BW: regardless of what data set was used, we can replicate the POPS findings (EFW mean and slope have positive causal effect on BW)
+- negative for CS
+
+
 ## 2024/05/31
 
 Okay, what did I do in the last week? 

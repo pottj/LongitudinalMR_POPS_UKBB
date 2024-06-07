@@ -8,7 +8,7 @@
 ## Full documentation can be found here: https://slurm.schedmd.com/sbatch.html
 
 ## Enter a short name for the job, to be shown in SLURM output
-#SBATCH -J LongMR_01_Prep_GetCandidateSNPs
+#SBATCH -J LongMR_01_Prep_GetDataFiles
 
 ## Enter the wall-clock time limit for your jobs.
 ## If jobs reach this limit they are automatically killed.
@@ -75,6 +75,14 @@ module load R/4.3.1-icelake
 ## Section 3: Run your application
 
 R CMD BATCH --vanilla ../scripts/01_Prep_01_checkCandidateSNPs.R ../scripts/01_Prep_01_checkCandidateSNPs.R.out
+
+R CMD BATCH --vanilla ../scripts/01_Prep_02_checkPOPSGenotypeData.R ../scripts/01_Prep_02_checkPOPSGenotypeData.R.out
+cp Rplots.pdf 01_Prep_02_2_RPlots.pdf
+rm Rplots.pdf
+
+R CMD BATCH --vanilla ../scripts/01_Prep_03_checkPOPSPCA.R ../scripts/01_Prep_03_checkPOPSPCA.R.out
+
+R CMD BATCH --vanilla ../scripts/01_Prep_04_checkPOPSData.R ../scripts/01_Prep_04_checkPOPSData.R.out
 
 
 ###############################################################

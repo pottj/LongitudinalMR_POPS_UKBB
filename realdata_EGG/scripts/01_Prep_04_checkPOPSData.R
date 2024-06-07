@@ -46,28 +46,25 @@ time0<-Sys.time()
 source("../../SourceFile_HPC.R")
 .libPaths()
 
-tag = format(Sys.time(), "%Y-%m-%d")
-tag = gsub("2024-","24-",tag)
-tag = gsub("-","",tag)
+tag = "EGG"
 
 #' # Load POS data ####
 #' ***
 #' ## Load genetic data ####
 myPC_files = list.files(path = POPS_phenotypes,pattern = "01_Prep_03")
-myPC_file = myPC_files[length(myPC_files)]
+myPC_file = myPC_files[grepl(tag,myPC_files)]
 loaded1 = load(paste0(POPS_phenotypes,myPC_file))
 loaded1
 
 myGD_files = list.files(path = POPS_phenotypes,pattern = "01_Prep_02")
-myGD_file = myGD_files[length(myGD_files)]
+myGD_file = myGD_files[grepl("filtered_EGG",myGD_files)]
 loaded2 = load(paste0(POPS_phenotypes,myGD_file))
 loaded2
 pvar = pvar2
 geno_mat = geno_mat2
 
 myScores = list.files(path="../results/",pattern = "01_Prep_02_SNPList")
-myScores = myScores[grepl("RData",myScores)]
-myScore = myScores[length(myScores)]
+myScore = myScores[grepl("filtered_EGG",myScores)]
 loaded3 = load(paste0("../results/",myScore))
 SNPList = SNPList_filtered
 
@@ -272,7 +269,7 @@ for(i in 1:(length(myVariables))){
     scale_colour_manual(values = c("darkblue","steelblue","darkred","firebrick1"))+
     guides(alpha="none")
     
-  png(file=paste0("../results/_figures/01_Prep_04_POPS_",myVar,"_filtered_",tag,".png"),
+  png(file=paste0("../results/_figures/01_Prep_04_POPS/Pheno_",myVar,"_filtered.png"),
       width=900,height=600)
   print(ggp1)
   dev.off()
@@ -300,7 +297,7 @@ ggp2  = ggplot(plotData_long, aes(x=measurement, color=pn_sex)) +
   # scale_colour_manual(values = c("darkblue","steelblue","darkred","firebrick1"))+
   guides(fill="none")
 
-png(file=paste0("../results/_figures/01_Prep_04_POPS_birthweight_filtered_",tag,".png"),
+png(file=paste0("../results/_figures/01_Prep_04_POPS/Pheno_birthweight_filtered.png"),
     width=1500,height=700)
 print(ggp2)
 dev.off()
@@ -317,7 +314,7 @@ filt = is.element(rownames(geno_mat),psam$FID)
 geno_mat = geno_mat[filt,]
 dim(geno_mat)
 save(psam,pvar,geno_mat, 
-     file = paste0(POPS_phenotypes,"/01_Prep_04_SNPData_PGS_",tag,".RData"))
+     file = paste0(POPS_phenotypes,"/01_Prep_04_SNPData_",tag,".RData"))
 
 #' # Session Info ####
 #' ***

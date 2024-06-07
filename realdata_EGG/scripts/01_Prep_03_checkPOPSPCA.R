@@ -32,9 +32,7 @@ time0<-Sys.time()
 source("../../SourceFile_HPC.R")
 .libPaths()
 
-tag = format(Sys.time(), "%Y-%m-%d")
-tag = gsub("2024-","24-",tag)
-tag = gsub("-","",tag)
+tag = "EGG"
 
 #' # Load data ####
 #' ***
@@ -42,7 +40,7 @@ POPS_PCS = fread(paste0(POPS_SNP_data,"PCs_Fetal_3484_GBRLabel.txt"))
 POPS_PCS[,1:6]
 
 myGD_files = list.files(path = POPS_phenotypes,pattern = "01_Prep_02")
-myGD_file = myGD_files[length(myGD_files)]
+myGD_file = myGD_files[grepl("filtered_EGG",myGD_files)]
 loaded2 = load(paste0(POPS_phenotypes,myGD_file))
 loaded2
 psam
@@ -71,7 +69,7 @@ max_all_PC1 = max(POPS_PCS[,c(i),with=F])
 max_all_PC2 = max(POPS_PCS[,c(j),with=F])
 min_all_PC1 = min(POPS_PCS[,c(i),with=F])
 min_all_PC2 = min(POPS_PCS[,c(j),with=F])
-png(file=paste0("../results/_figures/01_Prep_03_POPS_PCA_ancestry_",tag,".png"),width=900,height=600)
+png(file=paste0("../results/_figures/01_Prep_03_PCs/POPS_PCA_ancestry.png"),width=900,height=600)
 par(mfrow=c(1,1))
 
 plot(0,0,col="white",
@@ -91,7 +89,7 @@ dev.off()
 #' 
 #' ## First 5 PCs
 #' 
-png(file=paste0("../results/_figures/01_Prep_03_POPS_PCA_ancestry_panel_",tag,".png"),width=1920,height=1200)
+png(file=paste0("../results/_figures/01_Prep_03_PCs/POPS_PCA_ancestry_panel.png"),width=1920,height=1200)
 par(mfrow=c(5,5))
 par(mar=c(2,2,2,1))
 
@@ -135,7 +133,7 @@ max_all_PC1 = max(POPS_PCS2[,c(i),with=F])
 max_all_PC2 = max(POPS_PCS2[,c(j),with=F])
 min_all_PC1 = min(POPS_PCS2[,c(i),with=F])
 min_all_PC2 = min(POPS_PCS2[,c(j),with=F])
-png(file=paste0("../results/_figures/01_Prep_03_POPS_PCA_sex_",tag,".png"),width=900,height=600)
+png(file=paste0("../results/_figures/01_Prep_03_PCs/POPS_PCA_sex.png"),width=900,height=600)
 par(mfrow=c(1,1))
 
 plot(0,0,col="white",
@@ -154,7 +152,7 @@ dev.off()
 #' 
 #' ## First 5 PCs
 #' 
-png(file=paste0("../results/_figures/01_Prep_03_POPS_PCA_sex_panel_",tag,".png"),width=1920,height=1200)
+png(file=paste0("../results/_figures/01_Prep_03_PCs/POPS_PCA_sex_panel.png"),width=1920,height=1200)
 par(mfrow=c(5,5))
 par(mar=c(2,2,2,1))
 

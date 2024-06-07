@@ -28,9 +28,7 @@ source("../../SourceFile_HPC.R")
 source("../../helperfunctions/HWETest.R")
 .libPaths()
 
-tag = format(Sys.time(), "%Y-%m-%d")
-tag = gsub("2024-","24-",tag)
-tag = gsub("-","",tag)
+tag = "EGG"
 
 #' # Load data ####
 #' ***
@@ -292,6 +290,7 @@ result.22 = foreach(s2 = myCHR) %do% {
   subdata2
 }
 SNPList_filtered = rbindlist(result.22)
+setorder(SNPList_filtered,chr,pos_b38)
 
 #' now repeat the LD correlation table
 #' 

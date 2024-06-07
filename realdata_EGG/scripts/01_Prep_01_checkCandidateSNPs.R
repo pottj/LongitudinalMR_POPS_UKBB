@@ -36,10 +36,7 @@ time0<-Sys.time()
 
 source("../../SourceFile_HPC.R")
 .libPaths()
-
-tag = format(Sys.time(), "%Y-%m-%d")
-tag = gsub("202.-","24-",tag)
-tag = gsub("-","",tag)
+suppressPackageStartupMessages(library(SNPlocs.Hsapiens.dbSNP150.GRCh38))
 
 #' # Load EGG data ####
 #' ***
@@ -84,11 +81,11 @@ EGG_data = EGG_data[!is.na(pos_b38)]
 EGG_data[,dumID1 := paste0("chr",chr,":",pos_b38,":",effect_allele,":",other_allele)]
 EGG_data[,dumID2 := paste0("chr",chr,":",pos_b38,":",other_allele,":",effect_allele)]
 
-outFile1 = paste0(POPS_SNP_data,"01_Prep_01_SNPList_EGG_IDonly_",tag,".txt")
+outFile1 = paste0(POPS_SNP_data,"01_Prep_01_SNPList_EGG_IDonly.txt")
 mySNPlist = c(EGG_data$dumID1,EGG_data$dumID2)
 write.table(mySNPlist, file = outFile1,col.names = F,row.names = F, quote = F)
 
-outFile2 = paste0("../results/01_Prep_01_SNPList_EGG_",tag,".RData")
+outFile2 = paste0("../results/01_Prep_01_SNPList_EGG.RData")
 save(EGG_data, file = outFile2)
 
 #' # Session Info ####

@@ -23,14 +23,12 @@ time0<-Sys.time()
 source("../../SourceFile_HPC.R")
 .libPaths()
 
-tag = format(Sys.time(), "%Y-%m-%d")
-tag = gsub("202.-","24-",tag)
-tag = gsub("-","",tag)
+tag = "EGG"
 
 #' # Load and prep PGS data ####
 #' ***
+#' Load genetic data (data from the PGS, not from GWAS Catalog)
 myGD_files = list.files(path = POPS_phenotypes,pattern = "01_Prep_04")
-myGD_files = myGD_files[grepl("240517",myGD_files)]
 loaded1 = load(paste0(POPS_phenotypes,myGD_files[1]))
 loaded1
 loaded2 = load(paste0(POPS_phenotypes,myGD_files[2]))
@@ -39,13 +37,12 @@ loaded3 = load(paste0(POPS_phenotypes,myGD_files[3]))
 loaded3
 
 myScores = list.files(path="../results/",pattern = "01_Prep_02_SNPList")
-myScores = myScores[grepl("RData",myScores)]
-myScore = myScores[length(myScores)]
+myScore = myScores[grepl("filtered",myScores)]
 loaded3 = load(paste0("../results/",myScore))
 SNPList = SNPList_filtered
 
 stopifnot(is.element(psam$FID,myTab_Y$POPSID))
-stopifnot(pvar$ID == SNPList$SNP)
+stopifnot(pvar$ID == SNPList$ID)
 stopifnot(psam$FID == rownames(geno_mat))
 
 pvar[,rsID := SNPList$rsid]
@@ -165,7 +162,7 @@ myAssocs_Y
 
 myAssocs_Y[,table(pval_mean<0.05,phenotype,population)]
 
-save(myAssocs_Y,file=paste0("../results/03_SNPs_01_MAIN_Assocs_outcome_nTIA_",tag,".RData"))
+save(myAssocs_Y,file=paste0("../results/03_SNPs_01_MAIN_Assocs_outcome_nTIA.RData"))
 
 #' # Session Info ####
 #' ***

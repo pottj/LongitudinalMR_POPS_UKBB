@@ -74,7 +74,7 @@ rownames(CorTab)=gsub("_"," - ",rownames(CorTab))
 corrplot(CorTab, 
          tl.col = "black", tl.srt = 45) 
 
-png(file=paste0("../results/_figures/05_CorrelationPlot_Slides.png"),
+png(file=paste0("../results/_figures/05_GXchecks_03_GenCor_slides/CorrelationPlot_Slides.png"),
     width=1500,height=1200,res = 200)
 corrplot(CorTab, 
          tl.col = "black", tl.srt = 45) 

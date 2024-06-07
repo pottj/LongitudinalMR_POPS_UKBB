@@ -83,7 +83,7 @@ for(i in 1:length(myOtherPhenos)){
   CorTab[upper.tri(CorTab)] = CorTab4[upper.tri(CorTab4)]
   colnames(CorTab)=rep("",dim(CorTab)[1])
   rownames(CorTab)=gsub("beta_","",rownames(CorTab))
-  png(file=paste0("../results/_figures/05_CorPlot_",myOtherPhenos[i],".png"),
+  png(file=paste0("../results/_figures/05_GXchecks_02_GenCor/CorPlot_",myOtherPhenos[i],".png"),
       width=1500,height=900,res = 200)
   corrplot(CorTab, order = "hclust",addrect = 3,
            tl.col = "black", tl.srt = 45) 
@@ -138,7 +138,7 @@ for(i in 1:length(myOtherSettings)){
   CorTab[upper.tri(CorTab)] = CorTab5[upper.tri(CorTab5)]
   colnames(CorTab)=rep("",dim(CorTab)[1])
   rownames(CorTab)=gsub("beta_","",rownames(CorTab))
-  png(file=paste0("../results/_figures/05_CorPlot_",myOtherSettings[i],".png"),
+  png(file=paste0("../results/_figures/05_GXchecks_02_GenCor/CorPlot_",myOtherSettings[i],".png"),
       width=1500,height=900,res = 200)
   corrplot(CorTab, order = "hclust",addrect = NR_rect,
            tl.col = "black", tl.srt = 45) 

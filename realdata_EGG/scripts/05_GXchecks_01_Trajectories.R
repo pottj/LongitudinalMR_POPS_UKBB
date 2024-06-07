@@ -22,14 +22,9 @@ time0 = Sys.time()
 
 source("../../SourceFile_HPC.R")
 
-tag = format(Sys.time(), "%Y-%m-%d")
-tag = gsub("2024-","24-",tag)
-tag = gsub("-","",tag)
-
 #' # Load data ####
 #' ***
 myGD_files = list.files(path = POPS_phenotypes,pattern = "01_Prep_04")
-myGD_files = myGD_files[grepl("240517",myGD_files)]
 loaded1 = load(paste0(POPS_phenotypes,myGD_files[1]))
 loaded1
 loaded2 = load(paste0(POPS_phenotypes,myGD_files[2]))
@@ -79,7 +74,7 @@ ggp1
 
 #' I really dont know how to get rid of the black color.
 #' 
-png(file=paste0("../results/_figures/05_Trajectory_EFWR.png"),
+png(file=paste0("../results/_figures/05_GXchecks_01_Trajectories/EFWR.png"),
     width=1500,height=1200,res = 200)
 print(ggp1)
 dev.off()
@@ -106,7 +101,7 @@ ggp2
 
 #' I really dont know how to get rid of the black color.
 #' 
-png(file=paste0("../results/_figures/05_Trajectory_EFWL.png"),
+png(file=paste0("../results/_figures/05_GXchecks_01_Trajectories/EFWL.png"),
     width=1500,height=1200,res = 200)
 print(ggp2)
 dev.off()
@@ -133,7 +128,7 @@ ggp3
 
 #' I really dont know how to get rid of the black color.
 #' 
-png(file=paste0("../results/_figures/05_Trajectory_EFWZ.png"),
+png(file=paste0("../results/_figures/05_GXchecks_01_Trajectories/EFWZ.png"),
     width=1500,height=1200,res = 200)
 print(ggp3)
 dev.off()
@@ -160,7 +155,7 @@ ggp4
 
 #' I really dont know how to get rid of the black color.
 #' 
-png(file=paste0("../results/_figures/05_Trajectory_EFWC.png"),
+png(file=paste0("../results/_figures/05_GXchecks_01_Trajectories/EFWC.png"),
     width=1500,height=1200,res = 200)
 print(ggp4)
 dev.off()

@@ -17,12 +17,8 @@
 #' 
 #' 1) POPS - Cohort description (mean and SD of all covariables used in the linear regression model - restricted to setting all2 and phenotype EFW_C)
 #' 2) POPS - Overview of sample size per exposure and sample filter setting
-#' 3) POPS - MVMR results - main model
-#' 4) POPS - MVMR results - sens 1: GBR3
-#' 5) POPS - MVMR results - sens 2: LMM (no var)
-#' 6) POPS - MVMR results - sens 3: noTimeIA (no slope)
-#' 7) POPS - MVMR results - sens 4: sigma function time independent
-#' 10) POPS - MVMR results - sens 5: no covariables 
+#' 3) POPS - MVMR results - 1 sample MR (main + sensitivity)
+#' 4) MVMR results - 2 sample MR (main only)
 #' 
 #' 
 #' # Initialize ####
@@ -39,11 +35,13 @@ tag = gsub("-","",tag)
 #' # Get content table (tab0) ####
 #' ***
 {
-  tab0 = data.table(Table = paste0("S",c(3:4)),
-                    Title = c("POPS - Study description",
-                              "POPS - MVMR results (all in one table, use ID to filter for main or sensitivity results)"),
-                    Source = c("done in this script",
-                               "realdata/results/04_MVMR_*.RData"))
+  tab0 = data.table(Table = paste0("S",c(1,3:5)),
+                    Title = c("Simulation - main","POPS - Study description",
+                              "POPS - MVMR results (all in one table, use ID to filter for main or sensitivity results)",
+                              "2 sample MVMR"),
+                    Source = c("done in this script","../../simulation_main/results/",
+                               "realdata/results/04_MVMR_*.RData",
+                               "realdata/results/07_MVMR_*.RData"))
   
   tab0
   
@@ -82,6 +80,11 @@ tag = gsub("-","",tag)
   
 }
 
+#' # Get Sup Tab 1 ####
+#' ***
+load("../../simulation_main/results/_tables/Simulation_complete.RData")
+tab1 = copy(myTab)
+
 #' # Get Sup Tab 3 ####
 #' ***
 #' Study description
@@ -98,12 +101,10 @@ tag = gsub("-","",tag)
 #'    - emergency cesarian section (yes/no)
 #' 
 {
-  newpath = gsub("../../","",POPS_phenotypes)
-  myGD_files = list.files(path = newpath,pattern = "01_Prep_04")
-  myGD_files = myGD_files[grepl("240517",myGD_files)]
-  loaded1 = load(paste0(newpath,myGD_files[1]))
+  myGD_files = list.files(path = POPS_phenotypes,pattern = "01_Prep_04")
+  loaded1 = load(paste0(POPS_phenotypes,myGD_files[1]))
   loaded1
-  loaded2 = load(paste0(newpath,myGD_files[2]))
+  loaded2 = load(paste0(POPS_phenotypes,myGD_files[2]))
   loaded2
   
   # get table for exposure
@@ -240,13 +241,46 @@ tag = gsub("-","",tag)
   
 }  
 
+#' # Get Sup Tab 5 ####
+#' ***
+#' 2-sample MVMR tables
+#' 
+{
+  myMVMR_results = list.files(path = "../results/",pattern = "07_MVMR_")
+  
+  dumTab4 = foreach(i = 1:length(myMVMR_results))%do%{
+    #i=1
+    load(paste0("../results/",myMVMR_results[i]))
+    names(MVMR_results)
+    MVMR_results = MVMR_results[setting == "multivariate",]
+    
+    MVMR_tab_wide = dcast(MVMR_results, exposure + outcome + ID + threshold + NR_SNPs_total + HeteroStat + HeteroStat_pval ~ exposure_type, 
+                          value.var=c("NR_SNPs_type","beta_IVW","SE_IVW","pval_IVW","condFstat"))
+    names(MVMR_tab_wide) = gsub("IVW_","",names(MVMR_tab_wide))
+    names(MVMR_tab_wide) = gsub("NR_SNPs_type","SNPs",names(MVMR_tab_wide))
+    matched = match(MVMR_tab_wide$exposure,abbreviations$phenotype_POPS)
+    MVMR_tab_wide[,exposure := abbreviations[matched,abbrev_paper]]
+    
+    MVMR_tab_wide
+    
+  }
+  tab5 = rbindlist(dumTab4,fill=T)
+  names(tab5)
+  tab4 = tab4[,c(1:7, 
+                 8,11,14,17,20,
+                 9,12,15,18,21, 
+                 10,13,16,19,22)]
+  
+  
+}  
+
 #' # Save tables ###
 #' ***
 
-tosave4 = data.table(data = c("tab0", "tab3a","tab3b","tab3c", "tab4"), 
-                     SheetNames = c("Content","TableS3a", "TableS3b",
-                                    "TableS3c","TableS4"))
-excel_fn = paste0("../results/_tables/SupplementalTables_realdata_",tag,".xlsx")
+tosave4 = data.table(data = c("tab0","tab1", "tab3a","tab3b","tab3c", "tab4","tab5"), 
+                     SheetNames = c("Content","TableS1","TableS3a", "TableS3b",
+                                    "TableS3c","TableS4","TableS5"))
+excel_fn = paste0("../results/_tables/SupplementalTables_realdata_EGG.xlsx")
 WriteXLS(tosave4$data, 
          ExcelFileName=excel_fn, 
          SheetNames=tosave4$SheetNames, 
@@ -254,8 +288,8 @@ WriteXLS(tosave4$data,
          BoldHeaderRow=T,
          FreezeRow=1)
 
-save(tab0, tab3a, tab3b, tab3c, tab4, 
-     file = paste0("../results/_tables/SupplementalTables_",tag,".RData"))
+save(tab0, tab1, tab3a, tab3b, tab3c, tab4, tab5, 
+     file = paste0("../results/_tables/SupplementalTables_EGG.RData"))
 
 #' # SessionInfo ####
 #' ***

@@ -32,9 +32,9 @@ tag = gsub("-","",tag)
 #' ***
 #' ## SNP info
 #' Get high quality SNPs only
-load("../results/01_Prep_02_LD_filtered_240517.RData")
+load("../results/01_Prep_02_LD_filtered_EGG.RData")
 LDTab = copy(LDTab2)
-load("../results/01_Prep_02_SNPList_filtered_240517.RData")
+load("../results/01_Prep_02_SNPList_filtered_EGG.RData")
 SNPList = copy(SNPList_filtered)
 
 #' Filter LD table for good SNPs only
@@ -78,7 +78,7 @@ myAssocs_X_long = myAssocs_X_long[!is.na(beta),]
 # myAssocs_X_long[type == "slope",SE:=SE*36]
 
 #' ## Outcome
-load("../results/03_SNPs_01_MAIN_Assocs_outcome_nTIA_240522.RData")
+load("../results/03_SNPs_01_MAIN_Assocs_outcome_nTIA.RData")
 myAssocs_Y = myAssocs_Y[population == "GBR",]
 
 #' ## save as temporary files

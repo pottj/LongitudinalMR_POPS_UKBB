@@ -84,7 +84,7 @@
   SNPs_classes = c(rep("ABC",SNPs_NR))
   SNP_beta_cov = -0.9
   X_Sim_AS = "AS1_AS2_AS3"
-  Y_alpha = c(0.3,0.3,0)
+  Y_alpha = c(0.3,0.3,1)
   
 }
 

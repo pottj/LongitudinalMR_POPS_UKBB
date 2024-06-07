@@ -52,6 +52,10 @@ dumTab = foreach(i = 1:dim(ToDoFile)[1])%do%{
   SimTab[exposure %in% c("slope"),exposure := "X2"]
   SimTab[exposure %in% c("var"),exposure := "X3"]
 
+  # correct estimates for exposure age
+  # SimTab[exposure == "X2",beta_IVW2 := beta_IVW/60]
+  # SimTab[exposure == "X2",SE_IVW2 := SE_IVW/60]
+  
   # add true value
   SimTab[,theta1 := 0]
   SimTab[outcome %in% c("Y2","Y5","Y6","Y8"),theta1 := myRow$theta1]
@@ -151,51 +155,52 @@ myTab = myTab[,c(1:4,
 #' ***
 
 dumTab = copy(myTab)
-dumTab[,dumID1 := paste(Sim_NR,Sim_X,Sim_Y,sep="_")]
+dumTab[,dumID1 := paste(Sim_X,Sim_Y,sep="_")]
 
 dumTab_X1 <- dcast(dumTab, outcome ~ dumID1, value.var="N_sig_proc_X1")
 dumTab_X3 <- dcast(dumTab, outcome ~ dumID1, value.var="N_sig_proc_X3")
 
-dumTab2 = rbind(dumTab_X1,dumTab_X3)
-setorder(dumTab2,outcome)
+dumTab2 = cbind(dumTab_X1,dumTab_X3[,-1])
 x = dim(dumTab2)[2]
-dumMat = as.matrix(dumTab2[,2:x])
+dumMat = as.matrix(dumTab2[,-1])
+colnames(dumMat) = paste(colnames(dumMat),rep(c("X1","X3"),each=12),sep=" - ")
 
-rownames(dumMat) = paste(dumTab2$outcome,rep(c("X1","X3"),4),sep=" - ")
-corrplot(dumMat[1:8,], is.corr = FALSE,col.lim = c(0, 1),col = COL1('Reds'), 
+filt1 = grepl("X12_",colnames(dumMat))
+corrplot(dumMat[,filt1], is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'), 
+         col= colorRampPalette(c("#FFF5F0","#FB6A4A","#67000D"))(10),
          addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
 
-corrplot(dumMat[9:16,], is.corr = FALSE,col.lim = c(0, 1),col = COL1('Reds'), 
+filt2 = grepl("X123_",colnames(dumMat))
+corrplot(dumMat[,filt2], is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'), 
+         col= colorRampPalette(c("#FFF5F0","#FB6A4A","#67000D"))(10),
          addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
 
-filename = paste0("../results/_figures/DetectionRates_part1.png")
+filt3 = grepl("X13_",colnames(dumMat))
+corrplot(dumMat[,filt3], is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'), 
+         col= colorRampPalette(c("#FFF5F0","#FB6A4A","#67000D"))(10),
+         addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
+
+filename = paste0("../results/_figures/DetectionRates_X12.png")
 png(filename = filename,width = 2600, height = 1400, res=200)
-corrplot(dumMat[1:8,], is.corr = FALSE,col.lim = c(0, 1),col = COL1('Reds'), 
+corrplot(dumMat[,filt1], is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'), 
+         col= colorRampPalette(c("#FFF5F0","#FB6A4A","#67000D"))(10),
          addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
 dev.off()
 
-filename = paste0("../results/_figures/DetectionRates_part2.png")
+filename = paste0("../results/_figures/DetectionRates_X123.png")
 png(filename = filename,width = 2600, height = 1400, res=200)
-corrplot(dumMat[9:16,], is.corr = FALSE,col.lim = c(0, 1),col = COL1('Reds'), 
+corrplot(dumMat[,filt2], is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'), 
+         col= colorRampPalette(c("#FFF5F0","#FB6A4A","#67000D"))(10),
          addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
 dev.off()
 
-#' Okay, I want a plot with the tru models only - 01, 02, 07, and 12
-#' 
-dumTab3 = cbind(dumTab_X1[,c(1,2,3,8,13),with=F],dumTab_X3[,c(2,3,8,13),with=F])
-x = dim(dumTab3)[2]
-dumMat3 = as.matrix(dumTab3[,2:x])
-
-colnames(dumMat3) = paste(rep(c("X1","X3"),each=4),colnames(dumMat3),sep=" - ")
-rownames(dumMat3) = dumTab3$outcome
-corrplot(dumMat3, is.corr = FALSE,col.lim = c(0, 1),col = COL1('Reds'), 
-         addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
-
-filename = paste0("../results/_figures/DetectionRates_trueModels.png")
+filename = paste0("../results/_figures/DetectionRates_X133.png")
 png(filename = filename,width = 2600, height = 1400, res=200)
-corrplot(dumMat3, is.corr = FALSE,col.lim = c(0, 1),col = COL1('Reds'), 
+corrplot(dumMat[,filt3], is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'), 
+         col= colorRampPalette(c("#FFF5F0","#FB6A4A","#67000D"))(10),
          addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
 dev.off()
+
 
 #' # Check 2: Bias ####
 #' ***
@@ -212,9 +217,7 @@ dumTab3[,type := "var"]
 dumTab4 = rbind(dumTab,dumTab3)
 dumTab4 = dumTab4[!is.na(bias_X1),]
 
-dumTab4[,dumID := paste(Sim_NR,Sim_X,Sim_Y, sep=" - ")]
-
-plot5 = ggplot(dumTab4, aes(x=dumID, y=bias_X1, color = outcome)) +
+plot5 = ggplot(dumTab4[Sim_X=="X12"], aes(x=Sim_Y, y=bias_X1, color = outcome)) +
   facet_wrap(~ type,scales = "free_y") +
   geom_hline(yintercept = 0,color="grey") +
   geom_point(position=position_dodge(0.5),size=3) +
@@ -227,7 +230,43 @@ plot5 = ggplot(dumTab4, aes(x=dumID, y=bias_X1, color = outcome)) +
   labs(color = "Outcome")
 plot5
 
-filename = paste0("../results/_figures/Bias.png")
+filename = paste0("../results/_figures/Bias_X12.png")
+png(filename = filename,width = 2800, height = 1600, res=200)
+print(plot5)
+dev.off()
+
+plot5 = ggplot(dumTab4[Sim_X=="X123"], aes(x=Sim_Y, y=bias_X1, color = outcome)) +
+  facet_wrap(~ type,scales = "free_y") +
+  geom_hline(yintercept = 0,color="grey") +
+  geom_point(position=position_dodge(0.5),size=3) +
+  geom_errorbar(aes(ymin=bias_X1-1.96*bias_SE_X1, ymax=bias_X1+1.96*bias_SE_X1), width=.2,
+                position=position_dodge(0.5)) +
+  theme_bw(base_size = 15) + 
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  #theme(axis.text.x = element_text(angle = 45)) +
+  xlab("Scenario") + ylab("Bias") +
+  labs(color = "Outcome")
+plot5
+
+filename = paste0("../results/_figures/Bias_X123.png")
+png(filename = filename,width = 2800, height = 1600, res=200)
+print(plot5)
+dev.off()
+
+plot5 = ggplot(dumTab4[Sim_X=="X13"], aes(x=Sim_Y, y=bias_X1, color = outcome)) +
+  facet_wrap(~ type,scales = "free_y") +
+  geom_hline(yintercept = 0,color="grey") +
+  geom_point(position=position_dodge(0.5),size=3) +
+  geom_errorbar(aes(ymin=bias_X1-1.96*bias_SE_X1, ymax=bias_X1+1.96*bias_SE_X1), width=.2,
+                position=position_dodge(0.5)) +
+  theme_bw(base_size = 15) + 
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  #theme(axis.text.x = element_text(angle = 45)) +
+  xlab("Scenario") + ylab("Bias") +
+  labs(color = "Outcome")
+plot5
+
+filename = paste0("../results/_figures/Bias_X13.png")
 png(filename = filename,width = 2800, height = 1600, res=200)
 print(plot5)
 dev.off()
@@ -247,12 +286,10 @@ dumTab3[,type := "var"]
 dumTab4 = rbind(dumTab,dumTab3)
 dumTab4 = dumTab4[!is.na(mean_betaIVW2_X1),]
 
-dumTab4[,dumID := paste(Sim_NR,Sim_X,Sim_Y, sep=" - ")]
+data_hlines = data.frame(type = c(rep("mean",4),"var"),
+                         mylines = c(0.3,1.2,-1.2,-0.3,1))
 
-data_hlines = data.frame(type = c("mean","mean","var"),
-                         mylines = c(0.3,1.2,1))
-
-plot5 = ggplot(dumTab4[Sim_X == "X12",], aes(x=dumID, y=mean_betaIVW2_X1, color = outcome)) +
+plot5 = ggplot(dumTab4[Sim_X == "X12",], aes(x=Sim_Y, y=mean_betaIVW2_X1, color = outcome)) +
   facet_wrap(~ type,scales = "free_y") +
   geom_hline(yintercept = 0,color="grey") +
   geom_hline(data = data_hlines, col="black", linetype="dotted", aes(yintercept = mylines)) +
@@ -271,7 +308,7 @@ png(filename = filename,width = 2800, height = 1600, res=200)
 print(plot5)
 dev.off()
 
-plot5 = ggplot(dumTab4[Sim_X == "X123",], aes(x=dumID, y=mean_betaIVW2_X1, color = outcome)) +
+plot5 = ggplot(dumTab4[Sim_X == "X123",], aes(x=Sim_Y, y=mean_betaIVW2_X1, color = outcome)) +
   facet_wrap(~ type,scales = "free_y") +
   geom_hline(yintercept = 0,color="grey") +
   geom_hline(data = data_hlines, col="black", linetype="dotted", aes(yintercept = mylines)) +
@@ -290,7 +327,7 @@ png(filename = filename,width = 2800, height = 1600, res=200)
 print(plot5)
 dev.off()
 
-plot5 = ggplot(dumTab4[Sim_X == "X13",], aes(x=dumID, y=mean_betaIVW2_X1, color = outcome)) +
+plot5 = ggplot(dumTab4[Sim_X == "X13",], aes(x=Sim_Y, y=mean_betaIVW2_X1, color = outcome)) +
   facet_wrap(~ type,scales = "free_y") +
   geom_hline(yintercept = 0,color="grey") +
   geom_hline(data = data_hlines, col="black", linetype="dotted", aes(yintercept = mylines)) +
@@ -323,12 +360,10 @@ dumTab3[,type := "var"]
 dumTab4 = rbind(dumTab,dumTab3)
 dumTab4 = dumTab4[!is.na(mean_betaIVW_X1),]
 
-dumTab4[,dumID := paste(Sim_NR,Sim_X,Sim_Y, sep=" - ")]
+data_hlines = data.frame(type = c(rep("mean",4),"var"),
+                         mylines = c(0.3,1.2,-1.2,-0.3,1))
 
-data_hlines = data.frame(type = c("mean","mean","var"),
-                         mylines = c(0.3,1.2,1))
-
-plot5 = ggplot(dumTab4, aes(x=dumID, y=mean_betaIVW_X1, color = outcome)) +
+plot5 = ggplot(dumTab4[Sim_X=="X12"], aes(x=Sim_Y, y=mean_betaIVW_X1, color = outcome)) +
   facet_wrap(~ type,scales = "free") +
   geom_hline(yintercept = 0,color="grey") +
   geom_hline(data = data_hlines, col="black", linetype="dotted", aes(yintercept = mylines)) +
@@ -341,7 +376,43 @@ plot5 = ggplot(dumTab4, aes(x=dumID, y=mean_betaIVW_X1, color = outcome)) +
   labs(color = "Outcome")
 plot5
 
-filename = paste0("../results/_figures/RawEstimates.png")
+filename = paste0("../results/_figures/RawEstimates_X12.png")
+png(filename = filename,width = 2800, height = 1600, res=200)
+print(plot5)
+dev.off()
+
+plot5 = ggplot(dumTab4[Sim_X=="X123"], aes(x=Sim_Y, y=mean_betaIVW_X1, color = outcome)) +
+  facet_wrap(~ type,scales = "free") +
+  geom_hline(yintercept = 0,color="grey") +
+  geom_hline(data = data_hlines, col="black", linetype="dotted", aes(yintercept = mylines)) +
+  geom_point(position=position_dodge(0.5),size=3) +
+  geom_errorbar(aes(ymin=mean_betaIVW_X1-1.96*sd_betaIVW_X1, ymax=mean_betaIVW_X1+1.96*sd_betaIVW_X1), width=.2,
+                position=position_dodge(0.5)) +
+  theme_bw(base_size = 15) + 
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  xlab("Scenario") + ylab("Raw estimate") +
+  labs(color = "Outcome")
+plot5
+
+filename = paste0("../results/_figures/RawEstimates_X123.png")
+png(filename = filename,width = 2800, height = 1600, res=200)
+print(plot5)
+dev.off()
+
+plot5 = ggplot(dumTab4[Sim_X=="X13"], aes(x=Sim_Y, y=mean_betaIVW_X1, color = outcome)) +
+  facet_wrap(~ type,scales = "free") +
+  geom_hline(yintercept = 0,color="grey") +
+  geom_hline(data = data_hlines, col="black", linetype="dotted", aes(yintercept = mylines)) +
+  geom_point(position=position_dodge(0.5),size=3) +
+  geom_errorbar(aes(ymin=mean_betaIVW_X1-1.96*sd_betaIVW_X1, ymax=mean_betaIVW_X1+1.96*sd_betaIVW_X1), width=.2,
+                position=position_dodge(0.5)) +
+  theme_bw(base_size = 15) + 
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  xlab("Scenario") + ylab("Raw estimate") +
+  labs(color = "Outcome")
+plot5
+
+filename = paste0("../results/_figures/RawEstimates_X13.png")
 png(filename = filename,width = 2800, height = 1600, res=200)
 print(plot5)
 dev.off()
@@ -360,7 +431,7 @@ dumTab3[,type := "var"]
 dumTab4 = rbind(dumTab,dumTab3)
 dumTab4 = dumTab4[!is.na(condFStats_median_X1),]
 
-dumTab4[,dumID := paste(Sim_NR,Sim_X,Sim_Y, sep=" - ")]
+dumTab4[,dumID := paste(Sim_X,Sim_Y, sep=" - ")]
 
 plot5 = ggplot(dumTab4[outcome=="Y2"], aes(x=dumID, y=condFStats_median_X1)) +
   facet_wrap(~ type,scales = "free") +

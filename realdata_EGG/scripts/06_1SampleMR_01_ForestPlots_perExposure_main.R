@@ -117,7 +117,7 @@ dumTab0 = foreach(k = 1:length(myOutcomes))%do%{
     
     myX = gsub("_","",myExposure)
     myY = gsub("_","",myOutcome)
-    filename = paste0("../results/_figures/05_ForestPlots_byExposure/ForestPlots_",myX,"_",myY,".png")
+    filename = paste0("../results/_figures/06_1SampleMR_01_ForestPlots_byExposure/ForestPlots_",myX,"_",myY,".png")
     png(filename = filename,width = 2000, height = 1800, res=200)
     plot(p2)
     dev.off()

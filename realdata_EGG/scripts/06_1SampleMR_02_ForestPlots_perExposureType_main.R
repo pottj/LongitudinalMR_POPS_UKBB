@@ -95,7 +95,7 @@ p2<- forest(data4[,c(16,19,20)],
 
 plot(p2)
 
-filename = paste0("../results/_figures/05_ForestPlot_main/EFW_BW_Mean.png")
+filename = paste0("../results/_figures/06_1SampleMR_02_ForestPlots_byExposureType/EFW_BW_Mean.png")
 png(filename = filename,width = 2000, height = 1600, res=200)
 plot(p2)
 dev.off()
@@ -155,7 +155,7 @@ p2<- forest(data4[,c(16,19,20)],
 
 plot(p2)
 
-filename = paste0("../results/_figures/05_ForestPlot_main/EFW_BW_Slope.png")
+filename = paste0("../results/_figures/06_1SampleMR_02_ForestPlots_byExposureType/EFW_BW_Slope.png")
 png(filename = filename,width = 2000, height = 1600, res=200)
 plot(p2)
 dev.off()
@@ -213,7 +213,7 @@ p2<- forest(data4[,c(16,19,20)],
 
 plot(p2)
 
-filename = paste0("../results/_figures/05_ForestPlot_main/EFW_BW_Variability.png")
+filename = paste0("../results/_figures/06_1SampleMR_02_ForestPlots_byExposureType/EFW_BW_Variability.png")
 png(filename = filename,width = 2000, height = 1600, res=200)
 plot(p2)
 dev.off()
@@ -271,7 +271,7 @@ p2<- forest(data4[,c(16,19,20)],
 
 plot(p2)
 
-filename = paste0("../results/_figures/05_ForestPlot_main/EFW_eCS_Mean.png")
+filename = paste0("../results/_figures/06_1SampleMR_02_ForestPlots_byExposureType/EFW_eCS_Mean.png")
 png(filename = filename,width = 2000, height = 1600, res=200)
 plot(p2)
 dev.off()
@@ -331,7 +331,7 @@ p2<- forest(data4[,c(16,19,20)],
 
 plot(p2)
 
-filename = paste0("../results/_figures/05_ForestPlot_main/EFW_eCS_Slope.png")
+filename = paste0("../results/_figures/06_1SampleMR_02_ForestPlots_byExposureType/EFW_eCS_Slope.png")
 png(filename = filename,width = 2000, height = 1600, res=200)
 plot(p2)
 dev.off()
@@ -389,7 +389,7 @@ p2<- forest(data4[,c(16,19,20)],
 
 plot(p2)
 
-filename = paste0("../results/_figures/05_ForestPlot_main/EFW_eCS_Variability.png")
+filename = paste0("../results/_figures/06_1SampleMR_02_ForestPlots_byExposureType/EFW_eCS_Variability.png")
 png(filename = filename,width = 2000, height = 1600, res=200)
 plot(p2)
 dev.off()

@@ -2,6 +2,19 @@
 
 Here I want to track my progress
 
+## 2024/06/14
+
+Okay, what did I do in the last week? 
+
+### Simulation
+
+- Run sensitivity simulation with binary outcomes with prevalence of 0.25 (instead of 0.5, more similar to POPS)
+- Rerun simulation evaluation as there was a typo in my code (old $/theta$s)
+
+### Real data
+
+- add a script for a nicer forest plot for the 1-sample and 2-sample MVMR results
+
 ## 2024/06/07
 
 Okay, what did I do in the last week? 

@@ -196,7 +196,7 @@ corrplot(dumMat[,filt2], is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'),
          addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
 dev.off()
 
-filename = paste0("../results/_figures/DetectionRates_X133.png")
+filename = paste0("../results/_figures/DetectionRates_X13.png")
 png(filename = filename,width = 2600, height = 1400, res=200)
 corrplot(dumMat[,filt3], is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'), 
          col= colorRampPalette(c("#FFF5F0","#FB6A4A","#67000D"))(10),
@@ -298,13 +298,13 @@ dumTab3[,type := "var"]
 dumTab4 = rbind(dumTab,dumTab2,dumTab3)
 dumTab4 = dumTab4[!is.na(mean_betaIVW2_X1),]
 
-data_hlines = data.frame(type = c(rep("mean",4),"slope","var"),
-                         mylines = c(0.3,1.2,-1.2,-0.3,0.3,1))
+# data_hlines = data.frame(type = c(rep("mean",4),"slope","var"),
+#                          mylines = c(0.3,1.2,-1.2,-0.3,0.3,1))
 
 plot5 = ggplot(dumTab4[Sim_X == "X12",], aes(x=Sim_Y, y=mean_betaIVW2_X1, color = outcome)) +
   facet_wrap(~ type,scales = "free_y") +
   geom_hline(yintercept = 0,color="grey") +
-  geom_hline(data = data_hlines, col="black", linetype="dotted", aes(yintercept = mylines)) +
+  #geom_hline(data = data_hlines, col="black", linetype="dotted", aes(yintercept = mylines)) +
   geom_point(position=position_dodge(0.5),size=3) +
   geom_errorbar(aes(ymin=mean_betaIVW2_X1-1.96*sd_betaIVW2_X1, ymax=mean_betaIVW2_X1+1.96*sd_betaIVW2_X1), width=.2,
                 position=position_dodge(0.5)) +
@@ -323,7 +323,7 @@ dev.off()
 plot5 = ggplot(dumTab4[Sim_X == "X123",], aes(x=Sim_Y, y=mean_betaIVW2_X1, color = outcome)) +
   facet_wrap(~ type,scales = "free_y") +
   geom_hline(yintercept = 0,color="grey") +
-  geom_hline(data = data_hlines, col="black", linetype="dotted", aes(yintercept = mylines)) +
+  #geom_hline(data = data_hlines, col="black", linetype="dotted", aes(yintercept = mylines)) +
   geom_point(position=position_dodge(0.5),size=3) +
   geom_errorbar(aes(ymin=mean_betaIVW2_X1-1.96*sd_betaIVW2_X1, ymax=mean_betaIVW2_X1+1.96*sd_betaIVW2_X1), width=.2,
                 position=position_dodge(0.5)) +
@@ -342,7 +342,7 @@ dev.off()
 plot5 = ggplot(dumTab4[Sim_X == "X13",], aes(x=Sim_Y, y=mean_betaIVW2_X1, color = outcome)) +
   facet_wrap(~ type,scales = "free_y") +
   geom_hline(yintercept = 0,color="grey") +
-  geom_hline(data = data_hlines, col="black", linetype="dotted", aes(yintercept = mylines)) +
+  #geom_hline(data = data_hlines, col="black", linetype="dotted", aes(yintercept = mylines)) +
   geom_point(position=position_dodge(0.5),size=3) +
   geom_errorbar(aes(ymin=mean_betaIVW2_X1-1.96*sd_betaIVW2_X1, ymax=mean_betaIVW2_X1+1.96*sd_betaIVW2_X1), width=.2,
                 position=position_dodge(0.5)) +
@@ -377,13 +377,13 @@ dumTab3[,type := "var"]
 dumTab4 = rbind(dumTab,dumTab2,dumTab3)
 dumTab4 = dumTab4[!is.na(mean_betaIVW_X1),]
 
-data_hlines = data.frame(type = c(rep("mean",4),"slope","var"),
-                         mylines = c(0.3,1.2,-1.2,-0.3,0.3*4*17.5,1))
+# data_hlines = data.frame(type = c(rep("mean",4),"slope","var"),
+#                          mylines = c(0.3,1.2,-1.2,-0.3,0.3*4*17.5,1))
 
 plot5 = ggplot(dumTab4[Sim_X=="X12"], aes(x=Sim_Y, y=mean_betaIVW_X1, color = outcome)) +
   facet_wrap(~ type,scales = "free") +
   geom_hline(yintercept = 0,color="grey") +
-  geom_hline(data = data_hlines, col="black", linetype="dotted", aes(yintercept = mylines)) +
+  #geom_hline(data = data_hlines, col="black", linetype="dotted", aes(yintercept = mylines)) +
   geom_point(position=position_dodge(0.5),size=3) +
   geom_errorbar(aes(ymin=mean_betaIVW_X1-1.96*sd_betaIVW_X1, ymax=mean_betaIVW_X1+1.96*sd_betaIVW_X1), width=.2,
                 position=position_dodge(0.5)) +
@@ -401,7 +401,7 @@ dev.off()
 plot5 = ggplot(dumTab4[Sim_X=="X123"], aes(x=Sim_Y, y=mean_betaIVW_X1, color = outcome)) +
   facet_wrap(~ type,scales = "free") +
   geom_hline(yintercept = 0,color="grey") +
-  geom_hline(data = data_hlines, col="black", linetype="dotted", aes(yintercept = mylines)) +
+  #geom_hline(data = data_hlines, col="black", linetype="dotted", aes(yintercept = mylines)) +
   geom_point(position=position_dodge(0.5),size=3) +
   geom_errorbar(aes(ymin=mean_betaIVW_X1-1.96*sd_betaIVW_X1, ymax=mean_betaIVW_X1+1.96*sd_betaIVW_X1), width=.2,
                 position=position_dodge(0.5)) +
@@ -419,7 +419,7 @@ dev.off()
 plot5 = ggplot(dumTab4[Sim_X=="X13"], aes(x=Sim_Y, y=mean_betaIVW_X1, color = outcome)) +
   facet_wrap(~ type,scales = "free") +
   geom_hline(yintercept = 0,color="grey") +
-  geom_hline(data = data_hlines, col="black", linetype="dotted", aes(yintercept = mylines)) +
+  #geom_hline(data = data_hlines, col="black", linetype="dotted", aes(yintercept = mylines)) +
   geom_point(position=position_dodge(0.5),size=3) +
   geom_errorbar(aes(ymin=mean_betaIVW_X1-1.96*sd_betaIVW_X1, ymax=mean_betaIVW_X1+1.96*sd_betaIVW_X1), width=.2,
                 position=position_dodge(0.5)) +
@@ -456,7 +456,7 @@ dumTab4 = dumTab4[!is.na(condFStats_median_X1),]
 
 dumTab4[,dumID := paste(Sim_X,Sim_Y, sep=" - ")]
 
-plot5 = ggplot(dumTab4[outcome=="Y2"], aes(x=dumID, y=condFStats_median_X1)) +
+plot5 = ggplot(dumTab4[outcome=="Y2" & Sim_X=="X12"], aes(x=Sim_Y, y=condFStats_median_X1)) +
   facet_wrap(~ type,scales = "free") +
   geom_hline(yintercept = 0,color="grey") +
   geom_hline(yintercept = 10,color="red",linetype = "dashed") +
@@ -470,10 +470,49 @@ plot5 = ggplot(dumTab4[outcome=="Y2"], aes(x=dumID, y=condFStats_median_X1)) +
   xlab("Scenario") + ylab("Conditional F-Statistics")
 plot5
 
-filename = paste0("../results/_figures/CondFStats.png")
+filename = paste0("../results/_figures/CondFStats_X12.png")
 png(filename = filename,width = 3200, height = 1600, res=200)
 print(plot5)
 dev.off()
+
+plot5 = ggplot(dumTab4[outcome=="Y2" & Sim_X=="X123"], aes(x=Sim_Y, y=condFStats_median_X1)) +
+  facet_wrap(~ type,scales = "free") +
+  geom_hline(yintercept = 0,color="grey") +
+  geom_hline(yintercept = 10,color="red",linetype = "dashed") +
+  geom_point(position=position_dodge(0.5),size=3) +
+  geom_errorbar(aes(ymin=condFStats_1stQ_X1, 
+                    ymax=condFStats_3rdQ_X1), width=.2,
+                position=position_dodge(0.5)) +
+  theme_bw(base_size = 15) + 
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  #theme(axis.text.x = element_text(angle = 45)) +
+  xlab("Scenario") + ylab("Conditional F-Statistics")
+plot5
+
+filename = paste0("../results/_figures/CondFStats_X123.png")
+png(filename = filename,width = 3200, height = 1600, res=200)
+print(plot5)
+dev.off()
+
+plot5 = ggplot(dumTab4[outcome=="Y2" & Sim_X=="X13"], aes(x=Sim_Y, y=condFStats_median_X1)) +
+  facet_wrap(~ type,scales = "free") +
+  geom_hline(yintercept = 0,color="grey") +
+  geom_hline(yintercept = 10,color="red",linetype = "dashed") +
+  geom_point(position=position_dodge(0.5),size=3) +
+  geom_errorbar(aes(ymin=condFStats_1stQ_X1, 
+                    ymax=condFStats_3rdQ_X1), width=.2,
+                position=position_dodge(0.5)) +
+  theme_bw(base_size = 15) + 
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  #theme(axis.text.x = element_text(angle = 45)) +
+  xlab("Scenario") + ylab("Conditional F-Statistics")
+plot5
+
+filename = paste0("../results/_figures/CondFStats_X13.png")
+png(filename = filename,width = 3200, height = 1600, res=200)
+print(plot5)
+dev.off()
+
 
 #' # Save ####
 #' ***

@@ -2,6 +2,14 @@
 
 Here I want to track my progress
 
+## 2024/06/28
+
+Two weeks in one, because I was at the MR Conference in Bristol, and had some days off. 
+
+I did some tests regarding longitudinal data from the UKBB (heart rate during bicycle exercise), but these scripts are not yet staged (still in test folder). This should be added next week. 
+
+So far, simulation and POPS analyses are complete. Back to writing. 
+
 ## 2024/06/14
 
 Okay, what did I do in the last week? 

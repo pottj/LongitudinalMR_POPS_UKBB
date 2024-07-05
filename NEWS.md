@@ -2,6 +2,12 @@
 
 Here I want to track my progress
 
+## 2024/07/05
+
+I added the data prep for UKB HR data and did the first non-genetic model tests. I spoke with Marco, might be best to try the fully adjusted model including sex-IA, as the protocol might create such sex-interaction with the covariables. 
+
+Next week: run GAMLSS and download matching CAD summary statistics for the MVMR. 
+
 ## 2024/06/28
 
 Two weeks in one, because I was at the MR Conference in Bristol, and had some days off. 

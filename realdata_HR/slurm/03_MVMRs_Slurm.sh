@@ -8,12 +8,12 @@
 ## Full documentation can be found here: https://slurm.schedmd.com/sbatch.html
 
 ## Enter a short name for the job, to be shown in SLURM output
-#SBATCH -J LongMR_01_Prep_GetDataFiles_part2
+#SBATCH -J LongMR_03_MVMR
 
 ## Enter the wall-clock time limit for your jobs.
 ## If jobs reach this limit they are automatically killed.
 ## Maximum value 36:00:00.
-#SBATCH --time=16:00:00
+#SBATCH --time=1:00:00
 
 ## For single-core jobs, this number should be '1'. 
 ## If your job has built-in parallelism, eg using OpenMP or 
@@ -24,7 +24,7 @@
 ## Each task is allocated 3.3G (icelake) or 6.7G (icelake-himem) or 4.6G (sapphire)
 ## If this is insufficient, uncomment and edit this line.
 ## Maximum value 256G (icelake/sapphire) or 512G (icelake-himem)
-#SBATCH --mem=96G
+## #SBATCH --mem=96G
 
 ## The system can send emails when your job starts and stops.
 ## Values include BEGIN, END, ALL, and TIME_LIMIT_80 and TIME_LIMIT_90 
@@ -75,13 +75,15 @@ module load R/4.3.1-icelake
 ## Section 3: Run your application
 
 # Step 0: run R scripts
-R CMD BATCH --vanilla ../scripts/01_Prep_04_checkUKBgenedosages.R ../scripts/01_Prep_04_checkUKBgenedosages.R.out
-cp Rplots.pdf 01_Prep_04_Rplots.pdf
-rm Rplots.pdf
+R CMD BATCH --vanilla ../scripts/03_MVMRs_01_MAIN.R ../scripts/03_MVMRs_01_MAIN.R.out
+R CMD BATCH --vanilla ../scripts/03_MVMRs_02_SENS_rampUp.R ../scripts/03_MVMRs_02_SENS_rampUp.R.out
+R CMD BATCH --vanilla ../scripts/03_MVMRs_03_SENS_noVar.R ../scripts/03_MVMRs_03_SENS_noVar.R.out
+R CMD BATCH --vanilla ../scripts/03_MVMRs_04_SENS_noSlope.R ../scripts/03_MVMRs_04_SENS_noSlope.R.out
 
-R CMD BATCH --vanilla ../scripts/01_Prep_05_check_nonGeneticModels.R ../scripts/01_Prep_05_check_nonGeneticModels.R.out
-cp Rplots.pdf 01_Prep_05_Rplots.pdf
-rm Rplots.pdf
+R CMD BATCH --vanilla ../scripts/04_MVMRs_01_MAIN_AF.R ../scripts/04_MVMRs_01_MAIN_AF.R.out
+R CMD BATCH --vanilla ../scripts/04_MVMRs_02_SENS_rampUp_AF.R ../scripts/03_MVMRs_04_SENS_rampUp_AF.R.out
+R CMD BATCH --vanilla ../scripts/04_MVMRs_03_SENS_noVar_AF.R ../scripts/04_MVMRs_03_SENS_noVar_AF.R.out
+R CMD BATCH --vanilla ../scripts/04_MVMRs_04_SENS_noSlope_AF.R ../scripts/04_MVMRs_04_SENS_noSlope_AF.R.out
 
 ###############################################################
 ### You should not have to change anything below this line ####

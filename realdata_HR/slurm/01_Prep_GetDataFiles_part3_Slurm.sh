@@ -8,12 +8,12 @@
 ## Full documentation can be found here: https://slurm.schedmd.com/sbatch.html
 
 ## Enter a short name for the job, to be shown in SLURM output
-#SBATCH -J LongMR_01_Prep_GetDataFiles_part2
+#SBATCH -J LongMR_01_Prep_GetDataFiles_part3
 
 ## Enter the wall-clock time limit for your jobs.
 ## If jobs reach this limit they are automatically killed.
 ## Maximum value 36:00:00.
-#SBATCH --time=16:00:00
+#SBATCH --time=00:15:00
 
 ## For single-core jobs, this number should be '1'. 
 ## If your job has built-in parallelism, eg using OpenMP or 
@@ -75,12 +75,12 @@ module load R/4.3.1-icelake
 ## Section 3: Run your application
 
 # Step 0: run R scripts
-R CMD BATCH --vanilla ../scripts/01_Prep_04_checkUKBgenedosages.R ../scripts/01_Prep_04_checkUKBgenedosages.R.out
-cp Rplots.pdf 01_Prep_04_Rplots.pdf
+R CMD BATCH --vanilla ../scripts/01_Prep_06_checkCADSummaryStats.R ../scripts/01_Prep_06_checkCADSummaryStats.R.out
+cp Rplots.pdf 01_Prep_06_Rplots.pdf
 rm Rplots.pdf
 
-R CMD BATCH --vanilla ../scripts/01_Prep_05_check_nonGeneticModels.R ../scripts/01_Prep_05_check_nonGeneticModels.R.out
-cp Rplots.pdf 01_Prep_05_Rplots.pdf
+R CMD BATCH --vanilla ../scripts/01_Prep_07_checkAFSummaryStats.R ../scripts/01_Prep_07_checkAFSummaryStats.R.out
+cp Rplots.pdf 01_Prep_07_Rplots.pdf
 rm Rplots.pdf
 
 ###############################################################

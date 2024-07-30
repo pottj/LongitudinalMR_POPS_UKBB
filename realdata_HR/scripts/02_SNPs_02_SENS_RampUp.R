@@ -43,9 +43,7 @@ myTab_long4 = cbind(myTab_long4,myTab_cross4[matched,c(25:35,39)])
 myTab_long4[Sex==0,Sex:=2]
 
 data1 = copy(myTab_long4)
-data1 = data1[stageName == "Constant" & phaseTime>30,]
-badIDs = data1[speed>100,unique(ID)]
-data1 = data1[!is.element(ID,badIDs)]
+data1 = data1[stageName != "Constant" & load %in% c(66,88),]
 
 # prepare loop over SNPs
 mySNPs = pvar2$ID
@@ -62,23 +60,23 @@ dumTab2 = foreach(i = 1:length(mySNPs))%dorng%{
   data2 = copy(data1)
   data2[,myG := mySNP[matched]]
   
-  mod2 = gamlss(HR ~ Sex + Age + myG*phaseTime + 
+  mod2 = gamlss(HR ~ Sex + Age + load + myG*phaseTime + 
                   PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + random(x = as.factor(ID)),   
-                sigma.formula = ~ myG + Sex + Age + phaseTime, 
+                sigma.formula = ~ myG + Sex + Age + load + phaseTime, 
                 data = na.omit(data2), family = "NO")
   
   data3 = copy(data2)
   data3 = data3[Sex == 1,]
-  mod2M = gamlss(HR ~ Age + phaseTime + myG*phaseTime + 
+  mod2M = gamlss(HR ~ Age + load + phaseTime + myG*phaseTime + 
                    PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + random(x = as.factor(ID)),   
-                 sigma.formula = ~ myG + Age + phaseTime, 
+                 sigma.formula = ~ myG + Age + load + phaseTime, 
                  data = na.omit(data3), family = "NO")
   
   data4 = copy(data2)
   data4 = data4[Sex == 2,]
-  mod2F = gamlss(HR ~ Age + phaseTime + myG*phaseTime + 
+  mod2F = gamlss(HR ~ Age + load + phaseTime + myG*phaseTime + 
                    PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + random(x = as.factor(ID)),   
-                 sigma.formula = ~ myG + Age + phaseTime, 
+                 sigma.formula = ~ myG + Age + load + phaseTime, 
                  data = na.omit(data4), family = "NO")
   
   dummy2 = summary(mod2)
@@ -111,7 +109,7 @@ dumTab2 = foreach(i = 1:length(mySNPs))%dorng%{
 myAssocs_X = rbindlist(dumTab2)
 myAssocs_X
 
-save(myAssocs_X,file=paste0("../results/02_SNPs_01_MAIN.RData"))
+save(myAssocs_X,file=paste0("../results/02_SNPs_02_SENS_RampUp.RData"))
 
 #' # Session Info ####
 #' ***

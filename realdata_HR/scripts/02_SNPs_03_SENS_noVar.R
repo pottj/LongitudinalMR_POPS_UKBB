@@ -64,21 +64,21 @@ dumTab2 = foreach(i = 1:length(mySNPs))%dorng%{
   
   mod2 = gamlss(HR ~ Sex + Age + myG*phaseTime + 
                   PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + random(x = as.factor(ID)),   
-                sigma.formula = ~ myG + Sex + Age + phaseTime, 
+                sigma.formula = ~ Sex + Age + phaseTime, 
                 data = na.omit(data2), family = "NO")
   
   data3 = copy(data2)
   data3 = data3[Sex == 1,]
   mod2M = gamlss(HR ~ Age + phaseTime + myG*phaseTime + 
                    PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + random(x = as.factor(ID)),   
-                 sigma.formula = ~ myG + Age + phaseTime, 
+                 sigma.formula = ~ Age + phaseTime, 
                  data = na.omit(data3), family = "NO")
   
   data4 = copy(data2)
   data4 = data4[Sex == 2,]
   mod2F = gamlss(HR ~ Age + phaseTime + myG*phaseTime + 
                    PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + random(x = as.factor(ID)),   
-                 sigma.formula = ~ myG + Age + phaseTime, 
+                 sigma.formula = ~ Age + phaseTime, 
                  data = na.omit(data4), family = "NO")
   
   dummy2 = summary(mod2)
@@ -101,17 +101,13 @@ dumTab2 = foreach(i = 1:length(mySNPs))%dorng%{
                     beta_slope = c(dummy2[2,1],dummy2M[2,1],dummy2F[2,1]),
                     SE_slope =   c(dummy2[2,2],dummy2M[2,2],dummy2F[2,2]),
                     tval_slope = c(dummy2[2,3],dummy2M[2,3],dummy2F[2,3]),
-                    pval_slope = c(dummy2[2,4],dummy2M[2,4],dummy2F[2,4]),
-                    beta_var = c(dummy2[3,1],dummy2M[3,1],dummy2F[3,1]),
-                    SE_var =   c(dummy2[3,2],dummy2M[3,2],dummy2F[3,2]),
-                    tval_var = c(dummy2[3,3],dummy2M[3,3],dummy2F[3,3]),
-                    pval_var = c(dummy2[3,4],dummy2M[3,4],dummy2F[3,4]))
+                    pval_slope = c(dummy2[2,4],dummy2M[2,4],dummy2F[2,4]))
   res1
 }
 myAssocs_X = rbindlist(dumTab2)
 myAssocs_X
 
-save(myAssocs_X,file=paste0("../results/02_SNPs_01_MAIN.RData"))
+save(myAssocs_X,file=paste0("../results/02_SNPs_03_SENS_noVar.RData"))
 
 #' # Session Info ####
 #' ***

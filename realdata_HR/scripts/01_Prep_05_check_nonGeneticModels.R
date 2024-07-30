@@ -13,7 +13,7 @@
 #'
 #' # Introduction ####
 #' ***
-#' Here, I want to estimate the none-genetic effects in a **gamlssIA** model for HR. 
+#' Here, I want to estimate the none-genetic effects in a **gamlssIA** model for HR. My plan is to use the most simple model as main model (age, sex, and time), but include others in a sensitivity model (age, sex, time, load, speed, )
 #' 
 #' To be completed over time. 
 #' 
@@ -143,53 +143,96 @@ myTab_long4[Sex==0,Sex:=2]
 
 #' ## Constant stage
 #' 
-#' - Minimal model: just Age and Sex and phaseTime
+#' - Minimal model: just Age and Sex and phaseTime (RI + RS)
 #' - Full model: Age, Sex, speed, protocolID, and phaseTime
 #' - sex-combined, and sex-stratified
 #' 
-mod0_min = gamlss(HR ~  Sex + Age + phaseTime + 
-                 (Sex + Age):phaseTime + 
-                 random(x = as.factor(ID)),   
-               sigma.formula = ~ Sex + Age + phaseTime, 
-               data = myTab_long4[stageName=="Constant",], family = "NO")
+#' ### Sex combined ####
+data0 = copy(myTab_long4)
+data0 = data0[stageName == "Constant",]
 
-mod1_min = gamlss(HR ~  Age + phaseTime + 
-                    (Age):phaseTime + 
-                    random(x = as.factor(ID)),   
+time1<-Sys.time()
+mod0_RS = gamlss(HR ~  Sex + Age + phaseTime + re(random=~1+phaseTime|as.factor(ID)),   
+                  sigma.formula = ~ Sex + Age + phaseTime + re(random=~1|as.factor(ID)), 
+                  data = data0, family = "NO")
+message("\nTIME FOR CONSTANT LOAD IN SEX COMBINED SETTING & RI + RS: \n" ,round(difftime(Sys.time(),time1,units = "mins"),3)," minutes")
+
+time1<-Sys.time()
+mod0_RI = gamlss(HR ~  Sex + Age + phaseTime + re(random=~1|as.factor(ID)), 
+                  sigma.formula = ~ Sex + Age + phaseTime, 
+                  data = data0, family = "NO")
+message("\nTIME FOR CONSTANT LOAD IN SEX COMBINED SETTING & RI only: \n" ,round(difftime(Sys.time(),time1,units = "mins"),3)," minutes")
+
+summary(mod0_RS)
+summary(mod0_RI)
+
+pred_RS <- predict(mod0_RS, newdata=data0, type = "response")
+pred_RI <- predict(mod0_RI, newdata=data0, type = "response")
+
+plot(data0$HR,pred_RS)
+plot(data0$HR,pred_RI)
+plot(pred_RS,pred_RI)
+plot(data0$phaseTime,pred_RS)
+plot(data0$phaseTime,pred_RI)
+plot(data0$phaseTime,data0$HR)
+
+#' ### Men only ####
+data1 = copy(data0)
+data1 = data1[Sex == 1,]
+
+time1<-Sys.time()
+mod1_RS = gamlss(HR ~  Age + phaseTime + re(random=~1+phaseTime|as.factor(ID)),   
+                  sigma.formula = ~ Age + phaseTime + re(random=~1|as.factor(ID)), 
+                  data = data1, family = "NO")
+message("\nTIME FOR CONSTANT LOAD IN MALE SETTING & RI + RS: \n" ,round(difftime(Sys.time(),time1,units = "mins"),3)," minutes")
+
+time1<-Sys.time()
+mod1_RI = gamlss(HR ~  Age + phaseTime + re(random=~1|as.factor(ID)),   
                   sigma.formula = ~ Age + phaseTime, 
-                  data = myTab_long4[stageName=="Constant" & Sex==1,], family = "NO")
+                  data = data1, family = "NO")
+message("\nTIME FOR CONSTANT LOAD IN MALE SETTING & RI only: \n" ,round(difftime(Sys.time(),time1,units = "mins"),3)," minutes")
 
-mod2_min = gamlss(HR ~  Age + phaseTime + 
-                    (Age):phaseTime + 
-                    random(x = as.factor(ID)),   
+summary(mod1_RS)
+summary(mod1_RI)
+
+pred_RS <- predict(mod1_RS, newdata=data1, type = "response")
+pred_RI <- predict(mod1_RI, newdata=data1, type = "response")
+
+plot(data1$HR,pred_RS)
+plot(data1$HR,pred_RI)
+plot(pred_RS,pred_RI)
+plot(data1$phaseTime,pred_RS)
+plot(data1$phaseTime,pred_RI)
+plot(data1$phaseTime,data1$HR)
+
+#' ### Women only ####
+data2 = copy(data0)
+data2 = data2[Sex == 2,]
+
+time1<-Sys.time()
+mod2_RS = gamlss(HR ~  Age + phaseTime + re(random=~1+phaseTime|as.factor(ID)),   
+                  sigma.formula = ~ Age + phaseTime + re(random=~1|as.factor(ID)), 
+                  data = data2, family = "NO")
+message("\nTIME FOR CONSTANT LOAD IN FEMALE SETTING & RI + RS: \n" ,round(difftime(Sys.time(),time1,units = "mins"),3)," minutes")
+
+time1<-Sys.time()
+mod2_RI = gamlss(HR ~  Age + phaseTime + re(random=~1|as.factor(ID)), 
                   sigma.formula = ~ Age + phaseTime, 
-                  data = myTab_long4[stageName=="Constant" & Sex==2,], family = "NO")
+                  data = data2, family = "NO")
+message("\nTIME FOR CONSTANT LOAD IN FEMALE SETTING & RI only: \n" ,round(difftime(Sys.time(),time1,units = "mins"),3)," minutes")
 
-summary(mod0_min)
-summary(mod1_min)
-summary(mod2_min)
+summary(mod2_RS)
+summary(mod2_RI)
 
-mod0_full = gamlss(HR ~  Sex + Age + speed + protocolID + phaseTime + 
-                    (Sex + Age + speed + protocolID):phaseTime + 
-                    random(x = as.factor(ID)),   
-                  sigma.formula = ~ Sex + Age + speed + protocolID + phaseTime, 
-                  data = myTab_long4[stageName=="Constant",], family = "NO")
+pred_RS <- predict(mod2_RS, newdata=data2, type = "response")
+pred_RI <- predict(mod2_RI, newdata=data2, type = "response")
 
-mod1_full = gamlss(HR ~  Age + speed + protocolID + phaseTime + 
-                    (Age + speed + protocolID):phaseTime + 
-                    random(x = as.factor(ID)),   
-                  sigma.formula = ~ Age + speed + protocolID + phaseTime, 
-                  data = myTab_long4[stageName=="Constant" & Sex==1,], family = "NO")
-
-mod2_full = gamlss(HR ~  Age + speed + protocolID + phaseTime + 
-                    (Age + speed + protocolID):phaseTime + 
-                    random(x = as.factor(ID)),   
-                  sigma.formula = ~ Age + speed + protocolID + phaseTime, 
-                  data = myTab_long4[stageName=="Constant" & Sex==2,], family = "NO")
-
-summary(mod0_full)
-summary(mod1_full)
-summary(mod2_full)
+plot(data2$HR,pred_RS)
+plot(data2$HR,pred_RI)
+plot(pred_RS,pred_RI)
+plot(data2$phaseTime,pred_RS)
+plot(data2$phaseTime,pred_RI)
+plot(data2$phaseTime,data2$HR)
 
 #' ## Ramp-up stages
 #' 
@@ -197,49 +240,92 @@ summary(mod2_full)
 #' - Full model: Age, Sex, speed, protocolID, and trend and load
 #' - sex-combined, and sex-stratified
 #' 
-mod0_min = gamlss(HR ~  Sex + Age + phaseTime + load +
-                    (Sex + Age + load):phaseTime + 
-                    random(x = as.factor(ID)),   
+#' ### Sex combined ####
+data0 = copy(myTab_long4)
+data0 = data0[stageName != "Constant",]
+
+time1<-Sys.time()
+mod0_RS = gamlss(HR ~  Sex + Age + load + phaseTime + re(random=~1+phaseTime|as.factor(ID)),   
+                  sigma.formula = ~ Sex + Age + load + phaseTime + re(random=~1|as.factor(ID)), 
+                  data = data0, family = "NO")
+message("\nTIME FOR RAMP-UP IN SEX COMBINED SETTING & RI + RS: \n" ,round(difftime(Sys.time(),time1,units = "mins"),3)," minutes")
+
+time1<-Sys.time()
+mod0_RI = gamlss(HR ~  Sex + Age + load + phaseTime + re(random=~1|as.factor(ID)), 
                   sigma.formula = ~ Sex + Age + load + phaseTime, 
-                  data = myTab_long4[stageName!="Constant",], family = "NO")
+                  data = data0, family = "NO")
+message("\nTIME FOR RAMP-UP IN SEX COMBINED SETTING & RI only: \n" ,round(difftime(Sys.time(),time1,units = "mins"),3)," minutes")
 
-mod1_min = gamlss(HR ~  Age + phaseTime + load +
-                    (Age + load):phaseTime + 
-                    random(x = as.factor(ID)),   
+summary(mod0_RS)
+summary(mod0_RI)
+
+pred_RS <- predict(mod0_RS, newdata=data0, type = "response")
+pred_RI <- predict(mod0_RI, newdata=data0, type = "response")
+
+plot(data0$HR,pred_RS)
+plot(data0$HR,pred_RI)
+plot(pred_RS,pred_RI)
+plot(data0$phaseTime,pred_RS)
+plot(data0$phaseTime,pred_RI)
+plot(data0$phaseTime,data0$HR)
+
+#' ### Men only ####
+data1 = copy(data0)
+data1 = data1[Sex == 1,]
+
+time1<-Sys.time()
+mod1_RS = gamlss(HR ~  Age + load + phaseTime + re(random=~1+phaseTime|as.factor(ID)),   
+                  sigma.formula = ~ Age + load + phaseTime + re(random=~1|as.factor(ID)), 
+                  data = data1, family = "NO")
+message("\nTIME FOR RAMP-UP IN MALE SETTING & RI + RS: \n" ,round(difftime(Sys.time(),time1,units = "mins"),3)," minutes")
+
+time1<-Sys.time()
+mod1_RI = gamlss(HR ~  Age + load + phaseTime + re(random=~1|as.factor(ID)), 
                   sigma.formula = ~ Age + load + phaseTime, 
-                  data = myTab_long4[stageName!="Constant" & Sex==1,], family = "NO")
+                  data = data1, family = "NO")
+message("\nTIME FOR RAMP-UP IN MALE SETTING & RI only: \n" ,round(difftime(Sys.time(),time1,units = "mins"),3)," minutes")
 
-mod2_min = gamlss(HR ~  Age + phaseTime + load +
-                    (Age + load):phaseTime + 
-                    random(x = as.factor(ID)),   
+summary(mod1_RS)
+summary(mod1_RI)
+
+pred_RS <- predict(mod1_RS, newdata=data1, type = "response")
+pred_RI <- predict(mod1_RI, newdata=data1, type = "response")
+
+plot(data1$HR,pred_RS)
+plot(data1$HR,pred_RI)
+plot(pred_RS,pred_RI)
+plot(data1$phaseTime,pred_RS)
+plot(data1$phaseTime,pred_RI)
+plot(data1$phaseTime,data1$HR)
+
+#' ### Women only ####
+data2 = copy(data0)
+data2 = data2[Sex == 2,]
+
+time1<-Sys.time()
+mod2_RS = gamlss(HR ~  Age + load + phaseTime + re(random=~1+phaseTime|as.factor(ID)),   
+                  sigma.formula = ~ Age + load + phaseTime + re(random=~1|as.factor(ID)), 
+                  data = data2, family = "NO")
+message("\nTIME FOR RAMP-UP IN FEMALE SETTING & RI + RS: \n" ,round(difftime(Sys.time(),time1,units = "mins"),3)," minutes")
+
+time1<-Sys.time()
+mod2_RI = gamlss(HR ~  Age + load + phaseTime + re(random=~1|as.factor(ID)), 
                   sigma.formula = ~ Age + load + phaseTime, 
-                  data = myTab_long4[stageName!="Constant" & Sex==2,], family = "NO")
+                  data = data2, family = "NO")
+message("\nTIME FOR RAMP-UP IN FEMALE SETTING & RI only: \n" ,round(difftime(Sys.time(),time1,units = "mins"),3)," minutes")
 
-summary(mod0_min)
-summary(mod1_min)
-summary(mod2_min)
+summary(mod2_RS)
+summary(mod2_RI)
 
-mod0_full = gamlss(HR ~  Sex + Age + speed + protocolID + phaseTime + load +
-                     (Sex + Age + speed + protocolID + load):phaseTime +
-                     random(x = as.factor(ID)),   
-                   sigma.formula = ~ Sex + Age + speed + protocolID + phaseTime + load, 
-                   data = myTab_long4[stageName=="Constant",], family = "NO")
+pred_RS <- predict(mod2_RS, newdata=data2, type = "response")
+pred_RI <- predict(mod2_RI, newdata=data2, type = "response")
 
-mod1_full = gamlss(HR ~  Age + speed + protocolID + load + phaseTime + 
-                     (Age + speed + protocolID + load):phaseTime + 
-                     random(x = as.factor(ID)),   
-                   sigma.formula = ~ Age + speed + protocolID + load + phaseTime, 
-                   data = myTab_long4[stageName=="Constant" & Sex==1,], family = "NO")
-
-mod2_full = gamlss(HR ~  Age + speed + protocolID + load + phaseTime + 
-                     (Age + speed + protocolID + load):phaseTime + 
-                     random(x = as.factor(ID)),   
-                   sigma.formula = ~ Age + speed + protocolID + load + phaseTime, 
-                   data = myTab_long4[stageName=="Constant" & Sex==2,], family = "NO")
-
-summary(mod0_full)
-summary(mod1_full)
-summary(mod2_full)
+plot(data2$HR,pred_RS)
+plot(data2$HR,pred_RI)
+plot(pred_RS,pred_RI)
+plot(data2$phaseTime,pred_RS)
+plot(data2$phaseTime,pred_RI)
+plot(data2$phaseTime,data2$HR)
 
 #' # Session Info ####
 #' ***

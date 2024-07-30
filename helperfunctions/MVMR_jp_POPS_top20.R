@@ -177,6 +177,7 @@ MVMR_jp_POPS_top20 = function(data_exposure,exposure_name, data_outcome, outcome
                           beta_IVW = res2@Estimate,
                           SE_IVW = res2@StdError,
                           pval_IVW = res2@Pvalue,
+                          condFstat = c(res2@Fstat),
                           HeteroStat = res2@Heter.Stat[1],
                           HeteroStat_pval = res2@Heter.Stat[2])
         res4

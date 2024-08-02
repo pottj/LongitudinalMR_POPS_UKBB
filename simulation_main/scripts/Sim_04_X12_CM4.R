@@ -55,7 +55,7 @@
   SNPs_Correct_ASs = T
   SNP_beta_mean = c(-2,1,2)
   SNP_beta_sd = c(1,1,0.5)
-  AS_factor = c(5,10,1)
+  AS_factor = c(5,10,0.5)
   
   X_mean_random = c(0,1)
   X_var_random = c(1,0.25)

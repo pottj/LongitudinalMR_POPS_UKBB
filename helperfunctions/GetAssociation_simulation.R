@@ -177,11 +177,14 @@ GetAssociation = function(data,method,genotypes,dep_var_name,time_var_name,growt
       data2[,myVar := get(dep_var_name)]
       
       if(growth_var == "linear"){
-        modX_G = gamlss(myVar ~ mySNP + time + re(random=~1+time|as.factor(ID)), 
+        message("working on SNP ",j)
+        modX_G = gamlss(myVar ~ mySNP * time + re(random=~1+time|as.factor(ID)), 
                         sigma.formula = ~ mySNP + time + re(random=~1|as.factor(ID)), 
                         data = data2, family = "NO")
+        message("finished SNP ",j)
       }else if(growth_var != "linear"){
         message("working on SNP ",j)
+        #browser()
         modX_G = gamlss(formula = myVar ~ mySNP * time + age2 + re(random=~1+time|as.factor(ID)),
                         sigma.formula = ~ mySNP + time + re(random=~1|as.factor(ID)),
                         data=data2, family = "NO")

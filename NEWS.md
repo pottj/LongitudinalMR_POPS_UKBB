@@ -2,6 +2,17 @@
 
 Here I want to track my progress
 
+## 2024/08/02
+
+Long time testing the random slope model, but it still only works for some seeds. Problem is that for some SNPs the covariance matrix is not invertible, e.g. one covariable is linear combination of another. Not sure why this is only a problem when including random slope. 
+
+I also updated the main simulation to create stronger instruments here. I simply changed the factor for the allele score from 1 to 0.5. The simulations are still running. 
+
+I updated the evaluation script in extract coverage and empSE as well. 
+
+The runs on the HR data is finished, but I want to recheck the phase selection: in the constant phase, I only want data points after 30 seconds to be sure that we have "heart rate in movement". Also, for the ramp-up, I simply want protocol ID 66 for women and 88 for men. In both cases, the ramp-up is a factor 3, from 30 or 40 to 90 or 120 watt.
+
+
 ## 2024/07/05
 
 I added the data prep for UKB HR data and did the first non-genetic model tests. I spoke with Marco, might be best to try the fully adjusted model including sex-IA, as the protocol might create such sex-interaction with the covariables. 

@@ -59,6 +59,7 @@ results/
 simulation_test/
 simulation2/
 simulation/results_old/
+simulation_main/results_old2/
 *.html
 *.out
 *.pdf

@@ -46,6 +46,8 @@ myAssocs_X[,table(pval_slope<5e-8)]
 myAssocs_X[,table(pval_var<5e-8)]
 
 myAssocs_X[,table(pval_mean<5e-8,pval_slope<5e-8)]
+myAssocs_X[,table(pval_mean<5e-8,pval_var<5e-8)]
+myAssocs_X[,table(pval_slope<5e-8,pval_var<5e-8)]
 
 cor.test(myAssocs_X$beta_mean,myAssocs_X$beta_slope)
 cor.test(myAssocs_X$beta_mean,myAssocs_X$beta_var)
@@ -104,13 +106,13 @@ save(myAssocs_X_long,myAssocs_Y, file = paste0("../temp/03_MVMRInput_SENS_rampUp
 myExposures = unique(myAssocs_X_long$model)
 mySampleSize = c(22349, 11309, 11040)
 myOutcomes = unique(myAssocs_Y$phenotype)
-myFlag = "main"
+myFlag = "sens_rampUp"
 
 setnames(myAssocs_Y,"SNP","markername")
 setnames(myAssocs_Y,"rsID","SNP")
 
-registerDoParallel(as.numeric(Sys.getenv("SLURM_CPUS_PER_TASK")))
-#registerDoParallel(4)
+#registerDoParallel(as.numeric(Sys.getenv("SLURM_CPUS_PER_TASK")))
+registerDoParallel(4)
 
 #dumTab2 = foreach(j = 1:length(myExposures))%dorng%{
 dumTab2 = foreach(j = 1:length(myExposures))%dopar%{

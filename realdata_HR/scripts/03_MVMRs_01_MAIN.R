@@ -111,8 +111,8 @@ myFlag = "main"
 setnames(myAssocs_Y,"SNP","markername")
 setnames(myAssocs_Y,"rsID","SNP")
 
-registerDoParallel(as.numeric(Sys.getenv("SLURM_CPUS_PER_TASK")))
-#registerDoParallel(4)
+#registerDoParallel(as.numeric(Sys.getenv("SLURM_CPUS_PER_TASK")))
+registerDoParallel(4)
 
 #dumTab2 = foreach(j = 1:length(myExposures))%dorng%{
 dumTab2 = foreach(j = 1:length(myExposures))%dopar%{

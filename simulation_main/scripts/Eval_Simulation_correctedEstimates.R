@@ -69,13 +69,17 @@ dumTab = foreach(i = 1:dim(ToDoFile)[1])%do%{
   SimTab[,theta3 := 0]
   SimTab[outcome %in% c("Y4","Y6","Y7","Y8"),theta3 := myRow$theta3]
   
-  # correct estimates for exposure age
+  # correct estimates for age (X13 only, mean covers slope effect, but mean not yet corrected for age)
   if(myRow$SimX=="X13"){
     SimTab[exposure == "X1" & outcome %in% c("Y3","Y7"),theta1 := myRow$theta2 *(-3) ]
     SimTab[exposure == "X1" & outcome %in% c("Y5","Y8"),theta1 := myRow$theta1 + myRow$theta2 *(-3)]
-    
   }
   
+  # correct estimates of variability for AS factor (exp(factor))
+  SimTab[exposure == "X3",theta3 := theta3 *(exp(0.5)) ]
+  SimTab[exposure == "X2",theta2 := theta2 * 70 ]
+  
+  # finalize theta
   SimTab[exposure == "X1", theta := theta1]
   SimTab[exposure == "X2", theta := theta2]
   SimTab[exposure == "X3", theta := theta3]
@@ -94,8 +98,8 @@ dumTab = foreach(i = 1:dim(ToDoFile)[1])%do%{
   tab1[,power_SE := sqrt((power * (1-power))/N)]
     
   # get coverage
-  SimTab[,lower := beta_IVW2 - 1.96*SE_IVW2]
-  SimTab[,upper := beta_IVW2 + 1.96*SE_IVW2]
+  SimTab[,lower := beta_IVW - 1.96*SE_IVW]
+  SimTab[,upper := beta_IVW + 1.96*SE_IVW]
   SimTab[,covered := 0]
   SimTab[lower<=theta & theta<= upper,covered := 1]
   tab2 = SimTab[,sum(covered),by = dumID]
@@ -103,10 +107,10 @@ dumTab = foreach(i = 1:dim(ToDoFile)[1])%do%{
   tab1[,coverage_SE := sqrt((coverage * (1-coverage)) / N)]
   
   # get bias 
-  SimTab[,dif := beta_IVW2 - theta]
+  SimTab[,dif := beta_IVW - theta]
   tab3 = SimTab[,mean(dif),by = dumID]
   tab1[,bias := tab3[,V1]]
-  tab3 = SimTab[,sd(beta_IVW2),by = dumID]
+  tab3 = SimTab[,sd(beta_IVW),by = dumID]
   tab1[,bias_SE := tab3[,V1]]
   tab1[,bias_SE := bias_SE * sqrt(1/N)]
   
@@ -115,8 +119,8 @@ dumTab = foreach(i = 1:dim(ToDoFile)[1])%do%{
   tab1[,empSE_SE := empSE / sqrt(2*(N-1))]
   
   # get mean of estimates
-  tab4 = SimTab[,mean(beta_IVW2),by = dumID]
-  tab1[,mean_betaIVW2 := tab4[,V1]]
+  tab4 = SimTab[,mean(beta_IVW),by = dumID]
+  tab1[,mean_betaIVW := tab4[,V1]]
 
   # get median numbers of SNPs
   stopifnot(sum(is.na(SimTab$NR_SNPs_type))==0)
@@ -174,7 +178,6 @@ myTab = myTab[,c(1:4,
 
 #' # Check 1a: Detection rates / power / type 1 error ####
 #' ***
-
 dumTab = copy(myTab)
 dumTab[,dumID1 := paste(Sim_X,Sim_Y,sep="_")]
 
@@ -225,7 +228,6 @@ dev.off()
 
 #' # Check 1b: Coverage ####
 #' ***
-
 dumTab = copy(myTab)
 dumTab[,dumID1 := paste(Sim_X,Sim_Y,sep="_")]
 
@@ -430,27 +432,29 @@ dumTab = copy(myTab)
 dumTab[,type := "mean"]
 
 dumTab2 = copy(dumTab)
-dumTab2[,mean_betaIVW2_X1 := mean_betaIVW2_X2]
+dumTab2[,mean_betaIVW_X1 := mean_betaIVW_X2]
 dumTab2[,empSE_X1 := empSE_X2]
 dumTab2[,type := "slope"]
 
 dumTab3 = copy(dumTab)
-dumTab3[,mean_betaIVW2_X1 := mean_betaIVW2_X3]
+dumTab3[,mean_betaIVW_X1 := mean_betaIVW_X3]
 dumTab3[,empSE_X1 := empSE_X3]
 dumTab3[,type := "var"]
 
 dumTab4 = rbind(dumTab,dumTab2,dumTab3)
-dumTab4 = dumTab4[!is.na(mean_betaIVW2_X1),]
+dumTab4 = dumTab4[!is.na(mean_betaIVW_X1),]
 
 data_hlines = data.frame(type = c(rep("mean",4),"slope","var"),
-                         mylines = c(0.3,1.2,-1.2,-0.3,0.3,1))
+                         mylines = c(0.3,1.2,-1.2,-0.3,0.3*60,exp(0.5)))
+data_hlines2 = data.frame(type = c(rep("mean",4),"slope","var"),
+                         mylines = c(0.3*(-3),1.2*(-3),-1.2*(-3),-0.3*(-3),0.3*60,exp(0.5)))
 
-plot5 = ggplot(dumTab4[Sim_X == "X12",], aes(x=Sim_Y, y=mean_betaIVW2_X1, color = outcome)) +
+plot5 = ggplot(dumTab4[Sim_X == "X12",], aes(x=Sim_Y, y=mean_betaIVW_X1, color = outcome)) +
   facet_wrap(~ type,scales = "free_y") +
   geom_hline(yintercept = 0,color="grey") +
   geom_hline(data = data_hlines, col="black", linetype="dotted", aes(yintercept = mylines)) +
   geom_point(position=position_dodge(0.5),size=3) +
-  geom_errorbar(aes(ymin=mean_betaIVW2_X1-1.96*empSE_X1, ymax=mean_betaIVW2_X1+1.96*empSE_X1), width=.2,
+  geom_errorbar(aes(ymin=mean_betaIVW_X1-1.96*empSE_X1, ymax=mean_betaIVW_X1+1.96*empSE_X1), width=.2,
                 position=position_dodge(0.5)) +
   theme_bw(base_size = 15) + 
   scale_x_discrete(guide = guide_axis(angle = 45)) +
@@ -464,12 +468,12 @@ png(filename = filename,width = 2800, height = 1600, res=200)
 print(plot5)
 dev.off()
 
-plot5 = ggplot(dumTab4[Sim_X == "X123",], aes(x=Sim_Y, y=mean_betaIVW2_X1, color = outcome)) +
+plot5 = ggplot(dumTab4[Sim_X == "X123",], aes(x=Sim_Y, y=mean_betaIVW_X1, color = outcome)) +
   facet_wrap(~ type,scales = "free_y") +
   geom_hline(yintercept = 0,color="grey") +
   geom_hline(data = data_hlines, col="black", linetype="dotted", aes(yintercept = mylines)) +
   geom_point(position=position_dodge(0.5),size=3) +
-  geom_errorbar(aes(ymin=mean_betaIVW2_X1-1.96*empSE_X1, ymax=mean_betaIVW2_X1+1.96*empSE_X1), width=.2,
+  geom_errorbar(aes(ymin=mean_betaIVW_X1-1.96*empSE_X1, ymax=mean_betaIVW_X1+1.96*empSE_X1), width=.2,
                 position=position_dodge(0.5)) +
   theme_bw(base_size = 15) + 
   scale_x_discrete(guide = guide_axis(angle = 45)) +
@@ -483,12 +487,12 @@ png(filename = filename,width = 2800, height = 1600, res=200)
 print(plot5)
 dev.off()
 
-plot5 = ggplot(dumTab4[Sim_X == "X13",], aes(x=Sim_Y, y=mean_betaIVW2_X1, color = outcome)) +
+plot5 = ggplot(dumTab4[Sim_X == "X13",], aes(x=Sim_Y, y=mean_betaIVW_X1, color = outcome)) +
   facet_wrap(~ type,scales = "free_y") +
   geom_hline(yintercept = 0,color="grey") +
-  geom_hline(data = data_hlines, col="black", linetype="dotted", aes(yintercept = mylines)) +
+  geom_hline(data = data_hlines2, col="black", linetype="dotted", aes(yintercept = mylines)) +
   geom_point(position=position_dodge(0.5),size=3) +
-  geom_errorbar(aes(ymin=mean_betaIVW2_X1-1.96*empSE_X1, ymax=mean_betaIVW2_X1+1.96*empSE_X1), width=.2,
+  geom_errorbar(aes(ymin=mean_betaIVW_X1-1.96*empSE_X1, ymax=mean_betaIVW_X1+1.96*empSE_X1), width=.2,
                 position=position_dodge(0.5)) +
   theme_bw(base_size = 15) + 
   scale_x_discrete(guide = guide_axis(angle = 45)) +
@@ -525,7 +529,8 @@ dumTab4 = dumTab4[!is.na(condFStats_median_X1),]
 dumTab4[,dumID := paste(Sim_X,Sim_Y, sep=" - ")]
 
 plot5 = ggplot(dumTab4[outcome=="Y2"], aes(x=Sim_Y, y=condFStats_median_X1, col = Sim_X)) +
-  facet_wrap(~ type,scales = "free") +
+  #facet_wrap(~ type,scales = "free") +
+  facet_wrap(~ type) +
   geom_hline(yintercept = 0,color="grey") +
   geom_hline(yintercept = 10,color="black",linetype = "dashed") +
   geom_point(position=position_dodge(0.5),size=3) +

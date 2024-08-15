@@ -13,7 +13,7 @@
 ## Enter the wall-clock time limit for your jobs.
 ## If jobs reach this limit they are automatically killed.
 ## Maximum value 36:00:00.
-#SBATCH --time=06:00:00
+#SBATCH --time=07:00:00
 
 ## For single-core jobs, this number should be '1'. 
 ## If your job has built-in parallelism, eg using OpenMP or 
@@ -49,7 +49,7 @@
 ## Start multiple jobs at once.
 ## Note that resources (cores, memory, time) requested above are for each
 ## individual array task, NOT the total array.
-#SBATCH --array=5-8
+#SBATCH --array=6-7
 
 ##  - - - - - - - - - - - - - -
 

@@ -43,22 +43,19 @@ MVMR_1Sample[outcome == "BW_R",ID:="1SMR - BW (raw)"]
 MVMR_1Sample[outcome == "BW_C",ID:="1SMR - BW (percentiles)"]
 MVMR_1Sample[outcome == "BW_Z",ID:="1SMR - BW (Z-scores)"]
 MVMR_1Sample[outcome == "eCS",ID:="1SMR - emergency CS"]
-MVMR_1Sample = MVMR_1Sample[outcome == "BW_R",]
+MVMR_1Sample = MVMR_1Sample[outcome == "eCS",]
 MVMR_1Sample = MVMR_1Sample[exposure == "EFW_L",]
 MVMR_1Sample = MVMR_1Sample[grepl("SNPs",threshold),]
 
-load("../results/07_MVMR_2SampleMR_BW.RData")
+load("../results/07_MVMR_2SampleMR_CS.RData")
 MVMR_results = MVMR_results[setting == "multivariate"]
 matched = match(MVMR_results$exposure,matchingTable$old)
 MVMR_results[,exposure := matchingTable[matched,new]]
 MVMR_2sample_BW = copy(MVMR_results)
-MVMR_2sample_BW[outcome=="BW_EGG",ID:="2SMR - BW (Z-scores) EGG consortium"]
-MVMR_2sample_BW[outcome=="BW_UKBirnt",ID:="2SMR - BW (quantiles) UKBB"]
-MVMR_2sample_BW[outcome=="BW_UKBraw",ID:="2SMR - BW (raw) UKBB"]
-MVMR_2sample_BW[outcome=="BW_EGG",outcome:="BW_Z"]
-MVMR_2sample_BW[outcome=="BW_UKBirnt",outcome:="BW_C"]
-MVMR_2sample_BW[outcome=="BW_UKBraw",outcome:="BW_R"]
-MVMR_2sample_BW = MVMR_2sample_BW[outcome == "BW_R",]
+MVMR_2sample_BW[outcome=="CS_Sakaue",ID:="2SMR - CS (Sakaue et al.)"]
+MVMR_2sample_BW[outcome=="CS_UKB_elective ",ID:="2SMR - CS (elective) UKBB"]
+MVMR_2sample_BW[outcome=="CS_UKB_emergency",ID:="2SMR - CS (emergency) UKBB"]
+MVMR_2sample_BW = MVMR_2sample_BW[outcome == "CS_Sakaue",]
 MVMR_2sample_BW = MVMR_2sample_BW[exposure == "EFW_L",]
 MVMR_2sample_BW = MVMR_2sample_BW[grepl("SNPs",threshold),]
 
@@ -107,7 +104,7 @@ dummy[grepl("1SMR",dummy2) & grepl("nominal SNPs",dummy)] = "#5B9BD5"
 tm1<- forest_theme(core=list(bg_params=list(fill = dummy)))
 
 myXlab = 
-  "Causal effect of EFW on BW by exposure type"
+  "Causal effect of EFW on CS by exposure type"
 
 p2<- forest(data4[,c(16,19,20)],
             est = data4$beta_IVW,
@@ -115,17 +112,17 @@ p2<- forest(data4[,c(16,19,20)],
             upper = data4$upperCI95,
             sizes = 0.5,
             #ticks_at = myTicks,ticks_digits = 2,
-            ticks_at = c(0,1,2,3,4,5,6),ticks_digits = 0,
+            ticks_at = c(-6,-4,-2,0,2,4,6,8,10,12),ticks_digits = 0,
             ci_column = 2,
             ref_line = 0,
             #xlim = c(min_data4, max_data4),
-            xlim = c(-0.25, 6),
+            xlim = c(-6, 12),
             title = myXlab,
             theme = tm1)
 
 plot(p2)
 
-filename = paste0("../results/_figures/07_2SampleMR_04_ForestPlots_vs_1SMR/EFWL_BWR_SlidesSpecial.png")
+filename = paste0("../results/_figures/07_2SampleMR_04_ForestPlots_vs_1SMR/EFWL_BWR_SlidesSpecial_CS.png")
 png(filename = filename,width = 1800, height = 1000, res=200)
 plot(p2)
 dev.off()

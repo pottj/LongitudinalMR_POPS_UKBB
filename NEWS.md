@@ -2,6 +2,13 @@
 
 Here I want to track my progress
 
+## 2024/08/21
+
+- added TC analysis
+- finished simulation stuff
+- paper writing
+- holiday :)
+
 ## 2024/08/02
 
 Long time testing the random slope model, but it still only works for some seeds. Problem is that for some SNPs the covariance matrix is not invertible, e.g. one covariable is linear combination of another. Not sure why this is only a problem when including random slope. 

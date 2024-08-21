@@ -13,7 +13,7 @@
 rm(list = ls())
 time0<-Sys.time()
 
-source("../../../SourceFile_HPC.R")
+source("../../../SourceFile_BSUlaptop.R")
 
 tag = format(Sys.time(), "%Y-%m-%d")
 tag = gsub("202.-","24-",tag)
@@ -54,6 +54,14 @@ dumTab = foreach(i = 1:dim(ToDoFile)[1])%do%{
   SimTab[exposure %in% c("slope"),exposure := "X2"]
   SimTab[exposure %in% c("var"),exposure := "X3"]
   
+  # correct estimates for outcome age
+  SimTab[exposure == "X2",beta_IVW := beta_IVW/70]
+  SimTab[exposure == "X2",SE_IVW := SE_IVW/70]
+  
+  # correct estimates for Allele score factor
+  SimTab[exposure == "X3",beta_IVW := beta_IVW*0.5]
+  SimTab[exposure == "X3",SE_IVW := SE_IVW*0.5]
+  
   # add true value
   SimTab[,theta1 := 0]
   SimTab[outcome %in% c("Y2","Y5","Y6","Y8"),theta1 := myRow$theta1]
@@ -63,14 +71,10 @@ dumTab = foreach(i = 1:dim(ToDoFile)[1])%do%{
   SimTab[outcome %in% c("Y4","Y6","Y7","Y8"),theta3 := myRow$theta3]
   
   # correct estimates for age (X13 only, mean covers slope effect, but mean not yet corrected for age)
-  if(myRow$SimX=="X13"){
-    SimTab[exposure == "X1" & outcome %in% c("Y3","Y7"),theta1 := myRow$theta2 *(-3) ]
-    SimTab[exposure == "X1" & outcome %in% c("Y5","Y8"),theta1 := myRow$theta1 + myRow$theta2 *(-3)]
-  }
-  
-  # correct estimates of variability for AS factor (exp(factor))
-  SimTab[exposure == "X3",theta3 := theta3 *(exp(0.5)) ]
-  SimTab[exposure == "X2",theta2 := theta2 * 70 ]
+  # if(myRow$SimX=="X13"){
+  #   SimTab[exposure == "X1" & outcome %in% c("Y3","Y7"),theta1 := myRow$theta2 *(-3) ]
+  #   SimTab[exposure == "X1" & outcome %in% c("Y5","Y8"),theta1 := myRow$theta1 + myRow$theta2 *(-3)]
+  # }
   
   # finalize theta
   SimTab[exposure == "X1", theta := theta1]
@@ -418,7 +422,7 @@ dumTab4 = rbind(dumTab,dumTab3)
 dumTab4 = dumTab4[!is.na(mean_betaIVW_X1),]
 
 data_hlines = data.frame(type = c(rep("mean",4),"var"),
-                         mylines = c(0.3,1.2,-1.2,-0.3,exp(0.5)))
+                         mylines = c(0.3,1.2,-1.2,-0.3,1))
 
 plot5 = ggplot(dumTab4[Sim_X == "X12",], aes(x=Sim_Y, y=mean_betaIVW_X1, color = outcome)) +
   facet_wrap(~ type,scales = "free_y") +

@@ -50,6 +50,7 @@ rsconnect/
 
 # other stuff
 SourceFile_HPC.R
+SourceFile_BSUlaptop.R
 _archive/
 _archive2/
 archive/
@@ -71,4 +72,4 @@ realdata_v2/
 simulation_main/results_old/
 results_test1_do/
 results_test2_dopar/
-
+tables_figures/

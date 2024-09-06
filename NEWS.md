@@ -2,6 +2,11 @@
 
 Here I want to track my progress
 
+## 2024/09/06
+
+- finish main part of TC analyses
+- continue paper writing
+
 ## 2024/08/21
 
 - added TC analysis

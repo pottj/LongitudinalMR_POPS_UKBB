@@ -8,18 +8,18 @@
 ## Full documentation can be found here: https://slurm.schedmd.com/sbatch.html
 
 ## Enter a short name for the job, to be shown in SLURM output
-#SBATCH -J LongMR_02_GXassoc
+#SBATCH -J LongMR_01_Prep_GetDataFiles_part3
 
 ## Enter the wall-clock time limit for your jobs.
 ## If jobs reach this limit they are automatically killed.
 ## Maximum value 36:00:00.
-#SBATCH --time=4:00:00
+#SBATCH --time=00:30:00
 
 ## For single-core jobs, this number should be '1'. 
 ## If your job has built-in parallelism, eg using OpenMP or 
 ## R's foreach() and doParallel(), increase this number as desired.
 ## The maximum value is 76 on icelake; 112 on sapphire
-#SBATCH --cpus-per-task=50
+#SBATCH --cpus-per-task=1
 
 ## Each task is allocated 3.3G (icelake) or 6.7G (icelake-himem) or 4.6G (sapphire)
 ## If this is insufficient, uncomment and edit this line.
@@ -75,11 +75,17 @@ module load R/4.3.1-icelake
 ## Section 3: Run your application
 
 # Step 0: run R scripts
-R CMD BATCH --vanilla ../scripts/02_SNPs_01_MAIN.R ../scripts/02_SNPs_01_MAIN.R.out
+R CMD BATCH --vanilla ../scripts/01_Prep_04_checkCADSummaryStats.R ../scripts/01_Prep_04_checkCADSummaryStats.R.out
+cp Rplots.pdf 01_Prep_04_Rplots.pdf
+rm Rplots.pdf
 
-R CMD BATCH --vanilla ../scripts/02_SNPs_02_SENS_noVar.R ../scripts/02_SNPs_02_SENS_noVar.R.out
+R CMD BATCH --vanilla ../scripts/01_Prep_07_checkCADSummaryStats_sens.R ../scripts/01_Prep_07_checkCADSummaryStats_sens.R.out
+cp Rplots.pdf 01_Prep_07_Rplots.pdf
+rm Rplots.pdf
 
-R CMD BATCH --vanilla ../scripts/02_SNPs_03_SENS_noSlope.R ../scripts/02_SNPs_03_SENS_noSlope.R.out
+R CMD BATCH --vanilla ../scripts/01_Prep_08_checkCADSummaryStats_sens2.R ../scripts/01_Prep_08_checkCADSummaryStats_sens2.R.out
+cp Rplots.pdf 01_Prep_08_Rplots.pdf
+rm Rplots.pdf
 
 ###############################################################
 ### You should not have to change anything below this line ####

@@ -8,23 +8,23 @@
 ## Full documentation can be found here: https://slurm.schedmd.com/sbatch.html
 
 ## Enter a short name for the job, to be shown in SLURM output
-#SBATCH -J LongMR_02_GXassoc_SNPset
+#SBATCH -J LongMR_03_MVMR
 
 ## Enter the wall-clock time limit for your jobs.
 ## If jobs reach this limit they are automatically killed.
 ## Maximum value 36:00:00.
-#SBATCH --time=4:00:00
+#SBATCH --time=0:30:00
 
 ## For single-core jobs, this number should be '1'. 
 ## If your job has built-in parallelism, eg using OpenMP or 
 ## R's foreach() and doParallel(), increase this number as desired.
 ## The maximum value is 76 on icelake; 112 on sapphire
-#SBATCH --cpus-per-task=50
+#SBATCH --cpus-per-task=4
 
 ## Each task is allocated 3.3G (icelake) or 6.7G (icelake-himem) or 4.6G (sapphire)
 ## If this is insufficient, uncomment and edit this line.
 ## Maximum value 256G (icelake/sapphire) or 512G (icelake-himem)
-#SBATCH --mem=96G
+## #SBATCH --mem=192G
 
 ## The system can send emails when your job starts and stops.
 ## Values include BEGIN, END, ALL, and TIME_LIMIT_80 and TIME_LIMIT_90 
@@ -49,7 +49,7 @@
 ## Start multiple jobs at once.
 ## Note that resources (cores, memory, time) requested above are for each
 ## individual array task, NOT the total array.
-## #SBATCH --array=1-12
+## #SBATCH --array=1-5
 
 ##  - - - - - - - - - - - - - -
 
@@ -74,8 +74,12 @@ module load R/4.3.1-icelake
 
 ## Section 3: Run your application
 
-# Step 0: run R scripts
-R CMD BATCH --vanilla ../scripts/02_SNPs_05_SENS_SNPset.R ../scripts/02_SNPs_05_SENS_SNPset.R.out
+R CMD BATCH --vanilla ../scripts/03_MVMRs_01_MAIN.R ../scripts/03_MVMRs_01_MAIN.R.out
+R CMD BATCH --vanilla ../scripts/03_MVMRs_02_SENS_noVar.R ../scripts/03_MVMRs_02_SENS_noVar.R.out
+R CMD BATCH --vanilla ../scripts/03_MVMRs_03_SENS_noSlope.R ../scripts/03_MVMRs_03_SENS_noSlope.R.out
+R CMD BATCH --vanilla ../scripts/03_MVMRs_04_SENS_sampleSet.R ../scripts/03_MVMRs_04_SENS_sampleSet.R.out
+R CMD BATCH --vanilla ../scripts/03_MVMRs_05_SENS_SNPset.R ../scripts/03_MVMRs_05_SENS_SNPset.R.out
+R CMD BATCH --vanilla ../scripts/03_MVMRs_06_SENS_SNPset2.R ../scripts/03_MVMRs_06_SENS_SNPset2.R.out
 
 ###############################################################
 ### You should not have to change anything below this line ####

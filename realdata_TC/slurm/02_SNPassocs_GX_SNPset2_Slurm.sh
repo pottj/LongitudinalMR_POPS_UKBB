@@ -8,7 +8,7 @@
 ## Full documentation can be found here: https://slurm.schedmd.com/sbatch.html
 
 ## Enter a short name for the job, to be shown in SLURM output
-#SBATCH -J LongMR_02_GXassoc_sampleSet
+#SBATCH -J LongMR_02_GXassoc_SNPSet2
 
 ## Enter the wall-clock time limit for your jobs.
 ## If jobs reach this limit they are automatically killed.
@@ -19,7 +19,7 @@
 ## If your job has built-in parallelism, eg using OpenMP or 
 ## R's foreach() and doParallel(), increase this number as desired.
 ## The maximum value is 76 on icelake; 112 on sapphire
-#SBATCH --cpus-per-task=50
+#SBATCH --cpus-per-task=20
 
 ## Each task is allocated 3.3G (icelake) or 6.7G (icelake-himem) or 4.6G (sapphire)
 ## If this is insufficient, uncomment and edit this line.
@@ -75,7 +75,7 @@ module load R/4.3.1-icelake
 ## Section 3: Run your application
 
 # Step 0: run R scripts
-R CMD BATCH --vanilla ../scripts/02_SNPs_04_SENS_sampleSet.R ../scripts/02_SNPs_04_SENS_sampleSet.R.out
+R CMD BATCH --vanilla ../scripts/02_SNPs_06_SENS_SNPset2.R ../scripts/02_SNPs_06_SENS_SNPset2.R.out
 
 ###############################################################
 ### You should not have to change anything below this line ####

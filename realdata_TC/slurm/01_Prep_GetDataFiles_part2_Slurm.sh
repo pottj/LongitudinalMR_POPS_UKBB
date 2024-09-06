@@ -13,7 +13,7 @@
 ## Enter the wall-clock time limit for your jobs.
 ## If jobs reach this limit they are automatically killed.
 ## Maximum value 36:00:00.
-#SBATCH --time=01:30:00
+#SBATCH --time=02:30:00
 
 ## For single-core jobs, this number should be '1'. 
 ## If your job has built-in parallelism, eg using OpenMP or 
@@ -85,6 +85,14 @@ rm Rplots.pdf
 
 R CMD BATCH --vanilla ../scripts/01_Prep_05_checkUKB_sens.R ../scripts/01_Prep_05_checkUKB_sens.R.out
 cp Rplots.pdf 01_Prep_05_Rplots.pdf
+rm Rplots.pdf
+
+R CMD BATCH --vanilla ../scripts/01_Prep_06_checkUKB_sens2.R ../scripts/01_Prep_06_checkUKB_sens2.R.out
+cp Rplots.pdf 01_Prep_06_Rplots.pdf
+rm Rplots.pdf
+
+R CMD BATCH --vanilla ../scripts/01_Prep_07_checkCADSummaryStats_sens.R ../scripts/01_Prep_07_checkCADSummaryStats_sens.R.out
+cp Rplots.pdf 01_Prep_07_Rplots.pdf
 rm Rplots.pdf
 
 ###############################################################

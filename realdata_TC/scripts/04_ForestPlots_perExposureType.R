@@ -30,13 +30,14 @@ tag = gsub("-","",tag)
 load("../results/03_MVMR_01_MAIN.RData")
 MVMR_results = MVMR_results[setting == "multivariate"]
 filt0 = grepl("combined",MVMR_results$exposure) & grepl("combined",MVMR_results$outcome)
-filt1 = grepl("_men",MVMR_results$exposure) & MVMR_results$outcome %in% c("Agaram_CAD_combined","UKB_CAD_males")
-filt2 = grepl("_women",MVMR_results$exposure) & MVMR_results$outcome %in% c("Agaram_CAD_combined","UKB_CAD_females")
+filt1 = grepl("_men",MVMR_results$exposure) & MVMR_results$outcome %in% c("Agaram_CAD_combined","FinnGen_UKB_CAD_combined","UKB_CAD_males")
+filt2 = grepl("_women",MVMR_results$exposure) & MVMR_results$outcome %in% c("Agaram_CAD_combined","FinnGen_UKB_CAD_combined","UKB_CAD_females")
 filt = filt0 | filt1 | filt2
 MVMR_results = MVMR_results[filt]
 MVMR_results = MVMR_results[grepl("SNPs",threshold),]
 MVMR_results[,dumID := paste0(exposure_type,"_2SMR")]
 MVMR_results[grepl("UKB",outcome),dumID := paste0(exposure_type,"_1SMR")]
+MVMR_results[grepl("FinnGen",outcome),dumID := paste0(exposure_type,"_1SMR_new")]
 
 #' # Loop 
 #' ***
@@ -82,8 +83,8 @@ for(i in 1:length(mySetting)){
   dummy[grepl("combined",dummy2) & grepl("all SNPs",dummy)] = "#70AD47"
   dummy[grepl("_men",dummy2) & grepl("nominal SNPs",dummy)] = "#DEEBF7"
   dummy[grepl("_men",dummy2) & grepl("all SNPs",dummy)] = "#5B9BD5"
-  dummy[grepl("_women",dummy2) & grepl("nominal SNPs",dummy)] = "lightsalmon"
-  dummy[grepl("_women",dummy2) & grepl("all SNPs",dummy)] = "firebrick4"
+  dummy[grepl("_women",dummy2) & grepl("nominal SNPs",dummy)] = "darksalmon"
+  dummy[grepl("_women",dummy2) & grepl("all SNPs",dummy)] = "firebrick"
   tm1<- forest_theme(core=list(bg_params=list(fill = dummy)))
   
   myXlab = paste0("Causal effect of ",gsub("_.*","",mySetting[i])," of TC on CAD by sex (",gsub(".*_","",mySetting[i]),")")

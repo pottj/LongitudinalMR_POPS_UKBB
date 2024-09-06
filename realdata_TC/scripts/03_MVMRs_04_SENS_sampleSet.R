@@ -1,5 +1,5 @@
 #' ---
-#' title: "MVMR - main analysis"
+#' title: "MVMR - sens - reduced sample set"
 #' subtitle: "Longitudinal MVMR in UKB"
 #' author: "Janne Pott"
 #' date: "Last compiled on `r format(Sys.time(), '%d %B, %Y')`"
@@ -38,6 +38,7 @@ load("../results/01_Prep_02_SNPList_TC.RData")
 
 #' ## Exposure
 load("../results/02_SNPs_04_SENS_sampleSet.RData")
+length(unique(myAssocs_X$SNP))
 
 #' Check the GX associations
 myAssocs_X[,table(pval_mean==0)]
@@ -45,10 +46,13 @@ myAssocs_X[,table(pval_mean<5e-8,model)]
 myAssocs_X[,table(pval_slope<5e-8,model)]
 myAssocs_X[,table(pval_var<5e-8,model)]
 
-# myAssocs_X[,table(pval_mean<5e-8,pval_slope<5e-8)]
-# cor.test(myAssocs_X$beta_mean,myAssocs_X$beta_slope)
-# cor.test(myAssocs_X$beta_mean,myAssocs_X$beta_var)
-# cor.test(myAssocs_X$beta_slope,myAssocs_X$beta_var)
+myAssocs_X[,table(pval_mean<5e-8,pval_slope<5e-8, model)]
+myAssocs_X[,table(pval_mean<5e-8,pval_var<5e-8, model)]
+myAssocs_X[,table(pval_slope<5e-8,pval_var<5e-8, model)]
+
+myAssocs_X[,cor.test(beta_mean,beta_slope),by=model]
+myAssocs_X[,cor.test(beta_mean,beta_var),by=model]
+myAssocs_X[,cor.test(beta_slope,beta_var),by=model]
 
 #' Transform into wide format
 data_long1 = melt(myAssocs_X,
@@ -82,7 +86,7 @@ load("../results/01_Prep_04_CADsummaryStats.RData")
 
 #' ## save as temporary files
 goodSNPs = myAssocs_Y[,.N,by = rsID]
-goodSNPs = goodSNPs[N==4,]
+goodSNPs = goodSNPs[N==5,]
 myAssocs_X_long = myAssocs_X_long[SNP %in% goodSNPs$rsID,]
 myAssocs_Y = myAssocs_Y[rsID %in% goodSNPs$rsID,]
 save(myAssocs_X_long,myAssocs_Y, file = paste0("../temp/03_MVMRInput_SENS_sampleSet.RData"))
@@ -98,20 +102,16 @@ save(myAssocs_X_long,myAssocs_Y, file = paste0("../temp/03_MVMRInput_SENS_sample
 #' 
 #' I want to do this classically (all three exposures mean, slope and variability), and seperated for mean and variability or slope and variability.
 #' 
-#' ## Analysis 1: mean, slope and variability
-#' 
 myExposures = unique(myAssocs_X_long$model)
 mySampleSize = c(42193, 19267, 22926)
 myOutcomes = unique(myAssocs_Y$phenotype)
-myFlag = "sens_sampleSet"
+myFlag = "sens3_sampleSet"
 
 setnames(myAssocs_Y,"SNP","markername")
 setnames(myAssocs_Y,"rsID","SNP")
 
-#registerDoParallel(as.numeric(Sys.getenv("SLURM_CPUS_PER_TASK")))
 registerDoParallel(4)
 
-#dumTab2 = foreach(j = 1:length(myExposures))%dorng%{
 dumTab2 = foreach(j = 1:length(myExposures))%dopar%{
   #j=1
   source("../../SourceFile_HPC.R")

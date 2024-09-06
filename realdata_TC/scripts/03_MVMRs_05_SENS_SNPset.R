@@ -1,5 +1,5 @@
 #' ---
-#' title: "MVMR - main analysis"
+#' title: "MVMR - sens - different SNP selection"
 #' subtitle: "Longitudinal MVMR in UKB"
 #' author: "Janne Pott"
 #' date: "Last compiled on `r format(Sys.time(), '%d %B, %Y')`"
@@ -31,13 +31,13 @@ tag = gsub("-","",tag)
 #' ***
 #' ## SNP info
 #' Get high quality SNPs only
-load("../results/01_Prep_03_LD_filtered.RData")
+load("../results/01_Prep_06_LD_filtered.RData")
 LDTab = copy(LDTab2)
 LDTab[,SNP2 := as.character(SNP2)]
 load("../results/01_Prep_02_SNPList_TC.RData")
 
 #' ## Exposure
-load("../results/02_SNPs_01_MAIN.RData")
+load("../results/02_SNPs_05_SENS_SNPset.RData")
 length(unique(myAssocs_X$SNP))
 
 #' Check the GX associations
@@ -82,14 +82,14 @@ myAssocs_X_long[,type := gsub("beta_","",type)]
 myAssocs_X_long = myAssocs_X_long[!is.na(beta),]
 
 #' ## Outcome
-load("../results/01_Prep_04_CADsummaryStats.RData")
+load("../results/01_Prep_07_CADsummaryStats_sens.RData")
 
 #' ## save as temporary files
 goodSNPs = myAssocs_Y[,.N,by = rsID]
 goodSNPs = goodSNPs[N==5,]
 myAssocs_X_long = myAssocs_X_long[SNP %in% goodSNPs$rsID,]
 myAssocs_Y = myAssocs_Y[rsID %in% goodSNPs$rsID,]
-save(myAssocs_X_long,myAssocs_Y, file = paste0("../temp/03_MVMRInput_MAIN.RData"))
+save(myAssocs_X_long,myAssocs_Y, file = paste0("../temp/03_MVMRInput_SENS_SNPSet.RData"))
 
 #' # Do MVMR ####
 #' ***
@@ -105,7 +105,7 @@ save(myAssocs_X_long,myAssocs_Y, file = paste0("../temp/03_MVMRInput_MAIN.RData"
 myExposures = unique(myAssocs_X_long$model)
 mySampleSize = c(73778, 35726, 38052)
 myOutcomes = unique(myAssocs_Y$phenotype)
-myFlag = "main"
+myFlag = "sens4_SNPSet"
 
 setnames(myAssocs_Y,"SNP","markername")
 setnames(myAssocs_Y,"rsID","SNP")
@@ -193,7 +193,7 @@ dumTab2 = foreach(j = 1:length(myExposures))%dopar%{
 }
 
 MVMR_results = rbindlist(dumTab2,fill = T)
-save(MVMR_results,file = paste0("../results/03_MVMR_01_MAIN.RData"))
+save(MVMR_results,file = paste0("../results/03_MVMR_05_SENS_SNPSet.RData"))
 
 #' # Session Info ####
 #' ***

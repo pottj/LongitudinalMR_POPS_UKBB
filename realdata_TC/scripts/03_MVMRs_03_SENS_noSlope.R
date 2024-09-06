@@ -1,5 +1,5 @@
 #' ---
-#' title: "MVMR - main analysis"
+#' title: "MVMR - sens - no slope"
 #' subtitle: "Longitudinal MVMR in UKB"
 #' author: "Janne Pott"
 #' date: "Last compiled on `r format(Sys.time(), '%d %B, %Y')`"
@@ -37,42 +37,37 @@ LDTab[,SNP2 := as.character(SNP2)]
 load("../results/01_Prep_02_SNPList_TC.RData")
 
 #' ## Exposure
-load("../results/02_SNPs_01_MAIN.RData")
+load("../results/02_SNPs_03_SENS_noSlope.RData")
 length(unique(myAssocs_X$SNP))
 
 #' Check the GX associations
 myAssocs_X[,table(pval_mean==0)]
 myAssocs_X[,table(pval_mean<5e-8,model)]
-myAssocs_X[,table(pval_slope<5e-8,model)]
 myAssocs_X[,table(pval_var<5e-8,model)]
 
-myAssocs_X[,table(pval_mean<5e-8,pval_slope<5e-8, model)]
 myAssocs_X[,table(pval_mean<5e-8,pval_var<5e-8, model)]
-myAssocs_X[,table(pval_slope<5e-8,pval_var<5e-8, model)]
 
-myAssocs_X[,cor.test(beta_mean,beta_slope),by=model]
 myAssocs_X[,cor.test(beta_mean,beta_var),by=model]
-myAssocs_X[,cor.test(beta_slope,beta_var),by=model]
 
 #' Transform into wide format
 data_long1 = melt(myAssocs_X,
                   id.vars=names(myAssocs_X)[1:3],
-                  measure.vars=c("beta_mean", "beta_slope", "beta_var"),
+                  measure.vars=c("beta_mean", "beta_var"),
                   variable.name="type",
                   value.name="beta")
 data_long2 = melt(myAssocs_X,
                   id.vars=names(myAssocs_X)[1:3],
-                  measure.vars=c("SE_mean", "SE_slope", "SE_var"),
+                  measure.vars=c("SE_mean", "SE_var"),
                   variable.name="type",
                   value.name="SE")
 data_long3 = melt(myAssocs_X,
                   id.vars=names(myAssocs_X)[1:3],
-                  measure.vars=c("tval_mean", "tval_slope", "tval_var"),
+                  measure.vars=c("tval_mean", "tval_var"),
                   variable.name="type",
                   value.name="tval")
 data_long4 = melt(myAssocs_X,
                   id.vars=names(myAssocs_X)[1:3],
-                  measure.vars=c("pval_mean", "pval_slope", "pval_var"),
+                  measure.vars=c("pval_mean", "pval_var"),
                   variable.name="type",
                   value.name="pval")
 
@@ -89,7 +84,7 @@ goodSNPs = myAssocs_Y[,.N,by = rsID]
 goodSNPs = goodSNPs[N==5,]
 myAssocs_X_long = myAssocs_X_long[SNP %in% goodSNPs$rsID,]
 myAssocs_Y = myAssocs_Y[rsID %in% goodSNPs$rsID,]
-save(myAssocs_X_long,myAssocs_Y, file = paste0("../temp/03_MVMRInput_MAIN.RData"))
+save(myAssocs_X_long,myAssocs_Y, file = paste0("../temp/03_MVMRInput_SENS_noSlope.RData"))
 
 #' # Do MVMR ####
 #' ***
@@ -105,7 +100,7 @@ save(myAssocs_X_long,myAssocs_Y, file = paste0("../temp/03_MVMRInput_MAIN.RData"
 myExposures = unique(myAssocs_X_long$model)
 mySampleSize = c(73778, 35726, 38052)
 myOutcomes = unique(myAssocs_Y$phenotype)
-myFlag = "main"
+myFlag = "sens2_noSlope"
 
 setnames(myAssocs_Y,"SNP","markername")
 setnames(myAssocs_Y,"rsID","SNP")
@@ -193,7 +188,7 @@ dumTab2 = foreach(j = 1:length(myExposures))%dopar%{
 }
 
 MVMR_results = rbindlist(dumTab2,fill = T)
-save(MVMR_results,file = paste0("../results/03_MVMR_01_MAIN.RData"))
+save(MVMR_results,file = paste0("../results/03_MVMR_03_SENS_noSlope.RData"))
 
 #' # Session Info ####
 #' ***

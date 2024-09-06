@@ -15,7 +15,7 @@
 #' ***
 #' I want to test CAD (sex-combined, data taken from Aragam et al. (2022)) and coronary atherosclerosis (sex-stratified, Neale lab (2021?)) as outcomes. 
 #' 
-#' Here, I load the data and reduce them to the IVs for HR. I check the alleles and allele frequency. Every base position should be in hg19 / GRCh37 (our BSU UKB data is in hg19, Aragam data was downloaded using the GRCh37 build, Neale lab is using UKB, again hg19).  
+#' Here, I load the data and reduce them to the IVs for TC. I check the alleles and allele frequency. Every base position should be in hg19 / GRCh37 (our BSU UKB data is in hg19, Aragam data was downloaded using the GRCh37 build, Neale lab is using UKB, again hg19).  
 #' 
 #' - Neale lab: Variant identifier in the form "chr:pos:ref:alt", where "ref" is aligned to the forward strand of GRCh37 and "alt" is the effect allele (use this to join with variant annotation file).
 #' - Plink: ALT is effect allele
@@ -32,9 +32,29 @@ source("../../SourceFile_HPC.R")
 
 #' # Load HR SNP data ####
 #' ***
-#' I need the 151 SNPs, and the four data sets.
+#' I need the 20 SNPs, and the four data sets.
 #' 
-load(paste0(UKB_phenotypes_filtered,"/01_Prep_03_SNPData_filtered.RData"))
+myList = data.table(gene = c("APOE","LDLR","CELSR2","APOC1","PCSK9",
+                             "APOB","TM6SF2","CETP","HMGCR","DOCK7",
+                             "TOMM40","APOC4","ABCG8","LIPC","ABO",
+                             "BUD13","BACE1","APOC3","APOA4","LPL"), 
+                    SNP = c("rs7412","rs73015024","rs12740374","rs141622900","rs11591147",
+                            "rs6548010","rs58542926","rs183130","rs12916","rs995000",
+                            "rs11668327","rs12721109","rs4245791","rs633695","rs2519093",
+                            "rs964184","rs116987336","rs12718462","rs61905132","rs6993414"), 
+                    varEffect = c(T,F,F,T,F,
+                                  F,F,F,F,F,
+                                  T,F,F,F,F,
+                                  T,T,T,T,T),
+                    cytoband = c("19q13.32","19p13.2" ,"01p13.3","19q13.32","01p32.3",
+                                 "02p24.1" ,"19p13.11","16q13"  ,"05q13.3" ,"01p31.3",
+                                 "19q13.32","19q13.32","02p21"  ,"15q21.3" ,"09q34.2",
+                                 "11q23.3" ,"11q23.3", "11q23.3","11q23.3", "08p21.3"))
+
+load(paste0(UKB_phenotypes_filtered,"/01_Prep_03_SNPData.RData"))
+filt = is.element(pvar$ID,myList$SNP)
+table(filt)
+pvar2 = pvar[filt,]
 pvar2[,chrPosEAOA := paste(CHR,POS,ALT,REF,sep=":")]
 pvar2[,chrPosOAEA := paste(CHR,POS,REF,ALT,sep=":")]
 
@@ -224,7 +244,7 @@ names(myAssocs_Y4) = c("SNP","rsID","EA","OA","EAF","phenotype","sampleSize","be
 myAssocs_Y = rbind(myAssocs_Y0,myAssocs_Y1,myAssocs_Y2,myAssocs_Y3,myAssocs_Y4)
 
 #' ## save as temporary files
-save(myAssocs_Y, file = paste0("../results/01_Prep_04_CADsummaryStats.RData"))
+save(myAssocs_Y, file = paste0("../results/01_Prep_08_CADsummaryStats_sens2.RData"))
 
 #' # Session Info ####
 #' ***

@@ -15,7 +15,7 @@
 #' ***
 #' I want to test CAD (sex-combined, data taken from Aragam et al. (2022)) and coronary atherosclerosis (sex-stratified, Neale lab (2021?)) as outcomes. 
 #' 
-#' Here, I load the data and reduce them to the IVs for HR. I check the alleles and allele frequency. Every base position should be in hg19 / GRCh37 (our BSU UKB data is in hg19, Aragam data was downloaded using the GRCh37 build, Neale lab is using UKB, again hg19).  
+#' Here, I load the data and reduce them to the IVs for TC. I check the alleles and allele frequency. Every base position should be in hg19 / GRCh37 (our BSU UKB data is in hg19, Aragam data was downloaded using the GRCh37 build, Neale lab is using UKB, again hg19).  
 #' 
 #' - Neale lab: Variant identifier in the form "chr:pos:ref:alt", where "ref" is aligned to the forward strand of GRCh37 and "alt" is the effect allele (use this to join with variant annotation file).
 #' - Plink: ALT is effect allele
@@ -34,7 +34,7 @@ source("../../SourceFile_HPC.R")
 #' ***
 #' I need the 151 SNPs, and the four data sets.
 #' 
-load(paste0(UKB_phenotypes_filtered,"/01_Prep_03_SNPData_filtered.RData"))
+load(paste0(UKB_phenotypes_filtered,"/01_Prep_06_SNPData_filtered_sens.RData"))
 pvar2[,chrPosEAOA := paste(CHR,POS,ALT,REF,sep=":")]
 pvar2[,chrPosOAEA := paste(CHR,POS,REF,ALT,sep=":")]
 
@@ -224,7 +224,7 @@ names(myAssocs_Y4) = c("SNP","rsID","EA","OA","EAF","phenotype","sampleSize","be
 myAssocs_Y = rbind(myAssocs_Y0,myAssocs_Y1,myAssocs_Y2,myAssocs_Y3,myAssocs_Y4)
 
 #' ## save as temporary files
-save(myAssocs_Y, file = paste0("../results/01_Prep_04_CADsummaryStats.RData"))
+save(myAssocs_Y, file = paste0("../results/01_Prep_07_CADsummaryStats_sens.RData"))
 
 #' # Session Info ####
 #' ***

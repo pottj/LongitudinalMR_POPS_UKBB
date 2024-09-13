@@ -2,6 +2,12 @@
 
 Here I want to track my progress
 
+## 2024/09/13
+
+- check CAD in UKB: there were really small effect sizes, so I rerun it in our BSU data again (including sex-stratified). Lower power than the data from panUKB, but high correlation between the estimates (0.9)
+- plotting 
+- rerunning some stuff in POPS for paper
+
 ## 2024/09/06
 
 - finish main part of TC analyses

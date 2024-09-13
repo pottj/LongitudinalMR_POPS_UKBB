@@ -47,25 +47,39 @@ myTab_20 = fread(UKB_phenotypes,
 myAnnot = data.table(colNm = names(myTab_20))
 myAnnot[,colNR := 1:18506]
 
-#' get relevant parameters
+#' get relevant parameters: 
+#' 
+#' - exposure: TC at baseline and follow-up
+#' - covars: ID, sex, date (baseline + FU), medication (baseline + FU), ancestry, age at recruitment (baseline), genetic PCs, kinship
+#' - CAD: main diagnoses, secondary diagnoses, any diagnoses (filter later for correct ICD-10 codes. I will only use the baseline here!) 
+#'  
 exposure = c("f.30690.0.0","f.30690.1.0")
 table(is.element(exposure,myAnnot$colNm))
 
-covars = c("f.eid", "f.31.0.0","f.53.0.0","f.53.1.0","f.21022.0.0",
+covars = c("f.eid", "f.31.0.0","f.53.0.0","f.53.1.0",
            paste0("f.20003.1.",c(0:47)),paste0("f.20003.0.",c(0:47)),
-           paste0("f.22009.0.",1:10), "f.22021.0.0", "f.21000.0.0")
+           "f.21000.0.0","f.21022.0.0",paste0("f.22009.0.",1:10), "f.22021.0.0")
 table(is.element(covars,myAnnot$colNm))
 
-myAnnot = myAnnot[colNm %in% c(exposure,covars),]
+CAD_diagnoses = c(paste0("f.41202.0.",c(0:79)), 
+                  paste0("f.41204.0.",c(0:209)),
+                  paste0("f.41270.0.",c(0:258)))
+
+myAnnot = myAnnot[colNm %in% c(exposure,covars,CAD_diagnoses),]
 
 x = myAnnot[,colNR]
 myTab_cross <- fread(UKB_phenotypes , 
                      header=TRUE, sep="\t",select = x)
 names(myTab_cross)
 names(myTab_cross) = c("ID","sex","data_init","date_FU",
-                 paste("medication_init",1:48,sep="_"),paste("medication_FU",1:48,sep="_"),
-                 "ancestry","age",paste("PC",1:10,sep="_"),"kinship",
-                 "TC_init","TC_FU")
+                       paste("medication_init",1:48,sep="_"),
+                       paste("medication_FU",1:48,sep="_"),
+                       "ancestry","age",
+                       paste("PC",1:10,sep="_"),
+                       "kinship","TC_init","TC_FU",
+                       paste("diagnoses_main",1:80,sep="_"),
+                       paste("diagnoses_sec",1:210,sep="_"),
+                       paste("diagnoses_any",1:259,sep="_"))
 
 save(myTab_cross, file = "../temp/01_Prep_01_UKBB_unfiltered.RData")
 load("../temp/01_Prep_01_UKBB_unfiltered.RData")
@@ -101,6 +115,37 @@ for(i in 1:length(myMeds)){
 }
 myTab[,get("myMeds"):=NULL]
 dim(myTab)
+
+#' Get CAD: 
+#' 
+#' For CAD definition I use ICD-10 codes I20-I25
+#' 
+codingTable = fread(paste0(pathData,"/UKB_coding19.tsv"))
+
+myDiag1 = names(myTab)[grep("diagnoses_main",names(myTab))]
+myDiag2 = names(myTab)[grep("diagnoses_sec",names(myTab))]
+myDiag3 = names(myTab)[grep("diagnoses_any",names(myTab))]
+myDiag = c(myDiag1,myDiag2,myDiag3)
+
+codingTable = codingTable[grepl("I20",meaning) | grepl("I21",meaning) | 
+                            grepl("I22",meaning) | grepl("I23",meaning) | 
+                            grepl("I24",meaning) | grepl("I25",meaning),]
+codingTable = codingTable[selectable == "Y",]
+CAD_codes = codingTable[,coding]
+
+myTab[,CAD := 0]
+
+for(i in 1:length(myDiag)){
+  #i=1
+  myTab[get(myDiag[i]) %in% CAD_codes,CAD := 1]
+}
+myTab[,get("myDiag"):=NULL]
+dim(myTab)
+table(myTab$CAD)
+
+#' Check for consent
+ToExclude = fread(gsub("ukb672224.tab","withdraw98032_19.txt",UKB_phenotypes))
+table(is.element(myTab$ID,ToExclude$V1))
 
 #' Filter for no NA in TC baseline data
 myTab = myTab[!is.na(TC_init),]
@@ -182,14 +227,14 @@ myTab[,dumID_FU := paste(ID,date_FU,sep="_")]
 myTab4 = copy(myTab)
 myTab4[,source := "UKBB_Baseline"]
 names(myTab4)
-myTab4 = myTab4[,c(1,3,18,6,1,25,20,27)]
+myTab4 = myTab4[,c(1,3,18,6,1,26,20,28)]
 table(is.element(myTab4$dumID_init,myTab2$dumID))
 myTab2 = myTab2[!is.element(dumID, myTab4$dumID_init)]
 
 myTab5 = copy(myTab)
 myTab5[,source := "UKBB_FollowUp"]
 names(myTab5)
-myTab5 = myTab5[,c(1,4,19,24,1,26,21,27)]
+myTab5 = myTab5[,c(1,4,19,25,1,27,21,28)]
 myTab5 = myTab5[!is.na(TC_FU),]
 table(is.element(myTab5$dumID_FU,myTab2$dumID))
 myTab2 = myTab2[!is.element(dumID, myTab5$dumID_init)]

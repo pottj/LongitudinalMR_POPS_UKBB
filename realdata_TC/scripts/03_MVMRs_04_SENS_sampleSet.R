@@ -117,7 +117,7 @@ dumTab2 = foreach(j = 1:length(myExposures))%dopar%{
   source("../../SourceFile_HPC.R")
   source("../../helperfunctions/MVMR_jp_POPS.R")
   source("../../helperfunctions/MVMR_jp_POPS_top20.R")
-    
+  
   myExposure = myExposures[j]
   
   # filter data
@@ -125,71 +125,71 @@ dumTab2 = foreach(j = 1:length(myExposures))%dopar%{
   myAssocs_X_long2 = myAssocs_X_long2[model == myExposure,]
   myAssocs_X_long2[,phenotype := paste0("TC_",myExposure)]
   myAssocs_X_long2[,dumID := myFlag]
-    
+  
   dumTab3 = foreach(k = 1:length(myOutcomes))%do%{
-      #k=1
-      myOutcome = myOutcomes[k]
-      myAssocs_Y2 = copy(myAssocs_Y)
-      myAssocs_Y2 = myAssocs_Y2[phenotype == myOutcome,]
-      
-      message("Working on exposure ",myExposure," and outcome ",myOutcome," ...")
-      
-      # do MVMRs
-      MVMR0 = MVMR_jp_POPS(data_exposure = myAssocs_X_long2,
-                           data_outcome = myAssocs_Y2,
-                           exposure_name = paste0("TC_",myExposure), 
-                           outcome_name = myOutcome,
-                           flag = myFlag,
-                           GX_pval_treshold = 1,
-                           getPlot = F,
-                           corTab = LDTab,
-                           corTab_threshold = 0.1,sampleSize_GX = mySampleSize[j],
-                           random = F,getCondF = T,getUni = T)
-
-      MVMR2 = MVMR_jp_POPS(data_exposure = myAssocs_X_long2,
-                           data_outcome = myAssocs_Y2,
-                           exposure_name = paste0("TC_",myExposure), 
-                           outcome_name = myOutcome,
-                           flag = myFlag,
-                           GX_pval_treshold = 5e-8,
-                           getPlot = F,
-                           corTab = LDTab,
-                           corTab_threshold = 0.1,sampleSize_GX = mySampleSize[j],
-                           random = F,getCondF = T,getUni = T)
-
-      MVMR4 = MVMR_jp_POPS_top20(data_exposure = myAssocs_X_long2,
-                                 data_outcome = myAssocs_Y2,
-                                 exposure_name = paste0("TC_",myExposure), 
-                                 outcome_name = myOutcome,
-                                 flag = myFlag,
-                                 SNPSets = "overlap",
-                                 getPlot = F,
-                                 corTab = LDTab,
-                                 corTab_threshold = 0.1,sampleSize_GX = mySampleSize[j],
-                                 random = F,getCondF = T,getUni = T)
-      
-      MVMR5 = MVMR_jp_POPS_top20(data_exposure = myAssocs_X_long2,
-                                 data_outcome = myAssocs_Y2,
-                                 exposure_name = paste0("TC_",myExposure), 
-                                 outcome_name = myOutcome,
-                                 flag = myFlag,
-                                 SNPSets = "distinct",
-                                 getPlot = F,
-                                 corTab = LDTab,
-                                 corTab_threshold = 0.1,sampleSize_GX = mySampleSize[j],
-                                 random = F,getCondF = T,getUni = T)
-      
-      MVMR0[,threshold := "all_SNPs"]
-      MVMR2[,threshold := "nominal_SNPs"]
-      MVMR4[,threshold := "top20_overlap"]
-      MVMR5[,threshold := "top20_distinct"]
-      MVMR = rbind(MVMR0,MVMR2,MVMR4,MVMR5,fill=T)
-      MVMR
-      
-    }
-    MVMR_Tab1 = rbindlist(dumTab3)
-    MVMR_Tab1
+    #k=1
+    myOutcome = myOutcomes[k]
+    myAssocs_Y2 = copy(myAssocs_Y)
+    myAssocs_Y2 = myAssocs_Y2[phenotype == myOutcome,]
     
+    message("Working on exposure ",myExposure," and outcome ",myOutcome," ...")
+    
+    # do MVMRs
+    MVMR0 = MVMR_jp_POPS(data_exposure = myAssocs_X_long2,
+                         data_outcome = myAssocs_Y2,
+                         exposure_name = paste0("TC_",myExposure), 
+                         outcome_name = myOutcome,
+                         flag = myFlag,
+                         GX_pval_treshold = 1,
+                         getPlot = F,
+                         corTab = LDTab,
+                         corTab_threshold = 0.1,sampleSize_GX = mySampleSize[j],
+                         random = F,getCondF = T,getUni = T)
+    
+    MVMR2 = MVMR_jp_POPS(data_exposure = myAssocs_X_long2,
+                         data_outcome = myAssocs_Y2,
+                         exposure_name = paste0("TC_",myExposure), 
+                         outcome_name = myOutcome,
+                         flag = myFlag,
+                         GX_pval_treshold = 5e-8,
+                         getPlot = F,
+                         corTab = LDTab,
+                         corTab_threshold = 0.1,sampleSize_GX = mySampleSize[j],
+                         random = F,getCondF = T,getUni = T)
+    
+    MVMR4 = MVMR_jp_POPS_top20(data_exposure = myAssocs_X_long2,
+                               data_outcome = myAssocs_Y2,
+                               exposure_name = paste0("TC_",myExposure), 
+                               outcome_name = myOutcome,
+                               flag = myFlag,
+                               SNPSets = "overlap",
+                               getPlot = F,
+                               corTab = LDTab,
+                               corTab_threshold = 0.1,sampleSize_GX = mySampleSize[j],
+                               random = F,getCondF = T,getUni = T)
+    
+    MVMR5 = MVMR_jp_POPS_top20(data_exposure = myAssocs_X_long2,
+                               data_outcome = myAssocs_Y2,
+                               exposure_name = paste0("TC_",myExposure), 
+                               outcome_name = myOutcome,
+                               flag = myFlag,
+                               SNPSets = "distinct",
+                               getPlot = F,
+                               corTab = LDTab,
+                               corTab_threshold = 0.1,sampleSize_GX = mySampleSize[j],
+                               random = F,getCondF = T,getUni = T)
+    
+    MVMR0[,threshold := "all_SNPs"]
+    MVMR2[,threshold := "nominal_SNPs"]
+    MVMR4[,threshold := "top20_overlap"]
+    MVMR5[,threshold := "top20_distinct"]
+    MVMR = rbind(MVMR0,MVMR2,MVMR4,MVMR5,fill=T)
+    MVMR
+    
+  }
+  MVMR_Tab1 = rbindlist(dumTab3)
+  MVMR_Tab1
+  
 }
 
 MVMR_results = rbindlist(dumTab2,fill = T)

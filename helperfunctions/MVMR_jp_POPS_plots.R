@@ -1,4 +1,4 @@
-MVMR_jp_POPS_plots = function(data_exposure,exposure_name, data_outcome, outcome_name,getPlot,flag,GX_pval_treshold,corTab,corTab_threshold,sampleSize_GX=15000,random=F,getCondF=F,getUni=T){
+MVMR_jp_POPS_plots = function(data_exposure,exposure_name, data_outcome, outcome_name,getPlot,flag,GX_pval_treshold,corTab,corTab_threshold,sampleSize_GX=15000,random=F,getCondF=F,getUni=T,filename1){
   #debug
   # data_exposure=copy(myAssocs_X_long2)
   # data_outcome=copy(myAssocs_Y2)
@@ -182,21 +182,22 @@ MVMR_jp_POPS_plots = function(data_exposure,exposure_name, data_outcome, outcome
         geom_hline(yintercept = 0, color="grey", linetype="dashed", linewidth=0.5)+
         geom_vline(xintercept = 0, color="grey", linetype="dashed", linewidth=0.5)+
         geom_point() +
-        geom_errorbar(aes(ymin = myY- 1.96*myY_SE, ymax = myY+ 1.96*myY_SE),linewidth=0.5) +
-        geom_errorbarh(aes(xmin = beta- 1.96*SE, xmax = beta + 1.96*SE),linewidth=0.5) +
+        geom_errorbar(aes(ymin = myY- 1.96*myY_SE, ymax = myY+ 1.96*myY_SE),linewidth=0.5,alpha=0.5) +
+        geom_errorbarh(aes(xmin = beta- 1.96*SE, xmax = beta + 1.96*SE),linewidth=0.5,alpha=0.5) +
         geom_abline(data = data_hline_multi, aes(slope = line,intercept=0,linetype="multivariate")) +
         geom_abline(data = data_hline_uni, aes(slope = line,intercept=0,linetype="univariate")) +
         scale_linetype_manual("IVW estimate",values=c("univariate"=2,"multivariate"=1)) +
         labs(x=paste0("SNP effect on ",exposure_name), 
              y=paste0("SNP effect on ",outcome_name),
              color="Lowest pval in ")+
-        theme_bw(base_size = 10)
+        theme_bw(base_size = 10)+ 
+        theme(legend.position = "none")
         
       
       #filename1 = paste0("../figures/08_7_MVMR_top20_",flag,"_",exposure_name,"_",outcome_name,"_",tag,".tiff")
-      #tiff(filename = filename1,width = 2250, height = 1125, res=200, compression = 'lzw')
+      png(filename = filename1,width = 2250, height = 1125, res=200)
       print(myPlot)
-      #dev.off()
+      dev.off()
     }
     
     res = res3

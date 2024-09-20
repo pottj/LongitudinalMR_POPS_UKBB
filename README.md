@@ -1,8 +1,8 @@
 # MVMR of longitudinal exposure data
 
-last updated: 17/04/24
+last updated: 20/09/24
 
-This repository includes code relevant for both the simulation study and the real data analysis using POPS (Pregnancy Outcome Prediction Study) data. 
+This repository includes code relevant for my project **MVMR using longitudinal exposure data**. It consists of simulation studies and real data applications in POPS (Pregnancy Outcome Prediction Study)  and UK Biobank (UKB). 
 
 ## Overview
 
@@ -16,126 +16,110 @@ MVMR can separate the causal effect of mean, slope, and variability of an exposu
 
 ### Hypothesis 2
 
-Estimated fetal weight (EFW) has a causal effect on birth weight. While this sound obvious at first, the underlying research question is if the effect is only origin from the mean EFW, the trajectory of the EFW, or also influenced by the variability of each individual. This will be tested in the POPS data, and serve as positive control. 
+Estimated fetal weight (EFW) has a causal effect on birth weight (BW). While this sound obvious at first, the underlying research question is if the effect is only origin from the mean EFW, the trajectory of the EFW, or also influenced by the variability of each individual. This will be tested in the POPS data, and serve as positive control. 
+
+- Exposure: log-transformed EFW
+- Outcome: 
+    - 1-sample: BW in POPS (adjusted for gestational age (GA))
+    - 2-sample: BW in UKB (obtained from [Neale lab](https://www.nealelab.is/uk-biobank), not adjusted for GA)
 
 ### Hypothesis 3
 
-The final hypothesis is whether EFW has a causal effect on emergency Cesarean Section (eCS) or not. This will only be tested if the positive control works out. 
+Total cholesterol (TC) has a causal effect on coronary artery disease (CAD). Similar as *Hypothesis 2*, this is a positive control, as we know that there is a causal effect. However, we test if the change of TC over time and the within-individual variability have an additional effect on the risk for CAD.  
 
-### POPS exposure data
-
-**Primary exposure**: estimated fetal weight (EFW) 
-
-- absolute values (in kg)
-- log-transformed values
-- Z-scores (corrected for GA)
-- centiles (pnorm(Z-score))
-
-**Secondary exposures**: (not yet analyzed) 
-
-- Linear-growth exposures (in cm)
-    - Abdominal circumference (AC)
-    - Femur length (FL)
-    - Head circumference (HC)
-    - Biparietal diameter (BPD)
-- Z-score (GA corrected score, only when GA within certain ranges)
-    - Abdominal circumference (AC)
-    - Femur length (FL) 
-    - HC/AC 
-    - AC/FL
-
-**Outcomes** 
-
-- Birth weight (BW): used as positive control 
-    - Raw values, Z-score and centile in POPS
-- emergency Cesarean Section (eCS) in POPS (584 cases, 2420 controls) 
+- Exposure: TC
+- Outcome: 
+    - 1-sample: CAD in UKB (obtained from [FinnGen + panUKB meta-analysis](https://public-metaresults-fg-ukbb.finngen.fi/) "Coronary atherosclerosis" / "I9_CORATHER", though only the UKB results were used. Neale lab using linear regression for binary outcomes and is hence not considered for 1-sample MR)
+    - 2-sample: CAD in [Aragam et al.](https://pubmed.ncbi.nlm.nih.gov/36474045/) (2022, latest meta-GWAS, downloaded from [GWAS Catalog](https://www.ebi.ac.uk/gwas/studies/GCST90132314))
 
 ## Structure of github repository
-
-### data
-
-**This data will not be tracked by github!**
-
-**Phenotypes and raw genetic data will not be stored in the repository but on the HPC rds (check source file to get path)** 
-
-- POPS data extract as of 26/09/2023 (excel sheet, provided by Ulla Sovia)
-- Various derivatives of the extracted phenotypes after QC and preprocessing
-- Genetic data (filtered and mapped to samples with phenotypes)
-- Data download from the GWAS Catalog on BW (date: 22/09/2023)
-- PGS data download for BW (data: 13/11/2023)
-- Summary statistics for BW
 
 ### helperfunctions
 
 Various helperfunctions which I source in (**check which one of them are really necessary!**). I will try and document them as if they were within an R package (see YAML header in function for documentation).
 
-### realdata 
+### realdata_EGG 
 
 Scripts to run POPS analysis
 
 1) Pre-processing 
-  - SNP selection from PGS
+  - SNP selection from [EGG Consortium](http://egg-consortium.org/)("Birth Weight Summary Data - Fetal GWAS (2016)") 
   - Check SNPs in POPS (AF, LD, Allele coding, ...)
   - Check genetic principal components in POPS
   - Check POPS exposure and outcome data
   
 2) Get SNP associations on EWF
   - MAIN: GAMLSS with SNP-time interaction in all samples with at least 2 measurements 
-  - SENS1: GAMLSS with SNP-time interaction in British ancestry samples with 3 measurements 
-  - SENS2: LMM with SNP-time interaction in all samples with at least 2 measurements (no variability)
-  - SENS3: GAMLSS with SNP-time interaction and time-independent sigma-function in all samples with at least 2 measurements 
-  - SENS4: GAMLSS without SNP-time interaction in all samples with at least 2 measurements (no slope)
-  - SENS5: GAMLSS with SNP-time interaction in all samples with at least 2 measurements and no additional covariables
+  - SENS - GBR3: GAMLSS with SNP-time interaction in British ancestry samples with 3 measurements 
+  - SENS - noVar: GAMLSS with SNP-time interaction in all samples with at least 2 measurements (no variability)
+  - SENS - noSlope: GAMLSS without SNP-time interaction in all samples with at least 2 measurements (no slope) 
 
 3) Get SNP associations on outcome
-  - MAIN: linear/logistic regression in all samples
-  - SENS: linear/logistic regression in British ancestry samples
+  - MAIN: linear regression in all samples
+  - SENS: linear regression in British ancestry samples
   
 4) MVMRs using all relevant combinations
 
 5) Scripts to create figures and tables
 
-### simulation 
+### realdata_GLGC 
 
-Test hypothesis 1 in 16 scenarios: 
+Scripts to run UKB analysis
 
-- Growth: linear or quadratic
-- SNP set: one shared SNP set or two distinct SNP sets for mean and slope effects
-- Time: using real age or Follow-up number to simulate data and in regression model (creating/avoiding heteroscedacisity)
-- Regression model: LMM or GAMLSS
+1) Pre-processing 
+  - SNP selection from [GLGC consortium data](https://csg.sph.umich.edu/willer/public/glgc-lipids2021/)("TC_INV_EUR_HRC_1KGP3_others_ALL.meta.singlevar.results.gz")
+  - Check SNPs in UKB (AF, LD, Allele coding, ...)
+  - Check UKB exposure and outcome data
+  
+2) Get SNP associations on TC
+  - MAIN: GAMLSS with SNP-time interaction in all samples 
+  - SENS - sampleSet: GAMLSS with SNP-time interaction in samples with 
+      - no statin treatment at any timepoint
+      - age between 40-70
+      - first measurement per year
+  - SENS - noVar: GAMLSS with SNP-time interaction in all samples (no variability)
+  - SENS - noSlope: GAMLSS without SNP-time interaction (no slope) 
 
-### simulation v2
+3) MVMRs using all relevant combinations
+
+4) Scripts to create figures and tables
+
+### simulation_main 
+
+Test hypothesis 1 in 12 scenarios: 
+
+- 3 ways to simulate the longitudinal exposure: 
+    - $X_{12}$: SNPs affecting the mean and slope
+    - $X_{13}$: SNPs affecting the mean and variability
+    - $X_{123}$: SNPs affecting the mean, slope, and variability
+- 4 causal models: causal effect of mean on outcome, $\theta_1$, either 0.3, 1.2, -1.2, or -0.3. The other causal effects are fixed with $\theta_2 = 0.3$ and $\theta_3 = 1$
+
+### simulation_sensitivity
 
 Run some sensitivity checks on simulation 
 
-- MAIN: quadratic growth, age as time parameter, using GAMLSS with SNP-time interaction
-- SENS1: using linear growth in regression model
-- SENS2: using Follow-up number as time parameter
-- SENS3: using GAMLSS without SNP-time interaction 
-- SENS4: using GAMLSS with time-independent sigma-function
-- SENS5: using GAMLSS with SNP-independent sigma-function
+- using binary outcomes
+- changing the correlation between the SNPs
+- changing the GAMLSS model
+- changing the SNPs specificity for mean and slope vs variability (completely shared or completely distinct)
+- reducing the sample size 
 
 ## Abbreviations
 
-- AC, abdominal circumference
 - AF, allele frequency
-- BPD, biparietal diameter
 - BW, birth weight
+- CAD, coronary artery disease
 - EFW, estimated fetal weight
-- FL, femur length
+- EGG, Early Growth Genetics Consortium
 - GA, gestation age
 - GAMLSS, generalized additive model for location, scale and shape
+- GLGC, Global Lipids Genetics Consortium
 - GWAS, genome-wide association study
-- HC, head circumference
-- HPC, high performance computing
 - LD, linkage disequilibrium
-- LMM, linear mixed model
 - MR, Mendelian Randomization
 - MVMR, multivariate Mendelian Randomization
-- PGS, polygenetic score
 - POPS, Pregnancy Outcome Prediction Study
-- QC, quality control
-- rds, research data store
 - SNP, single nucleotide polymorphism
-- UKBB, UK Biobank
+- TC, total cholesterol 
+- UKB, UK Biobank
 

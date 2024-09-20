@@ -2,6 +2,21 @@
 
 Here I want to track my progress
 
+## 2024/0920
+
+- updated real data analyses: after feedback from Steve, I streamlined the analysis plan for the real data, to keep it focused:
+    - strict SNP selection procedure (EGG for EFW; GLGC for TC)
+    - I only test one exposure each (EFW log-transformed and TC)
+    - I only test two outcomes each (1-sample: BW or CAD within POPS or UKB, respectively; 2-sample: BW or CAD using UKB (Neale lab) or Aragam et al. summary statistics)
+    - sensitivity tests: no variability, no slope, different sample set. For TC only: different SNP set (in POPS I did not have these kind of SNP sets)
+- archived old versions: 
+    - using PGS in POPS (not enough SNPs, better to use some consortia data)
+    - using HR in UKB (longitudinal in seconds, not meaningful)
+    - using TC in UKB (SNP selection based on trajGWAS results, probably biased)
+- moved some other stuff into test area: 
+    - simulation: with random intercept and random slope -> still problems with positive definit matrix in GAMLSS
+    - real data: TC sex-stratified (and women also by menopause) -> follow-up project
+
 ## 2024/09/13
 
 - check CAD in UKB: there were really small effect sizes, so I rerun it in our BSU data again (including sex-stratified). Lower power than the data from panUKB, but high correlation between the estimates (0.9)

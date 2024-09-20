@@ -74,16 +74,19 @@ module load R/4.3.1-icelake
 
 ## Section 3: Run your application
 
-R CMD BATCH --vanilla ../scripts/01_Prep_01_checkCandidateSNPs.R ../scripts/01_Prep_01_checkCandidateSNPs.R.out
+# R CMD BATCH --vanilla ../scripts/01_Prep_01_checkCandidateSNPs.R ../scripts/01_Prep_01_checkCandidateSNPs.R.out
+# 
+# R CMD BATCH --vanilla ../scripts/01_Prep_02_checkPOPSGenotypeData.R ../scripts/01_Prep_02_checkPOPSGenotypeData.R.out
+# cp Rplots.pdf 01_Prep_02_RPlots.pdf
+# rm Rplots.pdf
+# 
+# R CMD BATCH --vanilla ../scripts/01_Prep_03_checkPOPSPCA.R ../scripts/01_Prep_03_checkPOPSPCA.R.out
+# 
+# R CMD BATCH --vanilla ../scripts/01_Prep_04_checkPOPSData.R ../scripts/01_Prep_04_checkPOPSData.R.out
 
-R CMD BATCH --vanilla ../scripts/01_Prep_02_checkPOPSGenotypeData.R ../scripts/01_Prep_02_checkPOPSGenotypeData.R.out
-cp Rplots.pdf 01_Prep_02_2_RPlots.pdf
+R CMD BATCH --vanilla ../scripts/01_Prep_05_SNPselection.R ../scripts/01_Prep_05_SNPselection.R.out
+cp Rplots.pdf 01_Prep_05_RPlots.pdf
 rm Rplots.pdf
-
-R CMD BATCH --vanilla ../scripts/01_Prep_03_checkPOPSPCA.R ../scripts/01_Prep_03_checkPOPSPCA.R.out
-
-R CMD BATCH --vanilla ../scripts/01_Prep_04_checkPOPSData.R ../scripts/01_Prep_04_checkPOPSData.R.out
-
 
 ###############################################################
 ### You should not have to change anything below this line ####

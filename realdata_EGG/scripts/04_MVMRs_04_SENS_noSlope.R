@@ -1,5 +1,5 @@
 #' ---
-#' title: "Get MVMR within POPS - sensitivity analyses"
+#' title: "Get MVMR within POPS - sensitivity analysis - GBR3"
 #' subtitle: "Longitudinal MVMR in POPS"
 #' author: "Janne Pott"
 #' date: "Last compiled on `r format(Sys.time(), '%d %B, %Y')`"
@@ -13,7 +13,13 @@
 #'
 #' # Introduction ####
 #' ***
-#' Sensitivity: estimating only mean and var, no slope effect
+#' Here, I want to run the MVMR using the statistics from all samples with at least 2 exposure measurements. I want to run only
+#' 
+#' - exposure = log-transformed EFW
+#' - outcomes = un-transformed BW
+#'    - in POPS adjusted for GA
+#'    - in UKB "raw"
+#' - using the 52 selected instruments
 #' 
 #' # Initialize ####
 #' ***
@@ -34,8 +40,7 @@ tag = gsub("-","",tag)
 #' Get high quality SNPs only
 load("../results/01_Prep_02_LD_filtered_EGG.RData")
 LDTab = copy(LDTab2)
-load("../results/01_Prep_02_SNPList_filtered_EGG.RData")
-SNPList = copy(SNPList_filtered)
+load("../results/01_Prep_05_SNPList.RData")
 
 #' Filter LD table for good SNPs only
 LDTab[,SNP2 := as.character(SNP2)]
@@ -43,10 +48,13 @@ LDTab[,SNP2 := as.character(SNP2)]
 #' ## Exposure
 load("../results/02_SNPs_04_SENS_noSlope.RData")
 myAssocs_X = copy(myAssocs_X_gamlssIA)
+myAssocs_X = myAssocs_X[rsID %in% SNPList$rsID,]
+myAssocs_X = myAssocs_X[phenotype == "logefwcomb",]
 
 #' Check the GX associations
-myAssocs_X[,table(pval_mean==0,phenotype)]
-myAssocs_X[,table(pval_mean<1e-50,phenotype)]
+# myAssocs_X[,cor.test(beta_mean,beta_slope)]
+myAssocs_X[,cor.test(beta_mean,beta_var)]
+# myAssocs_X[,cor.test(beta_slope,beta_var)]
 
 #' Transform into wide format
 data_long1 = melt(myAssocs_X,
@@ -74,27 +82,49 @@ myAssocs_X_long = cbind(data_long1,data_long2[,9],
                         data_long3[,9],data_long4[,9])
 myAssocs_X_long[,type := gsub("beta_","",type)]
 myAssocs_X_long = myAssocs_X_long[!is.na(beta),]
-# myAssocs_X_long[type == "slope",beta:=beta*36]
-# myAssocs_X_long[type == "slope",SE:=SE*36]
 
 #' ## Outcome
 load("../results/03_SNPs_01_MAIN_Assocs_outcome_nTIA.RData")
 myAssocs_Y = myAssocs_Y[population == "all",]
+myAssocs_Y = myAssocs_Y[rsID %in% SNPList$rsID,]
+myAssocs_Y = myAssocs_Y[phenotype == "pn_bw",]
+myAssocs_Y[,phenotype := "POPS_BW"]
+
+myAssocs_Y2 = copy(myAssocs_Y)
+stopifnot(myAssocs_Y2$rsID == SNPList$rsID)
+myAssocs_Y2[, phenotype := "UKB_BW"]
+myAssocs_Y2[, sampleSize := SNPList$UKB_sampleSize]
+myAssocs_Y2[, beta_mean := SNPList$UKB_beta]
+myAssocs_Y2[, SE_mean := SNPList$UKB_SE]
+myAssocs_Y2[, tval_mean := SNPList$UKB_tval]
+myAssocs_Y2[, pval_mean := SNPList$UKB_pval]
+
+myAssocs_Y3 = copy(myAssocs_Y)
+stopifnot(myAssocs_Y3$rsID == SNPList$rsID)
+myAssocs_Y3[, phenotype := "EGG_BW"]
+myAssocs_Y3[, sampleSize := SNPList$EGG_sampleSize]
+myAssocs_Y3[, beta_mean := SNPList$EGG_beta]
+myAssocs_Y3[, SE_mean := SNPList$EGG_SE]
+myAssocs_Y3[, tval_mean := SNPList$EGG_tval]
+myAssocs_Y3[, pval_mean := SNPList$EGG_pval]
+
+myAssocs_Y = rbind(myAssocs_Y,myAssocs_Y2,myAssocs_Y3)
 
 #' ## save as temporary files
 save(myAssocs_X_long,myAssocs_Y, file = paste0("../temp/04_MVMRInput_SENS_noSlope.RData"))
 
 #' # Do MVMR ####
 #' ***
+#' I want 
+#' 
+#' - all SNPs (including all non-significant ones)
+#' - nominal significant SNPs
+#' 
 myExposures = unique(myAssocs_X_long$phenotype)
 myOutcomes = unique(myAssocs_Y$phenotype)
 myFlag = "sens_noSlope"
 
-registerDoParallel(as.numeric(Sys.getenv("SLURM_CPUS_PER_TASK")))
-#registerDoParallel(4)
-
-dumTab2 = foreach(j = 1:length(myExposures))%dorng%{
-  #dumTab2 = foreach(j = 1:length(myExposures))%dopar%{
+dumTab2 = foreach(j = 1:length(myExposures))%do%{
   #j=1
   source("../../SourceFile_HPC.R")
   source("../../helperfunctions/MVMR_jp_POPS.R")
@@ -136,31 +166,9 @@ dumTab2 = foreach(j = 1:length(myExposures))%dorng%{
                          corTab = LDTab,
                          corTab_threshold = 0.1,sampleSize_GX = 2996,random = F,getCondF = T,getUni = T)
     
-    MVMR4 = MVMR_jp_POPS_top20(data_exposure = myAssocs_X_long2,
-                               data_outcome = myAssocs_Y2,
-                               exposure_name = myExposure, 
-                               outcome_name = myOutcome,
-                               flag = myFlag,
-                               SNPSets = "overlap",
-                               getPlot = F,
-                               corTab = LDTab,
-                               corTab_threshold = 0.1,sampleSize_GX = 2996,random = F,getCondF = T,getUni = T)
-    
-    MVMR5 = MVMR_jp_POPS_top20(data_exposure = myAssocs_X_long2,
-                               data_outcome = myAssocs_Y2,
-                               exposure_name = myExposure, 
-                               outcome_name = myOutcome,
-                               flag = myFlag,
-                               SNPSets = "distinct",
-                               getPlot = F,
-                               corTab = LDTab,
-                               corTab_threshold = 0.1,sampleSize_GX = 2996,random = F,getCondF = T,getUni = T)
-    
     MVMR0[,threshold := "all_SNPs"]
     MVMR2[,threshold := "nominal_SNPs"]
-    MVMR4[,threshold := "top20_overlap"]
-    MVMR5[,threshold := "top20_distinct"]
-    MVMR = rbind(MVMR0,MVMR2,MVMR4,MVMR5,fill=T)
+    MVMR = rbind(MVMR0,MVMR2,fill=T)
     MVMR
     
   }

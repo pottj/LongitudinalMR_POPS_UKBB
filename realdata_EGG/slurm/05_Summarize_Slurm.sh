@@ -8,23 +8,23 @@
 ## Full documentation can be found here: https://slurm.schedmd.com/sbatch.html
 
 ## Enter a short name for the job, to be shown in SLURM output
-#SBATCH -J LongMR_06_1SMR_ForestPlots
+#SBATCH -J LongMR_05_Summary
 
 ## Enter the wall-clock time limit for your jobs.
 ## If jobs reach this limit they are automatically killed.
 ## Maximum value 36:00:00.
-#SBATCH --time=00:10:00
+#SBATCH --time=00:15:00
 
 ## For single-core jobs, this number should be '1'. 
 ## If your job has built-in parallelism, eg using OpenMP or 
 ## R's foreach() and doParallel(), increase this number as desired.
 ## The maximum value is 76 on icelake; 112 on sapphire
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=1
 
 ## Each task is allocated 3.3G (icelake) or 6.7G (icelake-himem) or 4.6G (sapphire)
 ## If this is insufficient, uncomment and edit this line.
 ## Maximum value 256G (icelake/sapphire) or 512G (icelake-himem)
-## #SBATCH --mem=12G
+## #SBATCH --mem=96G
 
 ## The system can send emails when your job starts and stops.
 ## Values include BEGIN, END, ALL, and TIME_LIMIT_80 and TIME_LIMIT_90 
@@ -49,7 +49,7 @@
 ## Start multiple jobs at once.
 ## Note that resources (cores, memory, time) requested above are for each
 ## individual array task, NOT the total array.
-## #SBATCH --array=1-3
+## #SBATCH --array=1-12
 
 ##  - - - - - - - - - - - - - -
 
@@ -59,11 +59,12 @@
 
 . /etc/profile.d/modules.sh                # Leave this line (enables the module command)
 module purge                               # Removes all modules still loaded
-module load rhel8/default-icl            # REQUIRED - loads the basic environment
+module load rhel8/default-icl              # REQUIRED - loads the basic environment
 
 # Load the latest R version.
 # Before running your code, you should run R and install any required packages.
 module load R/4.3.1-icelake
+module load plink/2.00-alpha
 
 # If using the GPU cluster, replace the third line with the uncommented line:
 # module load rhel8/default-amp
@@ -74,18 +75,28 @@ module load R/4.3.1-icelake
 
 ## Section 3: Run your application
 
-R CMD BATCH --vanilla ../scripts/06_1SampleMR_01_ForestPlots_perExposure_main.R ../scripts/06_1SampleMR_01_ForestPlots_perExposure_main.R.out
-cp Rplots.pdf 06_1SMR_01_RPlots.pdf
+# Script for Main Figures
+R CMD BATCH --vanilla ../scripts/05_Summarize_01_MainFig_ForestPlot.R ../scripts/05_Summarize_01_MainFig_ForestPlot.R.out
+cp Rplots.pdf 05_01_MainFig_Rplots.pdf
 rm Rplots.pdf
 
-R CMD BATCH --vanilla ../scripts/06_1SampleMR_02_ForestPlots_perExposureType_main.R ../scripts/06_1SampleMR_02_ForestPlots_perExposureType_main.R.out
-cp Rplots.pdf 06_1SMR_02_RPlots.pdf
+# Script for Supplemental Tables
+R CMD BATCH --vanilla ../scripts/05_Summarize_02_SupTables.R ../scripts/05_Summarize_02_SupTables.R.out
+
+# Script for Supplemental Figures (Forest Plots)
+R CMD BATCH --vanilla ../scripts/05_Summarize_03_SupFigs_ForestPlots.R ../scripts/05_Summarize_03_SupFigs_ForestPlots.R.out
+cp Rplots.pdf 05_03_SupFig_Rplots.pdf
 rm Rplots.pdf
 
-R CMD BATCH --vanilla ../scripts/06_1SampleMR_03_ForestPlots_perExposure_sensitivity.R ../scripts/06_1SampleMR_03_ForestPlots_perExposure_sensitivity.R.out
-cp Rplots.pdf 05_GXchecks_03_RPlots.pdf
+# Script for Supplemental Figures (Scatter Plots)
+R CMD BATCH --vanilla ../scripts/05_Summarize_04_SupFigs_ScatterPlots.R ../scripts/05_Summarize_04_SupFigs_ScatterPlots.R.out
+cp Rplots.pdf 05_04_SupFig_Rplots.pdf
 rm Rplots.pdf
 
+# Script for Main Figures
+R CMD BATCH --vanilla ../scripts/05_Summarize_05_SupFigs_TrajectoryPlot.R ../scripts/05_Summarize_05_SupFigs_TrajectoryPlot.R.out
+cp Rplots.pdf 05_05_SupFig_Rplots.pdf
+rm Rplots.pdf
 
 ###############################################################
 ### You should not have to change anything below this line ####

@@ -73,3 +73,7 @@ simulation_main/results_old/
 results_test1_do/
 results_test2_dopar/
 tables_figures/
+realdata_HR/
+realdata_PGS/
+realdata_TC/
+realdata_TC_sexStrat/

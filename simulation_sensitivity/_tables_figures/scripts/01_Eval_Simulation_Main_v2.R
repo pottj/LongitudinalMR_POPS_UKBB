@@ -1,5 +1,5 @@
 #' ---
-#' title: "Evaluation no correlation"
+#' title: "Evaluation main simulation - correct $\theta_{1}$ for $X_{13}$"
 #' subtitle: "Summary of all simulations"
 #' author: "Janne Pott"
 #' date: "Last compiled on `r format(Sys.time(), '%d %B, %Y')`"
@@ -8,21 +8,34 @@
 #'
 #' # Introduction ####
 #' 
+#' I want to load all simulation results for all 12 scenarios and extract per scenario - exposure type - outcome combination 
+#' 
+#' - the bias
+#' - the empirical SE
+#' - the power
+#' - the coverage
+#' 
+#' 
 #' # Initialize ####
 #' ***
+
 rm(list = ls())
 time0<-Sys.time()
 
-source("../../../SourceFile_BSUlaptop.R")
+source("../../../SourceFile_HPC.R")
 
-tag = format(Sys.time(), "%Y-%m-%d")
-tag = gsub("202.-","24-",tag)
-tag = gsub("-","",tag)
+outdir_results = paste0("../results/_figures_main_v1/")
+if(dir.exists(outdir_results)==F){
+  dir.create(outdir_results)
+  message("Created results folder ",outdir_results, " for simulation main v1")
+}else{
+  message("Using pre-existing results folder ",outdir_results, " for simulation main v1")
+}
 
 #' # Get to-do list ####
 #' ***
 #' get the file names (same names for all results directories)
-mySims = list.files(path = "../results/",pattern = "_SimAll.RData")
+mySims = list.files(path = "../../../simulation_main/results/",pattern = "_SimAll.RData")
 
 ToDoFile = data.table(NR = 1:length(mySims),
                       file = mySims)
@@ -37,6 +50,7 @@ ToDoFile[SimY == "CM3",theta1 := -1.2]
 ToDoFile[SimY == "CM4",theta1 := -0.3]
 ToDoFile[,theta2 := 0.3]
 ToDoFile[,theta3 := 1]
+ToDoFile
 
 #' # Load files ####
 #' ***
@@ -45,15 +59,12 @@ dumTab = foreach(i = 1:dim(ToDoFile)[1])%do%{
   #i=10
   myRow = ToDoFile[i,]
   message("Working on ",myRow$file)
-  load(paste0("../results/",myRow$file))
-  
-  # restrict to the first 100 simulations (some might have more, but all sensitivity runs should be on the first 100)
-  SimTab = SimTab[n_sim <=100,]
+  load(paste0("../../../simulation_main/results/",myRow$file))
   
   SimTab[exposure %in% c("mean"),exposure := "X1"]
   SimTab[exposure %in% c("slope"),exposure := "X2"]
   SimTab[exposure %in% c("var"),exposure := "X3"]
-  
+
   # correct estimates for outcome age
   SimTab[exposure == "X2",beta_IVW := beta_IVW/70]
   SimTab[exposure == "X2",SE_IVW := SE_IVW/70]
@@ -71,10 +82,10 @@ dumTab = foreach(i = 1:dim(ToDoFile)[1])%do%{
   SimTab[outcome %in% c("Y4","Y6","Y7","Y8"),theta3 := myRow$theta3]
   
   # correct estimates for age (X13 only, mean covers slope effect, but mean not yet corrected for age)
-  # if(myRow$SimX=="X13"){
-  #   SimTab[exposure == "X1" & outcome %in% c("Y3","Y7"),theta1 := myRow$theta2 *(-3) ]
-  #   SimTab[exposure == "X1" & outcome %in% c("Y5","Y8"),theta1 := myRow$theta1 + myRow$theta2 *(-3)]
-  # }
+  if(myRow$SimX=="X13"){
+    SimTab[exposure == "X1" & outcome %in% c("Y3","Y7"),theta1 := myRow$theta2 *(-3) ]
+    SimTab[exposure == "X1" & outcome %in% c("Y5","Y8"),theta1 := myRow$theta1 + myRow$theta2 *(-3)]
+  }
   
   # finalize theta
   SimTab[exposure == "X1", theta := theta1]
@@ -93,7 +104,7 @@ dumTab = foreach(i = 1:dim(ToDoFile)[1])%do%{
   tab1[is.na(N_sig),N_sig := 0]
   tab1[,power := N_sig/N ]
   tab1[,power_SE := sqrt((power * (1-power))/N)]
-  
+    
   # get coverage
   SimTab[,lower := beta_IVW - 1.96*SE_IVW]
   SimTab[,upper := beta_IVW + 1.96*SE_IVW]
@@ -118,7 +129,7 @@ dumTab = foreach(i = 1:dim(ToDoFile)[1])%do%{
   # get mean of estimates
   tab4 = SimTab[,mean(beta_IVW),by = dumID]
   tab1[,mean_betaIVW := tab4[,V1]]
-  
+
   # get median numbers of SNPs
   stopifnot(sum(is.na(SimTab$NR_SNPs_type))==0)
   tab5 = SimTab[,summary(NR_SNPs_type),by=dumID]
@@ -131,7 +142,7 @@ dumTab = foreach(i = 1:dim(ToDoFile)[1])%do%{
   tab1[,NR_SNPs_median := as.numeric(tab5_median[matched,V1])]
   tab1[,NR_SNPs_1stQ := as.numeric(tab5_1stQ[matched,V1])]
   tab1[,NR_SNPs_3rdQ := as.numeric(tab5_3rdQ[matched,V1])]
-  
+    
   # get median cond F-Stat
   #stopifnot(sum(is.na(SimTab$condFStats))==0)
   boxplot(SimTab[outcome == "Y1", condFStats] ~ SimTab[outcome == "Y1",exposure],
@@ -155,13 +166,13 @@ dumTab = foreach(i = 1:dim(ToDoFile)[1])%do%{
   dummy = unlist(strsplit(tab1$dumID,"_"))
   tab1[,exposure := dummy[seq(1,length(dummy),2)]]
   tab1[,outcome := dummy[seq(2,length(dummy),2)]]
-  
+    
   tab1[,Sim_NR := myRow$SimNR]
   tab1[,Sim_X := myRow$SimX]
   tab1[,Sim_Y := myRow$SimY]
-  
+    
   tab1_wide = dcast(tab1, Sim_NR + Sim_X + Sim_Y + outcome ~ exposure, 
-                    value.var = names(tab1)[2:19])
+                      value.var = names(tab1)[2:19])
   tab1_wide
   
 }
@@ -202,28 +213,28 @@ corrplot(dumMat[,filt3], is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'),
          col= colorRampPalette(c("#FFF5F0","#FB6A4A","#67000D"))(10),
          addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
 
-filename = paste0("../results/_figures/DetectionRates_X12.png")
+filename = paste0("../results/_figures_main_v2/Power_X12.png")
 png(filename = filename,width = 2600, height = 1400, res=200)
 corrplot(dumMat[,filt1], is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'), 
          col= colorRampPalette(c("#FFF5F0","#FB6A4A","#67000D"))(10),
          addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
 dev.off()
 
-filename = paste0("../results/_figures/DetectionRates_X123.png")
+filename = paste0("../results/_figures_main_v2/Power_X123.png")
 png(filename = filename,width = 2600, height = 1400, res=200)
 corrplot(dumMat[,filt2], is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'), 
          col= colorRampPalette(c("#FFF5F0","#FB6A4A","#67000D"))(10),
          addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
 dev.off()
 
-filename = paste0("../results/_figures/DetectionRates_X13.png")
+filename = paste0("../results/_figures_main_v2/Power_X13.png")
 png(filename = filename,width = 2600, height = 1400, res=200)
 corrplot(dumMat[,filt3], is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'), 
          col= colorRampPalette(c("#FFF5F0","#FB6A4A","#67000D"))(10),
          addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
 dev.off()
 
-#' # Check 1b: Coverage ####
+#' # Check 2: Coverage ####
 #' ***
 dumTab = copy(myTab)
 dumTab[,dumID1 := paste(Sim_X,Sim_Y,sep="_")]
@@ -238,43 +249,45 @@ dumMat = as.matrix(dumTab2[,-1])
 colnames(dumMat) = paste(colnames(dumMat),rep(c("X1","X2","X3"),each=12),sep=" - ")
 
 filt1 = grepl("X12_",colnames(dumMat))
-corrplot(dumMat[,filt1], is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'),
+corrplot(dumMat[,filt1], is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'), 
          col= colorRampPalette(c("darkblue","#FFF5F0","#67000D"))(5),
          addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
 
 filt2 = grepl("X123_",colnames(dumMat))
-corrplot(dumMat[,filt2], is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'),
+corrplot(dumMat[,filt2], is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'), 
          col= colorRampPalette(c("darkblue","#FFF5F0","#67000D"))(5),
          addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
 
 filt3 = grepl("X13_",colnames(dumMat))
-corrplot(dumMat[,filt3], is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'),
+corrplot(dumMat[,filt3], is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'), 
          col= colorRampPalette(c("darkblue","#FFF5F0","#67000D"))(5),
          addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
 
-filename = paste0("../results/_figures/Coverage_X12.png")
+filename = paste0("../results/_figures_main_v2/Coverage_X12.png")
 png(filename = filename,width = 2600, height = 1400, res=200)
-corrplot(dumMat[,filt1], is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'),
+corrplot(dumMat[,filt1], is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'), 
          col= colorRampPalette(c("darkblue","#FFF5F0","#67000D"))(5),
          addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
 dev.off()
 
-filename = paste0("../results/_figures/Coverage_X123.png")
+filename = paste0("../results/_figures_main_v2/Coverage_X123.png")
 png(filename = filename,width = 2600, height = 1400, res=200)
-corrplot(dumMat[,filt2], is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'),
+corrplot(dumMat[,filt2], is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'), 
          col= colorRampPalette(c("darkblue","#FFF5F0","#67000D"))(5),
          addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
 dev.off()
 
-filename = paste0("../results/_figures/Coverage_X13.png")
+filename = paste0("../results/_figures_main_v2/Coverage_X13.png")
 png(filename = filename,width = 2600, height = 1400, res=200)
-corrplot(dumMat[,filt3], is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'),
+corrplot(dumMat[,filt3], is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'), 
          col= colorRampPalette(c("darkblue","#FFF5F0","#67000D"))(5),
          addCoef.col = 'grey50',method = 'color',tl.col = "black",tl.srt = 45)
 dev.off()
 
-#' # Check 2a: Bias ####
+#' # Check 3: Bias ####
 #' ***
+#' I want to plot the bias - again per outcome but only for continuous ones (does not really make sense for binary outcomes)
+#' 
 dumTab = copy(myTab)
 dumTab[,type := "mean"]
 
@@ -297,14 +310,14 @@ plot5 = ggplot(dumTab4[Sim_X=="X12"], aes(x=Sim_Y, y=bias_X1, color = outcome)) 
   geom_point(position=position_dodge(0.5),size=3) +
   geom_errorbar(aes(ymin=bias_X1-1.96*bias_SE_X1, ymax=bias_X1+1.96*bias_SE_X1), width=.2,
                 position=position_dodge(0.5)) +
-  theme_bw(base_size = 15) +
+  theme_bw(base_size = 15) + 
   scale_x_discrete(guide = guide_axis(angle = 45)) +
   #theme(axis.text.x = element_text(angle = 45)) +
   xlab("Scenario") + ylab("Bias") +
   labs(color = "Outcome")
 plot5
 
-filename = paste0("../results/_figures/Bias_X12.png")
+filename = paste0("../results/_figures_main_v2/Bias_X12.png")
 png(filename = filename,width = 2800, height = 1600, res=200)
 print(plot5)
 dev.off()
@@ -315,14 +328,14 @@ plot5 = ggplot(dumTab4[Sim_X=="X123"], aes(x=Sim_Y, y=bias_X1, color = outcome))
   geom_point(position=position_dodge(0.5),size=3) +
   geom_errorbar(aes(ymin=bias_X1-1.96*bias_SE_X1, ymax=bias_X1+1.96*bias_SE_X1), width=.2,
                 position=position_dodge(0.5)) +
-  theme_bw(base_size = 15) +
+  theme_bw(base_size = 15) + 
   scale_x_discrete(guide = guide_axis(angle = 45)) +
   #theme(axis.text.x = element_text(angle = 45)) +
   xlab("Scenario") + ylab("Bias") +
   labs(color = "Outcome")
 plot5
 
-filename = paste0("../results/_figures/Bias_X123.png")
+filename = paste0("../results/_figures_main_v2/Bias_X123.png")
 png(filename = filename,width = 2800, height = 1600, res=200)
 print(plot5)
 dev.off()
@@ -333,19 +346,19 @@ plot5 = ggplot(dumTab4[Sim_X=="X13"], aes(x=Sim_Y, y=bias_X1, color = outcome)) 
   geom_point(position=position_dodge(0.5),size=3) +
   geom_errorbar(aes(ymin=bias_X1-1.96*bias_SE_X1, ymax=bias_X1+1.96*bias_SE_X1), width=.2,
                 position=position_dodge(0.5)) +
-  theme_bw(base_size = 15) +
+  theme_bw(base_size = 15) + 
   scale_x_discrete(guide = guide_axis(angle = 45)) +
   #theme(axis.text.x = element_text(angle = 45)) +
   xlab("Scenario") + ylab("Bias") +
   labs(color = "Outcome")
 plot5
 
-filename = paste0("../results/_figures/Bias_X13.png")
+filename = paste0("../results/_figures_main_v2/Bias_X13.png")
 png(filename = filename,width = 2800, height = 1600, res=200)
 print(plot5)
 dev.off()
 
-#' # Check 2b: empSE ####
+#' # Check 4: empSE ####
 #' ***
 #' I want to plot the empirical SE - again per outcome but only for continuous ones (does not really make sense for binary outcomes)
 #' 
@@ -378,7 +391,7 @@ plot5 = ggplot(dumTab4[Sim_X=="X12"], aes(x=Sim_Y, y=empSE_X1, color = outcome))
   labs(color = "Outcome")
 plot5
 
-filename = paste0("../results/_figures/empSE_X12.png")
+filename = paste0("../results/_figures_main_v2/empSE_X12.png")
 png(filename = filename,width = 2800, height = 1600, res=200)
 print(plot5)
 dev.off()
@@ -396,7 +409,7 @@ plot5 = ggplot(dumTab4[Sim_X=="X123"], aes(x=Sim_Y, y=empSE_X1, color = outcome)
   labs(color = "Outcome")
 plot5
 
-filename = paste0("../results/_figures/empSE_X123.png")
+filename = paste0("../results/_figures_main_v2/empSE_X123.png")
 png(filename = filename,width = 2800, height = 1600, res=200)
 print(plot5)
 dev.off()
@@ -414,12 +427,12 @@ plot5 = ggplot(dumTab4[Sim_X=="X13"], aes(x=Sim_Y, y=empSE_X1, color = outcome))
   labs(color = "Outcome")
 plot5
 
-filename = paste0("../results/_figures/empSE_X13.png")
+filename = paste0("../results/_figures_main_v2/empSE_X13.png")
 png(filename = filename,width = 2800, height = 1600, res=200)
 print(plot5)
 dev.off()
 
-#' # Check 3: Estimate ####
+#' # Check 5: Estimate ####
 #' ***
 #' I want to plot the corrected causal effect estimates - again per outcome!
 #' 
@@ -456,7 +469,7 @@ plot5 = ggplot(dumTab4[Sim_X == "X12",], aes(x=Sim_Y, y=mean_betaIVW_X1, color =
   labs(color = "Outcome")
 plot5
 
-filename = paste0("../results/_figures/CorrectedEstimates_X12.png")
+filename = paste0("../results/_figures_main_v2/CorrectedEstimates_X12.png")
 png(filename = filename,width = 2800, height = 1600, res=200)
 print(plot5)
 dev.off()
@@ -475,7 +488,7 @@ plot5 = ggplot(dumTab4[Sim_X == "X123",], aes(x=Sim_Y, y=mean_betaIVW_X1, color 
   labs(color = "Outcome")
 plot5
 
-filename = paste0("../results/_figures/CorrectedEstimates_X123.png")
+filename = paste0("../results/_figures_main_v2/CorrectedEstimates_X123.png")
 png(filename = filename,width = 2800, height = 1600, res=200)
 print(plot5)
 dev.off()
@@ -494,12 +507,12 @@ plot5 = ggplot(dumTab4[Sim_X == "X13",], aes(x=Sim_Y, y=mean_betaIVW_X1, color =
   labs(color = "Outcome")
 plot5
 
-filename = paste0("../results/_figures/CorrectedEstimates_X13.png")
+filename = paste0("../results/_figures_main_v2/CorrectedEstimates_X13.png")
 png(filename = filename,width = 2800, height = 1600, res=200)
 print(plot5)
 dev.off()
 
-#' # Check 5: conditional F-statistics ####
+#' # Check 6: conditional F-statistics ####
 #' ***
 dumTab = copy(myTab)
 dumTab[,type := "mean"]
@@ -536,7 +549,7 @@ plot5 = ggplot(dumTab4[outcome=="Y2"], aes(x=Sim_Y, y=condFStats_median_X1, col 
   xlab("Scenario") + ylab("Conditional F-Statistics")
 plot5
 
-filename = paste0("../results/_figures/CondFStats.png")
+filename = paste0("../results/_figures_main_v2/CondFStats.png")
 png(filename = filename,width = 3200, height = 1600, res=200)
 print(plot5)
 dev.off()
@@ -545,9 +558,9 @@ dev.off()
 #' ***
 #' I want to save the big table as for the supplemental data!
 #' 
-save(myTab,file="../results/_tables/Simulation_complete.RData")
+save(myTab,file="../results/_tables/Simulation_complete_main_v2.RData")
 
-# excel_fn = paste0("../results/_tables/Simulation_complete.xlsx")
+# excel_fn = paste0("../results/_tables/Simulation_complete_main_v2.xlsx")
 # WriteXLS("myTab", 
 #          ExcelFileName=excel_fn, 
 #          SheetNames="Sim_res", 

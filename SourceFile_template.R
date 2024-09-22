@@ -20,14 +20,26 @@ suppressPackageStartupMessages(library(gamlss))
 suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(MendelianRandomization))
 suppressPackageStartupMessages(library(pgenlibr))
-
-#############################
-# Other helper functions 
-#############################
-source("../helperfunctions/HWETest.R")
+suppressPackageStartupMessages(library(corrplot))
+suppressPackageStartupMessages(library(WriteXLS))
+suppressPackageStartupMessages(library(grid))
+suppressPackageStartupMessages(library(forestploter))
+suppressPackageStartupMessages(library(xtable))
 
 #############################
 # path to data (only if not within the repository)
 #############################
-# POPS genotype data - restricted access only after approved project - PLINK2 format (pvar/pgen/psam)
-POPS_SNP_data = "PATH/TO/POPS/IMPUTED/GENOTYPE/DATA/PROJECT_SPECIFIC_FILTERED/pfile"
+# POPS data - restricted access only after approved project
+POPS_genotyped_data = "PATH/TO/POPS/POPs_Hardcalls/"
+POPS_SNP_data_EGG = "PATH/TO/POPS/POPs_Imputation/Pott/Pott_Fetal_EGG"
+POPS_phenotypes = "PATH/TO/POPS_projectFiltered/POPS_phenotypes/"
+
+# UKB genotype data - MRC BSU application data
+UKB_SNP_data = "PATH/TO/UKB/genotypes-imputed/"
+UKB_phenotypes = "PATH/TO/UKBB/phenotypes/ukb672224.tab"
+UKB_phenotypes_filtered = "PATH/TO/UKB_projectFiltered_phenotypes/"
+UKB_genotypes_filtered = "PATH/TO/UKB_projectFiltered_genotypes/"
+
+# path to other data (GWAS summary statistics used for 2-sample approaches)
+pathData = "PATH/TO/downloadedData"
+

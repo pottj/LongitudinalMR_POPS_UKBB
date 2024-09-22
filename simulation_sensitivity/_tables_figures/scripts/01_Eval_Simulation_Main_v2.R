@@ -24,12 +24,12 @@ time0<-Sys.time()
 
 source("../../../SourceFile_HPC.R")
 
-outdir_results = paste0("../results/_figures_main_v1/")
+outdir_results = paste0("../results/_figures_main_v2/")
 if(dir.exists(outdir_results)==F){
   dir.create(outdir_results)
-  message("Created results folder ",outdir_results, " for simulation main v1")
+  message("Created results folder ",outdir_results, " for simulation main v2")
 }else{
-  message("Using pre-existing results folder ",outdir_results, " for simulation main v1")
+  message("Using pre-existing results folder ",outdir_results, " for simulation main v2")
 }
 
 #' # Get to-do list ####

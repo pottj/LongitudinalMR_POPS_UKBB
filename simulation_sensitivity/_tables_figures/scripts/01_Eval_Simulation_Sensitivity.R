@@ -67,8 +67,14 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
     SimTab[exposure %in% c("var"),exposure := "X3"]
     
     # correct estimates for outcome age
-    SimTab[exposure == "X2",beta_IVW := beta_IVW/70]
-    SimTab[exposure == "X2",SE_IVW := SE_IVW/70]
+    if(myNames[j] %in% c("samplesAsPOPS","weakInstrumentBias")){
+      SimTab[exposure == "X2",beta_IVW := beta_IVW/30]
+      SimTab[exposure == "X2",SE_IVW := SE_IVW/30]
+    }else{
+      SimTab[exposure == "X2",beta_IVW := beta_IVW/70]
+      SimTab[exposure == "X2",SE_IVW := SE_IVW/70]
+    }
+    
     
     # correct estimates for Allele score factor
     SimTab[exposure == "X3",beta_IVW := beta_IVW*0.5]

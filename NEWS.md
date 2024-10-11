@@ -2,7 +2,14 @@
 
 Here I want to track my progress
 
-## 2024/0920
+## 2024/10/11
+
+- welcome back from holiday
+- updating simulation: run some scenarios with 
+    - fixed genetic correlation between mean-variability and slope-variability
+    - gene-environment interaction (check pleiotropy)
+    
+## 2024/09/20
 
 - updated real data analyses: after feedback from Steve, I streamlined the analysis plan for the real data, to keep it focused:
     - strict SNP selection procedure (EGG for EFW; GLGC for TC)

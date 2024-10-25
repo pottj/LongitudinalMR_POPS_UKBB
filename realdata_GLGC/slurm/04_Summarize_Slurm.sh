@@ -93,7 +93,7 @@ R CMD BATCH --vanilla ../scripts/04_Summarize_04_SupFigs_ScatterPlots.R ../scrip
 cp Rplots.pdf 04_04_SupFig_Rplots.pdf
 rm Rplots.pdf
 
-# Script for Main Figures
+# Script for Supplemental Figures (Trajectories)
 R CMD BATCH --vanilla ../scripts/04_Summarize_05_SupFigs_TrajectoryPlot.R ../scripts/04_Summarize_05_SupFigs_TrajectoryPlot.R.out
 cp Rplots.pdf 04_05_SupFig_Rplots.pdf
 rm Rplots.pdf

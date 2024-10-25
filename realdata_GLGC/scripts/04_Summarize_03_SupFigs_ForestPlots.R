@@ -39,13 +39,13 @@ for(i in 1:3){
   plotData = copy(myTab)
   if(i==1){
     plotData = plotData[,c(1,2,10:13)]
-    myHeight = 700
+    myHeight = 800
   }else if(i==2){
     plotData = plotData[,c(1,2,16,18:20)]
-    myHeight = 600
+    myHeight = 700
   }else if(i==3){
     plotData = plotData[,c(1,2,22:25)]
-    myHeight = 600
+    myHeight = 700
   }
   names(plotData)[3:6] = c("beta","SE","pval","condF")
   plotData = plotData[!is.na(beta),]
@@ -55,6 +55,7 @@ for(i in 1:3){
   plotData[,Grouping := gsub("sens_","sens: ",Grouping)]
   plotData[,Grouping := gsub("noSlope","no slope",Grouping)]
   plotData[,Grouping := gsub("noVar","no variability",Grouping)]
+  plotData[,Grouping := gsub("randomEffectSigma","2 RI",Grouping)]
   setnames(plotData,"Grouping","Setting")
   plotData[,condF := round(condF,2)]
   plotData[,condF := as.character(condF)]
@@ -98,13 +99,13 @@ for(i in 1:3){
   plotData = copy(myTab)
   if(i==1){
     plotData = plotData[,c(1,2,10:13)]
-    myHeight = 700
+    myHeight = 800
   }else if(i==2){
     plotData = plotData[,c(1,2,16,18:20)]
-    myHeight = 600
+    myHeight = 700
   }else if(i==3){
     plotData = plotData[,c(1,2,22:25)]
-    myHeight = 600
+    myHeight = 700
   }
   names(plotData)[3:6] = c("beta","SE","pval","condF")
   plotData = plotData[!is.na(beta),]
@@ -114,6 +115,7 @@ for(i in 1:3){
   plotData[,Grouping := gsub("sens_","sens: ",Grouping)]
   plotData[,Grouping := gsub("noSlope","no slope",Grouping)]
   plotData[,Grouping := gsub("noVar","no variability",Grouping)]
+  plotData[,Grouping := gsub("randomEffectSigma","2 RI",Grouping)]
   setnames(plotData,"Grouping","Setting")
   plotData[,condF := round(condF,2)]
   plotData[,condF := as.character(condF)]
@@ -152,17 +154,17 @@ myTab = copy(tab3)
 myExposureTypes = c("mean","slope","variability")
 
 for(i in 1:3){
-  #i=2
+  #i=1
   plotData = copy(myTab)
   if(i==1){
     plotData = plotData[,c(1,2,5,10:13)]
-    myHeight = 1200
+    myHeight = 1400
   }else if(i==2){
     plotData = plotData[,c(1,2,5,16,18:20)]
-    myHeight = 1000
+    myHeight = 1200
   }else if(i==3){
     plotData = plotData[,c(1,2,5,22:25)]
-    myHeight = 1000
+    myHeight = 1200
   }
   names(plotData)[4:7] = c("beta","SE","pval","condF")
   plotData = plotData[!is.na(beta),]
@@ -176,6 +178,7 @@ for(i in 1:3){
   plotData[,Grouping := gsub("sens_","sens: ",Grouping)]
   plotData[,Grouping := gsub("noSlope","no slope",Grouping)]
   plotData[,Grouping := gsub("noVar","no variability",Grouping)]
+  plotData[,Grouping := gsub("randomEffectSigma","2 RI",Grouping)]
   setnames(plotData,"Grouping","Setting")
   plotData[,condF := round(condF,2)]
   plotData[,condF := as.character(condF)]
@@ -227,15 +230,15 @@ for(i in 1:3){
   plotData2 = plotData2[setting == "2-sample"]
   if(i==1){
     plotData = plotData[,c(1,2,10:13)]
-    myHeight = 700
+    myHeight = 800
     plotData2 = plotData2[exposure_type == myExposureTypes[i]]
   }else if(i==2){
     plotData = plotData[,c(1,2,16,18:20)]
-    myHeight = 600
+    myHeight = 700
     plotData2 = plotData2[exposure_type == "slope_adj"]
   }else if(i==3){
     plotData = plotData[,c(1,2,22:25)]
-    myHeight = 600
+    myHeight = 700
     plotData2 = plotData2[exposure_type == "var"]
   }
   names(plotData)[3:6] = c("beta","SE","pval","condF")
@@ -252,6 +255,7 @@ for(i in 1:3){
   plotData[,Grouping := gsub("sens_","sens: ",Grouping)]
   plotData[,Grouping := gsub("noSlope","no slope",Grouping)]
   plotData[,Grouping := gsub("noVar","no variability",Grouping)]
+  plotData[,Grouping := gsub("randomEffectSigma","2 RI",Grouping)]
   setnames(plotData,"Grouping","Setting")
   plotData[,condF := round(condF,2)]
   plotData[,condF := as.character(condF)]
@@ -303,15 +307,15 @@ for(i in 1:3){
   plotData2 = plotData2[setting == "2-sample"]
   if(i==1){
     plotData = plotData[,c(1,2,10:13)]
-    myHeight = 700
+    myHeight = 800
     plotData2 = plotData2[exposure_type == myExposureTypes[i]]
   }else if(i==2){
     plotData = plotData[,c(1,2,16,18:20)]
-    myHeight = 600
+    myHeight = 700
     plotData2 = plotData2[exposure_type == "slope_adj"]
   }else if(i==3){
     plotData = plotData[,c(1,2,22:25)]
-    myHeight = 600
+    myHeight = 700
     plotData2 = plotData2[exposure_type == "var"]
   }
   names(plotData)[3:6] = c("beta","SE","pval","condF")
@@ -328,6 +332,7 @@ for(i in 1:3){
   plotData[,Grouping := gsub("sens_","sens: ",Grouping)]
   plotData[,Grouping := gsub("noSlope","no slope",Grouping)]
   plotData[,Grouping := gsub("noVar","no variability",Grouping)]
+  plotData[,Grouping := gsub("randomEffectSigma","2 RI",Grouping)]
   setnames(plotData,"Grouping","Setting")
   plotData[,condF := round(condF,2)]
   plotData[,condF := as.character(condF)]
@@ -377,15 +382,15 @@ for(i in 1:3){
   plotData2 = plotData2[setting == "2-sample"]
   if(i==1){
     plotData = plotData[,c(1,2,5,10:13)]
-    myHeight = 1200
+    myHeight = 1400
     plotData2 = plotData2[exposure_type == myExposureTypes[i]]
   }else if(i==2){
     plotData = plotData[,c(1,2,5,16,18:20)]
-    myHeight = 1000
+    myHeight = 1200
     plotData2 = plotData2[exposure_type == "slope_adj"]
   }else if(i==3){
     plotData = plotData[,c(1,2,5,22:25)]
-    myHeight = 1000
+    myHeight = 1200
     plotData2 = plotData2[exposure_type == "var"]
   }
   names(plotData)[4:7] = c("beta","SE","pval","condF")
@@ -407,6 +412,7 @@ for(i in 1:3){
   plotData[,Grouping := gsub("sens_","sens: ",Grouping)]
   plotData[,Grouping := gsub("noSlope","no slope",Grouping)]
   plotData[,Grouping := gsub("noVar","no variability",Grouping)]
+  plotData[,Grouping := gsub("randomEffectSigma","2 RI",Grouping)]
   setnames(plotData,"Grouping","Setting")
   plotData[,condF := round(condF,2)]
   plotData[,condF := as.character(condF)]

@@ -17,8 +17,8 @@
 #' 
 #' 1) UKBB - Cohort description (mean and SD of all covariables used in the regression model - restricted to setting main setting)
 #' 2) UKBB - Overview of instruments
-#' 3) POPS - MVMR results (main + sensitivity)
-#' 4) POPS - MR results (main + sensitivity)
+#' 3) UKBB - MVMR results (main + sensitivity)
+#' 4) UKBB - MR results (main + sensitivity)
 #' 
 #' 
 #' # Initialize ####
@@ -139,7 +139,7 @@ tag = gsub("-","",tag)
 #' ***
 #' Selected instruments
 #' 
-#' Here, I want to give all my summary statistics, that I used throughout the analysis. I want I row per SNP and setting (main, sens with no statin data, sens with no variability, sens with no slope). 
+#' Here, I want to give all my summary statistics, that I used throughout the analysis. I want I row per SNP and setting (main, sens with no statin data, sens with no variability, sens with no slope, sens with random effect in sigma model). 
 #' 
 {
   loaded = load("../results/01_Prep_03_SNPList.RData")

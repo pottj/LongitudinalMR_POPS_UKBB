@@ -8,12 +8,12 @@
 ## Full documentation can be found here: https://slurm.schedmd.com/sbatch.html
 
 ## Enter a short name for the job, to be shown in SLURM output
-#SBATCH -J LongMR_02_GXassoc
+#SBATCH -J LongMR_TC_mainRS
 
 ## Enter the wall-clock time limit for your jobs.
 ## If jobs reach this limit they are automatically killed.
 ## Maximum value 36:00:00.
-#SBATCH --time=6:00:00
+#SBATCH --time=3:00:00
 
 ## For single-core jobs, this number should be '1'. 
 ## If your job has built-in parallelism, eg using OpenMP or 
@@ -50,7 +50,7 @@
 ## Note that resources (cores, memory, time) requested above are for each
 ## individual array task, NOT the total array.
 ## #SBATCH --array=1-4
-#SBATCH --array=5
+#SBATCH --array=1-7
 
 ##  - - - - - - - - - - - - - -
 
@@ -77,7 +77,7 @@ module load R/4.3.1-icelake
 
 # Step 0: run R scripts
 
-RFILE=`ls ../scripts/02_SNPs_*.R | sed "${SLURM_ARRAY_TASK_ID}q;d"`
+RFILE=`ls ../scripts/02_SNPs_05*.R | sed "${SLURM_ARRAY_TASK_ID}q;d"`
 
 R CMD BATCH --vanilla $RFILE $RFILE.out
 

@@ -199,7 +199,7 @@ dumTab2 = foreach(j = 1:length(myExposures))%do%{
 }
 
 MVMR_results = rbindlist(dumTab2,fill = T)
-save(MVMR_results,file = paste0("../results/03_MVMR_05_SENS_SNPset.RData"))
+save(MVMR_results,file = paste0("../results/03_MVMR_06_SENS_SNPset.RData"))
 
 #' # Session Info ####
 #' ***

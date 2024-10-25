@@ -168,7 +168,7 @@ source("../../SourceFile_HPC.R")
 #' ***
 #' Selected instruments
 #' 
-#' Here, I want to give all my summary statistics, that I used throughout the analysis. I want I row per SNP and setting (main, sens with no statin data, sens with no variability, sens with no slope). 
+#' Here, I want to give all my summary statistics, that I used throughout the analysis. I want I row per SNP and setting (main, sens with no statin data, sens with no variability, sens with no slope, sens with random effect in sigma model). 
 #' 
 #' Note: I still have to add the summary statistics from the POPS BW GWAS 
 {

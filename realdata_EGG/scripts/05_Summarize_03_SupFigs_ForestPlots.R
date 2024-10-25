@@ -55,6 +55,7 @@ for(i in 1:3){
   plotData[,Grouping := gsub("sens_","sens: ",Grouping)]
   plotData[,Grouping := gsub("noSlope","no slope",Grouping)]
   plotData[,Grouping := gsub("noVar","no variability",Grouping)]
+  plotData[,Grouping := gsub("randomEffectSigma","2 RI",Grouping)]
   setnames(plotData,"Grouping","Setting")
   plotData[,condF := round(condF,2)]
   plotData[,condF := as.character(condF)]
@@ -114,6 +115,7 @@ for(i in 1:3){
   plotData[,Grouping := gsub("sens_","sens: ",Grouping)]
   plotData[,Grouping := gsub("noSlope","no slope",Grouping)]
   plotData[,Grouping := gsub("noVar","no variability",Grouping)]
+  plotData[,Grouping := gsub("randomEffectSigma","2 RI",Grouping)]
   setnames(plotData,"Grouping","Setting")
   plotData[,condF := round(condF,2)]
   plotData[,condF := as.character(condF)]
@@ -176,6 +178,7 @@ for(i in 1:3){
   plotData[,Grouping := gsub("sens_","sens: ",Grouping)]
   plotData[,Grouping := gsub("noSlope","no slope",Grouping)]
   plotData[,Grouping := gsub("noVar","no variability",Grouping)]
+  plotData[,Grouping := gsub("randomEffectSigma","2 RI",Grouping)]
   setnames(plotData,"Grouping","Setting")
   plotData[,condF := round(condF,2)]
   plotData[,condF := as.character(condF)]
@@ -252,6 +255,7 @@ for(i in 1:3){
   plotData[,Grouping := gsub("sens_","sens: ",Grouping)]
   plotData[,Grouping := gsub("noSlope","no slope",Grouping)]
   plotData[,Grouping := gsub("noVar","no variability",Grouping)]
+  plotData[,Grouping := gsub("randomEffectSigma","2 RI",Grouping)]
   setnames(plotData,"Grouping","Setting")
   plotData[,condF := round(condF,2)]
   plotData[,condF := as.character(condF)]
@@ -328,6 +332,7 @@ for(i in 1:3){
   plotData[,Grouping := gsub("sens_","sens: ",Grouping)]
   plotData[,Grouping := gsub("noSlope","no slope",Grouping)]
   plotData[,Grouping := gsub("noVar","no variability",Grouping)]
+  plotData[,Grouping := gsub("randomEffectSigma","2 RI",Grouping)]
   setnames(plotData,"Grouping","Setting")
   plotData[,condF := round(condF,2)]
   plotData[,condF := as.character(condF)]
@@ -407,6 +412,7 @@ for(i in 1:3){
   plotData[,Grouping := gsub("sens_","sens: ",Grouping)]
   plotData[,Grouping := gsub("noSlope","no slope",Grouping)]
   plotData[,Grouping := gsub("noVar","no variability",Grouping)]
+  plotData[,Grouping := gsub("randomEffectSigma","2 RI",Grouping)]
   setnames(plotData,"Grouping","Setting")
   plotData[,condF := round(condF,2)]
   plotData[,condF := as.character(condF)]

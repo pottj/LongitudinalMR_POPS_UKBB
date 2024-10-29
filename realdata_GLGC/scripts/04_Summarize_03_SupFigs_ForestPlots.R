@@ -28,267 +28,126 @@ load("../results/_tables/SupplementalTables_GLGC.RData")
 
 #' # Loop 1 ####
 #' ***
-#' I want one plot per exposure type. These plots should only include the MVMR results, and only the "all SNPs setting" (there will be literally no difference between "nominal" and "all"). 
+#' I want one plot per exposure type. These plots should include 
 #' 
-myTab = copy(tab3)
-myTab = myTab[threshold == "all_SNPs",]
-myExposureTypes = c("mean","slope","variability")
-
-for(i in 1:3){
-  #i=1
-  plotData = copy(myTab)
-  if(i==1){
-    plotData = plotData[,c(1,2,10:13)]
-    myHeight = 800
-  }else if(i==2){
-    plotData = plotData[,c(1,2,16,18:20)]
-    myHeight = 700
-  }else if(i==3){
-    plotData = plotData[,c(1,2,22:25)]
-    myHeight = 700
-  }
-  names(plotData)[3:6] = c("beta","SE","pval","condF")
-  plotData = plotData[!is.na(beta),]
-  plotData[,lowerCI95 := beta-1.96*SE]
-  plotData[,upperCI95 := beta+1.96*SE]
-  plotData[,Grouping := paste(setting,flag,sep=" - ")]
-  plotData[,Grouping := gsub("sens_","sens: ",Grouping)]
-  plotData[,Grouping := gsub("noSlope","no slope",Grouping)]
-  plotData[,Grouping := gsub("noVar","no variability",Grouping)]
-  plotData[,Grouping := gsub("randomEffectSigma","2 RI",Grouping)]
-  setnames(plotData,"Grouping","Setting")
-  plotData[,condF := round(condF,2)]
-  plotData[,condF := as.character(condF)]
-  plotData[setting=="2-sample",condF := ""]
-  
-  plotData$` ` <- paste(rep(" ", 50), collapse = " ")
-  plotData$`Estimate [95% CI]` <- ifelse(is.na(plotData$SE), "",
-                                      sprintf("%.2f [%.2f, %.2f]",
-                                              plotData$beta, plotData$lowerCI95, plotData$upperCI95))
-  
-  myXlab = paste0("Causal effect of the ",myExposureTypes[i]," of TC on CAD")
-  
-  p2<- forest(plotData[,c(9,10,11,6)],
-              est = plotData$beta,
-              lower = plotData$lowerCI95, 
-              upper = plotData$upperCI95,
-              sizes = 0.5,
-              ci_column = 2,
-              ref_line = 0,
-              title = myXlab)
-  
-  plot(p2)
-  
-  filename = paste0("../results/_figures/SupFigs/ForestPlot_",myExposureTypes[i],"_all_1v2sample.png")
-  png(filename = filename,width = 1900, height = myHeight, res=200)
-  plot(p2)
-  dev.off()
-  
-}
-
-#' # Loop 2 ####
-#' ***
-#' I want one plot per exposure type. These plots should only include the MVMR results, and only the "nominal SNPs setting" (there will be literally no difference between "nominal" and "all"). 
+#' - only the nominal SNP approaches
+#' - 1- vs 2-sample approach
+#' - uni- vs multivariable
+#' - main vs sensitivity setting
+#' - not the cherry picking SNP set 
 #' 
 myTab = copy(tab3)
 myTab = myTab[threshold == "nominal_SNPs",]
 myExposureTypes = c("mean","slope","variability")
-
-for(i in 1:3){
-  #i=1
-  plotData = copy(myTab)
-  if(i==1){
-    plotData = plotData[,c(1,2,10:13)]
-    myHeight = 800
-  }else if(i==2){
-    plotData = plotData[,c(1,2,16,18:20)]
-    myHeight = 700
-  }else if(i==3){
-    plotData = plotData[,c(1,2,22:25)]
-    myHeight = 700
-  }
-  names(plotData)[3:6] = c("beta","SE","pval","condF")
-  plotData = plotData[!is.na(beta),]
-  plotData[,lowerCI95 := beta-1.96*SE]
-  plotData[,upperCI95 := beta+1.96*SE]
-  plotData[,Grouping := paste(setting,flag,sep=" - ")]
-  plotData[,Grouping := gsub("sens_","sens: ",Grouping)]
-  plotData[,Grouping := gsub("noSlope","no slope",Grouping)]
-  plotData[,Grouping := gsub("noVar","no variability",Grouping)]
-  plotData[,Grouping := gsub("randomEffectSigma","2 RI",Grouping)]
-  setnames(plotData,"Grouping","Setting")
-  plotData[,condF := round(condF,2)]
-  plotData[,condF := as.character(condF)]
-  plotData[setting=="2-sample",condF := ""]
-  
-  plotData$` ` <- paste(rep(" ", 50), collapse = " ")
-  plotData$`Estimate [95% CI]` <- ifelse(is.na(plotData$SE), "",
-                                         sprintf("%.2f [%.2f, %.2f]",
-                                                 plotData$beta, plotData$lowerCI95, plotData$upperCI95))
-  
-  myXlab = paste0("Causal effect of the ",myExposureTypes[i]," of TC on CAD")
-  
-  p2<- forest(plotData[,c(9,10,11,6)],
-              est = plotData$beta,
-              lower = plotData$lowerCI95, 
-              upper = plotData$upperCI95,
-              sizes = 0.5,
-              ci_column = 2,
-              ref_line = 0,
-              title = myXlab)
-  
-  plot(p2)
-  
-  filename = paste0("../results/_figures/SupFigs/ForestPlot_",myExposureTypes[i],"_nominal_1v2sample.png")
-  png(filename = filename,width = 1900, height = myHeight, res=200)
-  plot(p2)
-  dev.off()
-  
-}
-
-#' # Loop 3 ####
-#' ***
-#' I want one plot per exposure type. These plots should only include the MVMR results, and both "all" and the "nominal"  SNPs setting. 
-#' 
-myTab = copy(tab3)
-myExposureTypes = c("mean","slope","variability")
-
-for(i in 1:3){
-  #i=1
-  plotData = copy(myTab)
-  if(i==1){
-    plotData = plotData[,c(1,2,5,10:13)]
-    myHeight = 1400
-  }else if(i==2){
-    plotData = plotData[,c(1,2,5,16,18:20)]
-    myHeight = 1200
-  }else if(i==3){
-    plotData = plotData[,c(1,2,5,22:25)]
-    myHeight = 1200
-  }
-  names(plotData)[4:7] = c("beta","SE","pval","condF")
-  plotData = plotData[!is.na(beta),]
-  plotData[,lowerCI95 := beta-1.96*SE]
-  plotData[,upperCI95 := beta+1.96*SE]
-  plotData[,threshold := gsub("_SNPs","",threshold)]
-  plotData[,threshold := gsub("nominal","nom",threshold)]
-  plotData[,threshold := gsub("all","all    ",threshold)]
-  
-  plotData[,Grouping := paste(setting,threshold,flag,sep=" - ")]
-  plotData[,Grouping := gsub("sens_","sens: ",Grouping)]
-  plotData[,Grouping := gsub("noSlope","no slope",Grouping)]
-  plotData[,Grouping := gsub("noVar","no variability",Grouping)]
-  plotData[,Grouping := gsub("randomEffectSigma","2 RI",Grouping)]
-  setnames(plotData,"Grouping","Setting")
-  plotData[,condF := round(condF,2)]
-  plotData[,condF := as.character(condF)]
-  plotData[setting=="2-sample",condF := ""]
-  
-  plotData$` ` <- paste(rep(" ", 50), collapse = " ")
-  plotData$`Estimate [95% CI]` <- ifelse(is.na(plotData$SE), "",
-                                         sprintf("%.2f [%.2f, %.2f]",
-                                                 plotData$beta, plotData$lowerCI95, plotData$upperCI95))
-  
-  myXlab = paste0("Causal effect of the ",myExposureTypes[i]," of TC on CAD")
-  
-  p2<- forest(plotData[,c(10,11,12,7)],
-              est = plotData$beta,
-              lower = plotData$lowerCI95, 
-              upper = plotData$upperCI95,
-              sizes = 0.5,
-              ci_column = 2,
-              ref_line = 0,
-              title = myXlab)
-  
-  plot(p2)
-  
-  filename = paste0("../results/_figures/SupFigs/ForestPlot_",myExposureTypes[i],"_1v2sample.png")
-  png(filename = filename,width = 2000, height = myHeight, res=200)
-  plot(p2)
-  dev.off()
-  
-}
-
-#' # Loop 4 ####
-#' ***
-#' I want a forest plot for the multi- and univariate results. I only use the 2-sample MR / MVMR results, and only the "all SNPs setting" 
-#' 
-myTab = copy(tab3)
-myTab = myTab[threshold == "all_SNPs",]
-myExposureTypes = c("mean","slope","variability")
+myTab = myTab[flag != "SENS_SNPset"]
 
 myTab2 = copy(tab4)
 myTab2 = myTab2[exposure_type %in% c("mean","slope_adj","var"),]
-myTab2 = myTab2[threshold == "all_SNPs",]
+myTab2 = myTab2[threshold == "nominal_SNPs",]
+myTab2 = myTab2[flag != "SENS_SNPset"]
 setorder(myTab2,setting,exposure_type)
 
 for(i in 1:3){
   #i=1
   plotData = copy(myTab)
-  plotData = plotData[setting == "2-sample"]
+  #plotData = plotData[setting == "2-sample"]
   plotData2 = copy(myTab2)
-  plotData2 = plotData2[setting == "2-sample"]
+  #plotData2 = plotData2[setting == "2-sample"]
   if(i==1){
     plotData = plotData[,c(1,2,10:13)]
-    myHeight = 800
+    myHeight = 1400
     plotData2 = plotData2[exposure_type == myExposureTypes[i]]
   }else if(i==2){
     plotData = plotData[,c(1,2,16,18:20)]
-    myHeight = 700
+    myHeight = 1200
     plotData2 = plotData2[exposure_type == "slope_adj"]
   }else if(i==3){
     plotData = plotData[,c(1,2,22:25)]
-    myHeight = 700
+    myHeight = 1200
     plotData2 = plotData2[exposure_type == "var"]
   }
   names(plotData)[3:6] = c("beta","SE","pval","condF")
   plotData = plotData[!is.na(beta),]
+  
   plotData2 = plotData2[,c(1,2,8,9,10,11)]
   names(plotData2)[3:6] = c("beta","SE","pval","condF")
-  plotData2[,setting := "univariate"]
-  plotData[,setting := "multivariate"]
+  
+  plotData2[,setting2 := "UV"]
+  plotData[,setting2 := "MV"]
   plotData = rbind(plotData,plotData2)
   
   plotData[,lowerCI95 := beta-1.96*SE]
   plotData[,upperCI95 := beta+1.96*SE]
-  plotData[,Grouping := paste(setting,flag,sep=" - ")]
-  plotData[,Grouping := gsub("sens_","sens: ",Grouping)]
-  plotData[,Grouping := gsub("noSlope","no slope",Grouping)]
-  plotData[,Grouping := gsub("noVar","no variability",Grouping)]
-  plotData[,Grouping := gsub("randomEffectSigma","2 RI",Grouping)]
+  plotData[,Grouping := paste(setting,setting2,flag,sep=" - ")]
   setnames(plotData,"Grouping","Setting")
   plotData[,condF := round(condF,2)]
   plotData[,condF := as.character(condF)]
-  plotData[setting=="2-sample",condF := ""]
+  setorder(plotData,flag,setting2,-setting)
+  plotData[setting!="2-sample",condF := ""]
   
   plotData$` ` <- paste(rep(" ", 50), collapse = " ")
   plotData$`Estimate [95% CI]` <- ifelse(is.na(plotData$SE), "",
                                          sprintf("%.2f [%.2f, %.2f]",
                                                  plotData$beta, plotData$lowerCI95, plotData$upperCI95))
+  plotData[,Setting := gsub(" - MAIN","",Setting)]
+  plotData[,Setting := gsub(" - SENS.*","",Setting)]
+  plotData[,Setting := paste0("    ",Setting)]
+  
+  dummy = data.table(Setting = unique(plotData$flag))
+  plotData = rbind(plotData,dummy, fill=T)
+  if(i==1){
+    plotData = plotData[c(21,1:4,25,17:20,22,5:8,23,9:12,24,13:16)]
+  }else{
+    plotData = plotData[c(17,1:4,20,13:16,18,5:8,19,9:12)]  
+  }
+  plotData[,Setting := gsub("SENS_","sens: ",Setting)]
+  plotData[,Setting := gsub("noSlope","no slope",Setting)]
+  plotData[,Setting := gsub("noVar","no variability",Setting)]
+  plotData[,Setting := gsub("RIsigma","RI sigma",Setting)]
+  plotData[,Setting := gsub("sampleSet","data subset",Setting)]
+  plotData[is.na(flag),` ` := ""]
+  plotData[is.na(flag),`Estimate [95% CI]`:= ""]
+  plotData[is.na(flag),condF := ""]
+  
+  dummy = plotData$Setting
+  dummy2 = plotData$flag
+  dummy[is.na(dummy2)] = "white"
+  dummy[grepl("2-sample",dummy) & grepl("UV",dummy)] = "#E2F0D9"
+  dummy[grepl("2-sample",dummy) & grepl("MV",dummy)] = "#70AD47"
+  dummy[grepl("1-sample",dummy) & grepl("UV",dummy)] = "#DEEBF7"
+  dummy[grepl("1-sample",dummy) & grepl("MV",dummy)] = "#5B9BD5"
+  tm1<- forest_theme(core=list(bg_params=list(fill = dummy)))
   
   myXlab = paste0("Causal effect of the ",myExposureTypes[i]," of TC on CAD")
   
-  p2<- forest(plotData[,c(9,10,11,6)],
+  p2<- forest(plotData[,c(10,11,12,6)],
               est = plotData$beta,
               lower = plotData$lowerCI95, 
               upper = plotData$upperCI95,
               sizes = 0.5,
               ci_column = 2,
               ref_line = 0,
-              title = myXlab)
+              title = myXlab,
+              theme = tm1)
   
   plot(p2)
   
-  filename = paste0("../results/_figures/SupFigs/ForestPlot_",myExposureTypes[i],"_all_UniMulti.png")
-  png(filename = filename,width = 1900, height = myHeight, res=200)
+  filename = paste0("../results/_figures/SupFigs/ForestPlot_",myExposureTypes[i],"_nom.png")
+  png(filename = filename,width = 1700, height = myHeight, res=200)
   plot(p2)
   dev.off()
   
 }
 
-#' # Loop 5 ####
+#' # Loop 1 ####
 #' ***
-#' I want a forest plot for the multi- and univariate results. I only use the 2-sample MR / MVMR results, and only the "nominal SNPs setting" 
+#' I want one plot per exposure type. These plots should include 
+#' 
+#' - only the nominal SNP approaches
+#' - 1- vs 2-sample approach
+#' - uni- vs multivariable
+#' - main vs sensitivity setting
+#' - including the cherry picking SNP set 
 #' 
 myTab = copy(tab3)
 myTab = myTab[threshold == "nominal_SNPs",]
@@ -302,142 +161,91 @@ setorder(myTab2,setting,exposure_type)
 for(i in 1:3){
   #i=1
   plotData = copy(myTab)
-  plotData = plotData[setting == "2-sample"]
+  #plotData = plotData[setting == "2-sample"]
   plotData2 = copy(myTab2)
-  plotData2 = plotData2[setting == "2-sample"]
+  #plotData2 = plotData2[setting == "2-sample"]
   if(i==1){
     plotData = plotData[,c(1,2,10:13)]
-    myHeight = 800
+    myHeight = 1600
     plotData2 = plotData2[exposure_type == myExposureTypes[i]]
   }else if(i==2){
     plotData = plotData[,c(1,2,16,18:20)]
-    myHeight = 700
+    myHeight = 1400
     plotData2 = plotData2[exposure_type == "slope_adj"]
   }else if(i==3){
     plotData = plotData[,c(1,2,22:25)]
-    myHeight = 700
+    myHeight = 1400
     plotData2 = plotData2[exposure_type == "var"]
   }
   names(plotData)[3:6] = c("beta","SE","pval","condF")
   plotData = plotData[!is.na(beta),]
+  
   plotData2 = plotData2[,c(1,2,8,9,10,11)]
   names(plotData2)[3:6] = c("beta","SE","pval","condF")
-  plotData2[,setting := "univariate"]
-  plotData[,setting := "multivariate"]
+  
+  plotData2[,setting2 := "UV"]
+  plotData[,setting2 := "MV"]
   plotData = rbind(plotData,plotData2)
   
   plotData[,lowerCI95 := beta-1.96*SE]
   plotData[,upperCI95 := beta+1.96*SE]
-  plotData[,Grouping := paste(setting,flag,sep=" - ")]
-  plotData[,Grouping := gsub("sens_","sens: ",Grouping)]
-  plotData[,Grouping := gsub("noSlope","no slope",Grouping)]
-  plotData[,Grouping := gsub("noVar","no variability",Grouping)]
-  plotData[,Grouping := gsub("randomEffectSigma","2 RI",Grouping)]
+  plotData[,Grouping := paste(setting,setting2,flag,sep=" - ")]
   setnames(plotData,"Grouping","Setting")
   plotData[,condF := round(condF,2)]
   plotData[,condF := as.character(condF)]
-  plotData[setting=="2-sample",condF := ""]
+  setorder(plotData,flag,setting2,-setting)
+  plotData[setting!="2-sample",condF := ""]
   
   plotData$` ` <- paste(rep(" ", 50), collapse = " ")
   plotData$`Estimate [95% CI]` <- ifelse(is.na(plotData$SE), "",
                                          sprintf("%.2f [%.2f, %.2f]",
                                                  plotData$beta, plotData$lowerCI95, plotData$upperCI95))
+  plotData[,Setting := gsub(" - MAIN","",Setting)]
+  plotData[,Setting := gsub(" - SENS.*","",Setting)]
+  plotData[,Setting := paste0("    ",Setting)]
   
-  myXlab = paste0("Causal effect of the ",myExposureTypes[i]," of TC on CAD")
-  
-  p2<- forest(plotData[,c(9,10,11,6)],
-              est = plotData$beta,
-              lower = plotData$lowerCI95, 
-              upper = plotData$upperCI95,
-              sizes = 0.5,
-              ci_column = 2,
-              ref_line = 0,
-              title = myXlab)
-  
-  plot(p2)
-  
-  filename = paste0("../results/_figures/SupFigs/ForestPlot_",myExposureTypes[i],"_nominal_UniMulti.png")
-  png(filename = filename,width = 1900, height = myHeight, res=200)
-  plot(p2)
-  dev.off()
-  
-}
-
-#' # Loop 6 ####
-#' ***
-#' I want a forest plot for the multi- and univariate results. I only use the 2-sample MR / MVMR results, and both SNP settings 
-#' 
-myTab = copy(tab3)
-myExposureTypes = c("mean","slope","variability")
-
-myTab2 = copy(tab4)
-myTab2 = myTab2[exposure_type %in% c("mean","slope_adj","var"),]
-setorder(myTab2,setting,exposure_type)
-
-for(i in 1:3){
-  #i=1
-  plotData = copy(myTab)
-  plotData = plotData[setting == "2-sample"]
-  plotData2 = copy(myTab2)
-  plotData2 = plotData2[setting == "2-sample"]
+  dummy = data.table(Setting = unique(plotData$flag))
+  plotData = rbind(plotData,dummy, fill=T)
   if(i==1){
-    plotData = plotData[,c(1,2,5,10:13)]
-    myHeight = 1400
-    plotData2 = plotData2[exposure_type == myExposureTypes[i]]
-  }else if(i==2){
-    plotData = plotData[,c(1,2,5,16,18:20)]
-    myHeight = 1200
-    plotData2 = plotData2[exposure_type == "slope_adj"]
-  }else if(i==3){
-    plotData = plotData[,c(1,2,5,22:25)]
-    myHeight = 1200
-    plotData2 = plotData2[exposure_type == "var"]
+    plotData = plotData[c(25,1:4,30,21:24,26,5:8,28,13:16,29,17:20,27,9:12)]
+  }else{
+    plotData = plotData[c(21,1:4,25,17:20,22,5:8,24,13:16,23,9:12)]  
   }
-  names(plotData)[4:7] = c("beta","SE","pval","condF")
-  plotData = plotData[!is.na(beta),]
-  plotData2 = plotData2[,c(1,2,5,8,9,10,11)]
-  names(plotData2)[4:7] = c("beta","SE","pval","condF")
+  plotData[,Setting := gsub("SENS_","sens: ",Setting)]
+  plotData[,Setting := gsub("noSlope","no slope",Setting)]
+  plotData[,Setting := gsub("noVar","no variability",Setting)]
+  plotData[,Setting := gsub("RIsigma","RI sigma",Setting)]
+  plotData[,Setting := gsub("sampleSet","data subset",Setting)]
+  plotData[,Setting := gsub("SNPset","SNP cherry picking",Setting)]
+  plotData[is.na(flag),` ` := ""]
+  plotData[is.na(flag),`Estimate [95% CI]`:= ""]
+  plotData[is.na(flag),condF := ""]
   
-  plotData2[,setting := "univariate"]
-  plotData[,setting := "multivariate"]
-  plotData = rbind(plotData,plotData2)
-  plotData[,threshold := gsub("_SNPs","",threshold)]
-  plotData[,threshold := gsub("nominal","nom",threshold)]
-  plotData[,threshold := gsub("all","all    ",threshold)]
-  plotData[,setting := gsub("univariate","univariate   ",setting)]
-  
-  plotData[,lowerCI95 := beta-1.96*SE]
-  plotData[,upperCI95 := beta+1.96*SE]
-  plotData[,Grouping := paste(setting,threshold,flag,sep=" - ")]
-  plotData[,Grouping := gsub("sens_","sens: ",Grouping)]
-  plotData[,Grouping := gsub("noSlope","no slope",Grouping)]
-  plotData[,Grouping := gsub("noVar","no variability",Grouping)]
-  plotData[,Grouping := gsub("randomEffectSigma","2 RI",Grouping)]
-  setnames(plotData,"Grouping","Setting")
-  plotData[,condF := round(condF,2)]
-  plotData[,condF := as.character(condF)]
-  plotData[setting=="2-sample",condF := ""]
-  
-  plotData$` ` <- paste(rep(" ", 50), collapse = " ")
-  plotData$`Estimate [95% CI]` <- ifelse(is.na(plotData$SE), "",
-                                         sprintf("%.2f [%.2f, %.2f]",
-                                                 plotData$beta, plotData$lowerCI95, plotData$upperCI95))
+  dummy = plotData$Setting
+  dummy2 = plotData$flag
+  dummy[is.na(dummy2)] = "white"
+  dummy[grepl("2-sample",dummy) & grepl("UV",dummy)] = "#E2F0D9"
+  dummy[grepl("2-sample",dummy) & grepl("MV",dummy)] = "#70AD47"
+  dummy[grepl("1-sample",dummy) & grepl("UV",dummy)] = "#DEEBF7"
+  dummy[grepl("1-sample",dummy) & grepl("MV",dummy)] = "#5B9BD5"
+  tm1<- forest_theme(core=list(bg_params=list(fill = dummy)))
   
   myXlab = paste0("Causal effect of the ",myExposureTypes[i]," of TC on CAD")
   
-  p2<- forest(plotData[,c(10,11,12,7)],
+  p2<- forest(plotData[,c(10,11,12,6)],
               est = plotData$beta,
               lower = plotData$lowerCI95, 
               upper = plotData$upperCI95,
               sizes = 0.5,
               ci_column = 2,
               ref_line = 0,
-              title = myXlab)
+              title = myXlab,
+              theme = tm1)
   
   plot(p2)
   
-  filename = paste0("../results/_figures/SupFigs/ForestPlot_",myExposureTypes[i],"_UniMulti.png")
-  png(filename = filename,width = 2000, height = myHeight, res=200)
+  filename = paste0("../results/_figures/SupFigs/ForestPlot_",myExposureTypes[i],"_nom_inclSNPset.png")
+  png(filename = filename,width = 1800, height = myHeight, res=200)
   plot(p2)
   dev.off()
   

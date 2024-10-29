@@ -149,11 +149,23 @@ tag = gsub("-","",tag)
   names(tab2)
   tab2 = tab2[,c(1:9,14,10:13,15,16,21,22,17:20,23,24,29,30,25:28)]
   
+  if(!file.exists("../results/02_SNPs_05_SENS_RandomEffectSigma.RData")){
+    input = list.files(path = "../results/",pattern = "02_SNPs_05")
+    dumTab = foreach(i=1:length(input))%do%{
+      #i=1
+      load(paste0("../results/",input[i]))
+      myAssocs_X
+    }
+    myAssocs_X = rbindlist(dumTab)
+    save(myAssocs_X,file = "../results/02_SNPs_05_SENS_RandomEffectSigma.RData")
+  }
+
   mySumStats = list.files(path = "../results/",pattern = "02_SNPs_0")
-  mySumStats = mySumStats[c(1:4)]
+  mySumStats = mySumStats[!grepl("SNPset",mySumStats)]
   
   settings = gsub(".RData","",mySumStats)
   settings = gsub("02_SNPs_0._","",settings)
+  settings[grepl("RandomEffect",settings)] = "SENS_RIsigma"
   
   dumTab = foreach(i = 1:length(mySumStats))%do%{
     #i=1
@@ -210,7 +222,9 @@ tag = gsub("-","",tag)
   x3 = grep("var",names(tab3))
   x = c(1:8,x1,x2,x3)
   tab3 = tab3[,x,with=F]
-  
+  tab3[flag == "main",flag:="MAIN"]
+  tab3[,flag:=gsub("sens","SENS",flag)]
+  tab3[,flag:=gsub("randomEffectSigma","RIsigma",flag)]
   
 }  
 
@@ -247,7 +261,9 @@ tag = gsub("-","",tag)
   tab4.1[,SE := SE/55.654]
   tab4.1[,exposure_type := "slope_adj",]
   tab4 = rbind(tab4,tab4.1)
-  
+  tab4[flag == "main",flag:="MAIN"]
+  tab4[,flag:=gsub("sens","SENS",flag)]
+  tab4[,flag:=gsub("randomEffectSigma","RIsigma",flag)]
 }  
 
 #' # Save tables ###

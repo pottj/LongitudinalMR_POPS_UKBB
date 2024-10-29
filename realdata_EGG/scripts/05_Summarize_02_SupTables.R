@@ -180,10 +180,11 @@ source("../../SourceFile_HPC.R")
   tab2 = tab2[,c(1:9,14,10:13,15,16,21,17:20)]
   
   mySumStats = list.files(path = "../results/",pattern = "02_SNPs_0")
-  mySumStats = mySumStats[c(1:4)]
+  #mySumStats = mySumStats[c(1:4)]
   
   settings = gsub(".RData","",mySumStats)
   settings = gsub("02_SNPs_0._","",settings)
+  settings[grepl("RandomEffect",settings)] = "SENS_RIsigma"
   
   dumTab = foreach(i = 1:length(mySumStats))%do%{
     #i=1
@@ -256,7 +257,10 @@ source("../../SourceFile_HPC.R")
   x3 = grep("var",names(tab3))
   x = c(1:8,x1,x2,x3)
   tab3 = tab3[,x,with=F]
-  
+  tab3[flag == "main",flag:="MAIN"]
+  tab3[,flag:=gsub("sens","SENS",flag)]
+  tab3[,flag:=gsub("randomEffectSigma","RIsigma",flag)]
+  tab3[,flag:=gsub("SENS_GBR","SENS_GBR3",flag)]
   
 }  
 
@@ -293,6 +297,10 @@ source("../../SourceFile_HPC.R")
   tab4.1[,SE := SE/40.316]
   tab4.1[,exposure_type := "slope_adj",]
   tab4 = rbind(tab4,tab4.1)
+  tab4[flag == "main",flag:="MAIN"]
+  tab4[,flag:=gsub("sens","SENS",flag)]
+  tab4[,flag:=gsub("randomEffectSigma","RIsigma",flag)]
+  tab4[,flag:=gsub("SENS_GBR","SENS_GBR3",flag)]
   
 }  
 

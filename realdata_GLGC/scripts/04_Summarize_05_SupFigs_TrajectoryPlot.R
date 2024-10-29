@@ -37,9 +37,9 @@ plotData[,sex := myTab7[matched,sex]]
 plotData[sex==0,sex2 := "female"]
 plotData[sex==1,sex2 := "male"]
 
-#' # Get Plot ####
+#' # Get Plot 1: all samples ####
 #' ***
-ggp2  = ggplot(plotData, aes(x=exposure_age, y=exposure_value, group=BSU_ID,
+ggp1  = ggplot(plotData, aes(x=exposure_age, y=exposure_value, group=BSU_ID,
                              col=sex2,fill=sex2,
                              shape = as.factor(lipLowMed))) +
   geom_hline(yintercept = 5.17,linetype="dashed", linewidth=0.5)+
@@ -55,10 +55,38 @@ ggp2  = ggplot(plotData, aes(x=exposure_age, y=exposure_value, group=BSU_ID,
                       labels = c("female", "male"))+
   theme_classic() +
   theme(legend.position = "none")
-ggp2
+ggp1
 
 filename = paste0("../results/_figures/SupFigs/Trajectory_TC_MAIN.png")
 png(filename = filename,width=1500,height=1200,res = 200)
+plot(ggp1)
+dev.off()
+
+#' # Get Plot 2: 10 random samples ####
+#' ***
+set.seed(2023)
+myIDs = sample(myTab7$ID,size=10)
+plotData[,myShape := as.factor(lipLowMed)]
+
+ggp2 = ggplot(plotData[BSU_ID %in% myIDs], 
+                 aes(x=exposure_age, y=exposure_value, group=BSU_ID,shape=myShape)) +
+  geom_hline(yintercept = 5.17,linetype="dashed", linewidth=0.5)+
+  geom_hline(yintercept = 6.18,linetype="dotted", linewidth=0.5)+
+  geom_line(aes(col=as.factor(BSU_ID))) + 
+  geom_point(aes(colour = as.factor(BSU_ID)))+
+  labs(x="Age (in years)",
+       y="Total cholesterol (in mmol/l)", 
+       color="IDs",
+       shape="Statin\ntreatment",
+       title = paste0("Trajectories of TC levels (example with 10 random samples)")) +
+  scale_shape_manual(values=c(21,24),
+                     labels = c("no","yes"))+
+  # scale_colour_manual(values = c("darkred","steelblue"),
+  #                     labels = c("women","men"))+
+  theme_classic() 
+
+filename = paste0("../results/_figures/SupFigs/Trajectory_TC_MAIN_randomSamples.png")
+png(filename = filename,width = 1800, height = 1000, res=200)
 plot(ggp2)
 dev.off()
 
@@ -75,9 +103,9 @@ plotData[,sex := myTab7[matched,sex]]
 plotData[sex==0,sex2 := "female"]
 plotData[sex==1,sex2 := "male"]
 
-#' # Get Plot ####
+#' # Get Plot 3: sensitivity subset ####
 #' ***
-ggp2  = ggplot(plotData, aes(x=exposure_age, y=exposure_value, group=BSU_ID,
+ggp3  = ggplot(plotData, aes(x=exposure_age, y=exposure_value, group=BSU_ID,
                              col=sex2,fill=sex2)) +
   geom_hline(yintercept = 5.17,linetype="dashed", linewidth=0.5)+
   geom_hline(yintercept = 6.18,linetype="dotted", linewidth=0.5)+
@@ -90,12 +118,13 @@ ggp2  = ggplot(plotData, aes(x=exposure_age, y=exposure_value, group=BSU_ID,
                       labels = c("female", "male"))+
   theme_classic() +
   theme(legend.position = "none")
-ggp2
+ggp3
 
 filename = paste0("../results/_figures/SupFigs/Trajectory_TC_SENS_sampleSet.png")
 png(filename = filename,width=1500,height=1200,res = 200)
-plot(ggp2)
+plot(ggp3)
 dev.off()
+
 
 #' # SessionInfo ####
 #' ***

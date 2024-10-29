@@ -42,7 +42,7 @@ for(i in 1:length(myFiles)){
   
   # start plotting 
   MVMR2 = copy(MVMR)
-  MVMR2 = MVMR2[threshold == "all_SNPs",]
+  MVMR2 = MVMR2[threshold == "nominal_SNPs",]
   MVMR2[,ID := gsub(" - .*","",ID)]
   MVMR2[,threshold := gsub("_"," ",threshold)]
   MVMR2[,rank := 2]
@@ -60,6 +60,7 @@ for(i in 1:length(myFiles)){
                                               data4$beta_IVW, data4$lowerCI95, data4$upperCI95))
   
   setorder(data4,exposure_type,rank)
+  data4[exposure_type=="var" & is.na(setting),`   model`:= "variability"]
   dummy = data4$ID
   dummy2 = data4$exposure_type
   dummy[is.na(dummy)] = "white"

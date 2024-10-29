@@ -46,7 +46,7 @@ ggp2  = ggplot(plotData, aes(x=ga, y=logefwcomb, group=POPSID,
                              col=pn_sex,fill=pn_sex)) +
   geom_line(aes(alpha=0.01)) + 
   geom_point(shape = 21,color="black")+
-  labs(x="Gestational Age (weeks)", y="log(EFW)") +
+  labs(x="Gestational Age (weeks)", y="Estimated Foetal Weight (log-transformed)") +
   scale_fill_manual(values = c("darkred","steelblue"),
                       labels = c("FEMALE", "MALE"))+
   scale_colour_manual(values = c("darkred","steelblue"),
@@ -71,7 +71,7 @@ ggp2  = ggplot(plotData, aes(x=ga, y=logefwcomb, group=POPSID,
                              col=pn_sex,fill=pn_sex)) +
   geom_line(aes(alpha=0.01)) + 
   geom_point(shape = 21,color="black")+
-  labs(x="Gestational Age (weeks)", y="log(EFW)") +
+  labs(x="Gestational Age (weeks)", y="Estimated Foetal Weight (log-transformed)") +
   scale_fill_manual(values = c("darkred","steelblue"),
                     labels = c("FEMALE", "MALE"))+
   scale_colour_manual(values = c("darkred","steelblue"),

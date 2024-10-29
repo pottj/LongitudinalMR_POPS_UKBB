@@ -98,6 +98,11 @@ R CMD BATCH --vanilla ../scripts/05_Summarize_05_SupFigs_TrajectoryPlot.R ../scr
 cp Rplots.pdf 05_05_SupFig_Rplots.pdf
 rm Rplots.pdf
 
+# Script for Supplemental Figures (GenCor & Venn diagram)
+R CMD BATCH --vanilla ../scripts/05_Summarize_06_SupFigs_GenCor.R ../scripts/05_Summarize_06_SupFigs_GenCor.R.out
+cp Rplots.pdf 05_06_SupFig_Rplots.pdf
+rm Rplots.pdf
+
 ###############################################################
 ### You should not have to change anything below this line ####
 ###############################################################

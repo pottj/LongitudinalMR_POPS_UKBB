@@ -26,7 +26,7 @@ mySensitivityRuns = mySensitivityRuns[-1]
 myNames = gsub("../../","",mySensitivityRuns)
 
 dumTab0 = foreach(j = 1:length(myNames))%do%{
-  #j=4
+  #j=7
   message("Working on Sensitivity run ",myNames[j]," (",j," of ",length(myNames),")")
   outdir_results = paste0("../results/_figures_",myNames[j])
   if(dir.exists(outdir_results)==F){
@@ -178,7 +178,7 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
   names(myTab)
   
   # in case of "noSlope" and "noVar", there is a different number of columns
-  if(myNames[j] %in% c("noSlope","noVariability")){
+  if(myNames[j] %in% c("noSlope","noVariability","noSlopeCorrelatedShared")){
     myTab = myTab[,c(1:4,
                      7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,
                      8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40)]
@@ -195,7 +195,7 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
     dumTab = copy(myTab)
     dumTab[,dumID1 := paste(Sim_X,Sim_Y,sep="_")]
     
-    if(myNames[j] == "noSlope"){
+    if(myNames[j] == "noSlope" | myNames[j]=="noSlopeCorrelatedShared"){
       dumTab_X1 <- dcast(dumTab, outcome ~ dumID1, value.var="power_X1")
       dumTab_X3 <- dcast(dumTab, outcome ~ dumID1, value.var="power_X3")
       dumTab2 = cbind(dumTab_X1,dumTab_X3[,-1])
@@ -248,7 +248,7 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
     dumTab = copy(myTab)
     dumTab[,dumID1 := paste(Sim_X,Sim_Y,sep="_")]
     
-    if(myNames[j] == "noSlope"){
+    if(myNames[j] == "noSlope" | myNames[j] == "noSlopeCorrelatedShared"){
       dumTab_X1 <- dcast(dumTab, outcome ~ dumID1, value.var="coverage_X1")
       dumTab_X3 <- dcast(dumTab, outcome ~ dumID1, value.var="coverage_X3")
       dumTab2 = cbind(dumTab_X1,dumTab_X3[,-1])
@@ -301,7 +301,7 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
     dumTab = copy(myTab)
     dumTab[,type := "mean"]
     
-    if(myNames[j] != "noSlope"){
+    if(!grepl("noSlope",myNames[j])){
       dumTab2 = copy(dumTab)
       dumTab2[,bias_X1 := bias_X2]
       dumTab2[,bias_SE_X1 := bias_SE_X2]
@@ -316,7 +316,7 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
       
     }
     
-    if(myNames[j] == "noSlope"){
+    if(grepl("noSlope",myNames[j])){
       dumTab4 = rbind(dumTab,dumTab3)
     }else if(myNames[j] == "noVariability"){ 
       dumTab4 = rbind(dumTab,dumTab2)
@@ -383,7 +383,7 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
     dumTab = copy(myTab)
     dumTab[,type := "mean"]
     
-    if(myNames[j] != "noSlope"){
+    if(!grepl("noSlope",myNames[j])){
       dumTab2 = copy(dumTab)
       dumTab2[,empSE_X1 := empSE_X2]
       dumTab2[,empSE_SE_X1 := empSE_SE_X2]
@@ -397,7 +397,7 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
       dumTab3[,type := "var"]
     }
     
-    if(myNames[j] == "noSlope"){
+    if(grepl("noSlope",myNames[j])){
       dumTab4 = rbind(dumTab,dumTab3)
     }else if(myNames[j] == "noVariability"){ 
       dumTab4 = rbind(dumTab,dumTab2)
@@ -467,7 +467,7 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
     dumTab = copy(myTab)
     dumTab[,type := "mean"]
     
-    if(myNames[j] != "noSlope"){
+    if(!grepl("noSlope",myNames[j])){
       dumTab2 = copy(dumTab)
       dumTab2[,mean_betaIVW_X1 := mean_betaIVW_X2]
       dumTab2[,empSE_X1 := empSE_X2]
@@ -481,7 +481,7 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
       dumTab3[,type := "var"]
     } 
     
-    if(myNames[j] == "noSlope"){
+    if(grepl("noSlope",myNames[j])){
       dumTab4 = rbind(dumTab,dumTab3)
     }else if(myNames[j] == "noVariability"){ 
       dumTab4 = rbind(dumTab,dumTab2)
@@ -554,7 +554,7 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
     dumTab = copy(myTab)
     dumTab[,type := "mean"]
     
-    if(myNames[j] != "noSlope"){
+    if(!grepl("noSlope",myNames[j])){
       dumTab2 = copy(dumTab)
       dumTab2[,condFStats_median_X1 := condFStats_median_X2]
       dumTab2[,condFStats_1stQ_X1 := condFStats_1stQ_X2]
@@ -570,7 +570,7 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
       dumTab3[,type := "var"]
     }
 
-    if(myNames[j] == "noSlope"){
+    if(grepl("noSlope",myNames[j])){
       dumTab4 = rbind(dumTab,dumTab3)
     }else if(myNames[j] == "noVariability"){ 
       dumTab4 = rbind(dumTab,dumTab2)

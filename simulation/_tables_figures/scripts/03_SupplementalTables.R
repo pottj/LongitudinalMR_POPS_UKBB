@@ -26,8 +26,8 @@ source("../../../SourceFile_HPC.R")
   tab0 = data.table(Table = paste0("S",c(1:2)),
                     Title = c("Simulation results - main",
                               "Simulation results - senstivity"),
-                    Source = c("simulation_main/results/_tables/",
-                               "simulation_sensitivity/XXX/results/_tables/"))
+                    Source = c("simulation_sensitivity/_tables_figures/results/_tables/",
+                               "simulation_sensitivity/_tables_figures/results/_tables/"))
   
   tab0
   
@@ -52,7 +52,10 @@ source("../../../SourceFile_HPC.R")
 {
   myToDoList = list.files(path = "../results/_tables/",
                           pattern = "Simulation_complete_*")
-  myToDoList = myToDoList[!grepl("main",myToDoList)]
+  myToDoList = myToDoList[!grepl("main_v",myToDoList)]
+  myNames = gsub("Simulation_complete_","",myToDoList)
+  myNames = gsub(".RData","",myNames)
+  
   dumTab2 = foreach(i = 1:length(myToDoList))%do%{
     #i=1
     loaded = load(paste0("../results/_tables/",myToDoList[i]))
@@ -60,7 +63,7 @@ source("../../../SourceFile_HPC.R")
     names(tab2) = gsub("X1","mean",names(tab2))
     names(tab2) = gsub("X2","slope",names(tab2))
     names(tab2) = gsub("X3","var",names(tab2))
-    tab2[,check := gsub("/.*","",myToDoList[i])]
+    tab2[,check := myNames[i]]
     tab2
   }
   tab2 = rbindlist(dumTab2,fill=T)

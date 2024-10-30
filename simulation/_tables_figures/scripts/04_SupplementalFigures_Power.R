@@ -26,8 +26,12 @@ source("../../../SourceFile_HPC.R")
 #' ***
 myToDoList = list.files(path = "../results/_tables/",
                         pattern = "Simulation_complete_*")
-myToDoList = myToDoList[!grepl("main",myToDoList)]
-myToDoList = myToDoList[c(4,5,9,7)]
+myGrep = c(grep("noSlope",myToDoList),
+           grep("noVar",myToDoList),
+           grep("SNPsAllSharedCorrelated",myToDoList),
+           grep("samplesAsPOPS",myToDoList))
+myToDoList = myToDoList[myGrep]
+myToDoList = myToDoList[!grepl("GxE",myToDoList)]
 myToDoList
 
 for(i in 1:length(myToDoList)){
@@ -42,7 +46,7 @@ for(i in 1:length(myToDoList)){
   
   dumTab_X1 <- dcast(tab2, outcome ~ dumID1, value.var="power_X1")
   
-  if(i==1){
+  if(grepl("noSlope",flag)){
     dumTab_X3 <- dcast(tab2, outcome ~ dumID1, value.var="power_X3")
     dumTab2 = cbind(dumTab_X1,dumTab_X3[,-1])
     dumTab3 = copy(dumTab2)
@@ -50,7 +54,7 @@ for(i in 1:length(myToDoList)){
     dumMat = as.matrix(dumTab3[,-1])
     colnames(dumMat) = paste(colnames(dumMat),rep(c("X1","X1","X3","X3"),3),sep=" - ")
     
-  }else if(i==2){
+  }else if(grepl("noVar",flag)){
     dumTab_X2 <- dcast(tab2, outcome ~ dumID1, value.var="power_X2")
     dumTab2 = cbind(dumTab_X1,dumTab_X2[,-1])
     dumTab3 = copy(dumTab2)

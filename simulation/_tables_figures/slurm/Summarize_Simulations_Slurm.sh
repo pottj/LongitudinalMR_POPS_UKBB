@@ -86,6 +86,8 @@ rm Rplots.pdf
 
 # Scripts for Sensitivity Evaluations
 R CMD BATCH --vanilla ../scripts/01_Eval_Simulation_Sensitivity.R ../scripts/01_Eval_Simulation_Sensitivity.R.out
+cp Rplots.pdf 01_Eval_Sens_RPlots.pdf
+rm Rplots.pdf
 
 # Scripts for Main Tables
 R CMD BATCH --vanilla ../scripts/02_MainTables.R ../scripts/02_MainTables.R.out
@@ -96,7 +98,12 @@ R CMD BATCH --vanilla ../scripts/03_SupplementalTables.R ../scripts/03_Supplemen
 
 # Scripts for Supplemental Figures
 R CMD BATCH --vanilla ../scripts/04_SupplementalFigures_Bias_Estimate.R ../scripts/04_SupplementalFigures_Bias_Estimate.R.out
+cp Rplots.pdf 04_Main_Bias_RPlots.pdf
+rm Rplots.pdf
+
 R CMD BATCH --vanilla ../scripts/04_SupplementalFigures_Power.R ../scripts/04_SupplementalFigures_Power.R.out
+cp Rplots.pdf 04_Sens_Power_RPlots.pdf
+rm Rplots.pdf
 
 ###############################################################
 ### You should not have to change anything below this line ####

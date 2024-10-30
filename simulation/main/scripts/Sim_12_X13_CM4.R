@@ -32,10 +32,10 @@
 #' ***
 #' ## Helper function ####
 {
-  source("../../helperfunctions/SimulateSNP.R")
-  source("../../helperfunctions/HWETest.R")
-  source("../../helperfunctions/GetAssociation_simulation.R")
-  source("../../helperfunctions/MVMR_jp_simulation.R")
+  source("../../../helperfunctions/SimulateSNP.R")
+  source("../../../helperfunctions/HWETest.R")
+  source("../../../helperfunctions/GetAssociation_simulation.R")
+  source("../../../helperfunctions/MVMR_jp_simulation.R")
   
 }
 
@@ -78,13 +78,13 @@
 #' ## Specific settings ####
 #' These parameters change between the scenarios!
 {
-  outfiles_prefix = "Sim_10_X13_CM2"
+  outfiles_prefix = "Sim_12_X13_CM4"
   
   SNPs_classes = c(rep("AB",SNPs_NR/3*2), rep("C",SNPs_NR/3))
   #SNPs_classes = c(rep("ABC",SNPs_NR/3*3))
   SNP_beta_cov = -0.9
   X_Sim_AS = "AS1_AS3"
-  Y_alpha = c(1.2,0.3,1)
+  Y_alpha = c(-0.3,0.3,1)
   
 }
 

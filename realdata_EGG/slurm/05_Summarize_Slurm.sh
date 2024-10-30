@@ -103,6 +103,9 @@ R CMD BATCH --vanilla ../scripts/05_Summarize_06_SupFigs_GenCor.R ../scripts/05_
 cp Rplots.pdf 05_06_SupFig_Rplots.pdf
 rm Rplots.pdf
 
+# Script to generate FUMA input
+R CMD BATCH --vanilla ../scripts/05_Summarize_07_FUMA.R ../scripts/05_Summarize_07_FUMA.R.out
+
 ###############################################################
 ### You should not have to change anything below this line ####
 ###############################################################

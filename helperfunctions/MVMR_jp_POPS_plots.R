@@ -1,16 +1,16 @@
 MVMR_jp_POPS_plots = function(data_exposure,exposure_name, data_outcome, outcome_name,getPlot,flag,GX_pval_treshold,corTab,corTab_threshold,sampleSize_GX=15000,random=F,getCondF=F,getUni=T,filename1){
   #debug
-  # data_exposure=copy(myAssocs_X_long2)
-  # data_outcome=copy(myAssocs_Y2)
-  # exposure_name=myExposure
-  # outcome_name=myOutcome
-  # flag="main"
-  # getPlot=F
+  # data_exposure=copy(myAssocs_X_long)
+  # data_outcome=copy(myAssocs_Y)
+  # exposure_name="EFW (data from POPS)"
+  # outcome_name="BW (data from UKB)"
+  # flag="plotting"
+  # getPlot=T
   # GX_pval_treshold = 1
-  # corTab = copy(LDTab)
+  # corTab = copy(LDTab2)
   # corTab_threshold = 0.1
-  # sampleSize_GX = 3*2996
-  # random=T
+  # sampleSize_GX = 2996
+  # random=F
   # getCondF=T
   # getUni = T
   
@@ -187,12 +187,11 @@ MVMR_jp_POPS_plots = function(data_exposure,exposure_name, data_outcome, outcome
         geom_abline(data = data_hline_multi, aes(slope = line,intercept=0,linetype="multivariate")) +
         geom_abline(data = data_hline_uni, aes(slope = line,intercept=0,linetype="univariate")) +
         scale_linetype_manual("IVW estimate",values=c("univariate"=2,"multivariate"=1)) +
+        scale_color_manual("Lowest pval in",values=c("#F2AA84","#47D45A","#61CBF4")) +
         labs(x=paste0("SNP effect on ",exposure_name), 
-             y=paste0("SNP effect on ",outcome_name),
-             color="Lowest pval in ")+
-        theme_bw(base_size = 10)+ 
+             y=paste0("SNP effect on ",outcome_name))+
+        theme_bw(base_size = 10) + 
         theme(legend.position = "none")
-        
       
       #filename1 = paste0("../figures/08_7_MVMR_top20_",flag,"_",exposure_name,"_",outcome_name,"_",tag,".tiff")
       png(filename = filename1,width = 2250, height = 1125, res=200)

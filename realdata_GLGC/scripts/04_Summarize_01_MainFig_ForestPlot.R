@@ -50,33 +50,37 @@ for(i in 1:length(myFiles)){
   data4 = rbind(MVMR2,dummy, fill=T)
   data4[,subgroup := paste0("   ", ID)]
   data4[is.na(threshold),subgroup := exposure_type]
-  setnames(data4,"subgroup", "   model")
+  data4[subgroup=="   multivariate",subgroup:= "   MVMR"]
+  data4[subgroup=="   univariate",subgroup:= "   MR"]
+  #setnames(data4,"subgroup", "   model")
   
   data4[,lowerCI95 := beta_IVW-1.96*SE_IVW]
   data4[,upperCI95 := beta_IVW+1.96*SE_IVW]
   data4$` ` <- paste(rep(" ", 50), collapse = " ")
-  data4$`Estimate [95% CI]` <- ifelse(is.na(data4$SE_IVW), "",
+  data4$`Estimate \n[95% CI]` <- ifelse(is.na(data4$SE_IVW), "",
                                       sprintf("%.2f [%.2f, %.2f]",
                                               data4$beta_IVW, data4$lowerCI95, data4$upperCI95))
   
   setorder(data4,exposure_type,rank)
-  data4[exposure_type=="var" & is.na(setting),`   model`:= "variability"]
+  data4[exposure_type=="var" & is.na(setting),subgroup:= "variability"]
   dummy = data4$ID
   dummy2 = data4$exposure_type
   dummy[is.na(dummy)] = "white"
-  dummy[grepl("uni",dummy) & grepl("mean",dummy2)] = "#E2F0D9"
-  dummy[grepl("multi",dummy) & grepl("mean",dummy2)] = "#70AD47"
-  dummy[grepl("uni",dummy) & grepl("slope",dummy2)] = "#DEEBF7"
-  dummy[grepl("multi",dummy) & grepl("slope",dummy2)] = "#5B9BD5"
-  dummy[grepl("uni",dummy) & grepl("var",dummy2)] = "darksalmon"
-  dummy[grepl("multi",dummy) & grepl("var",dummy2)] = "firebrick"
+  dummy[grepl("uni",dummy) & grepl("mean",dummy2)] = "#FBE3D6"
+  dummy[grepl("multi",dummy) & grepl("mean",dummy2)] = "#F2AA84"
+  dummy[grepl("uni",dummy) & grepl("slope",dummy2)] = "#C2F1C8"
+  dummy[grepl("multi",dummy) & grepl("slope",dummy2)] = "#47D45A"
+  dummy[grepl("uni",dummy) & grepl("var",dummy2)] = "#CAEEFB"
+  dummy[grepl("multi",dummy) & grepl("var",dummy2)] = "#61CBF4"
   tm1<- forest_theme(core=list(bg_params=list(fill = dummy)))
   
-  myXlab =  "Causal effect of TC on CAD by exposure type"
+  myXlab =  "causal estimand of TC on CAD"
   
   data4[,condF := round(condFstat,1)]
   data4[,condF := as.character(condF)]
   data4[is.na(setting),condF := ""]
+  setnames(data4,"condF","(cond) \nF-stat")
+  setnames(data4,"subgroup", "exposure type \n   MR approach")
   
   p2<- forest(data4[,c(16,19,20,21)],
               est = data4$beta_IVW,
@@ -85,7 +89,8 @@ for(i in 1:length(myFiles)){
               sizes = 0.5,
               ci_column = 2,
               ref_line = 0,
-              title = myXlab,
+              #title = myXlab,
+              xlab = myXlab,
               theme = tm1)
   
   plot(p2)

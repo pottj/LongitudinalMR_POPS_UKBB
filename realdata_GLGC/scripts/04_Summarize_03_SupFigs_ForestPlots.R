@@ -72,8 +72,8 @@ for(i in 1:3){
   plotData2 = plotData2[,c(1,2,8,9,10,11)]
   names(plotData2)[3:6] = c("beta","SE","pval","condF")
   
-  plotData2[,setting2 := "UV"]
-  plotData[,setting2 := "MV"]
+  plotData2[,setting2 := "MR"]
+  plotData[,setting2 := "MVMR"]
   plotData = rbind(plotData,plotData2)
   
   plotData[,lowerCI95 := beta-1.96*SE]
@@ -82,11 +82,11 @@ for(i in 1:3){
   setnames(plotData,"Grouping","Setting")
   plotData[,condF := round(condF,2)]
   plotData[,condF := as.character(condF)]
-  setorder(plotData,flag,setting2,-setting)
+  setorder(plotData,flag,-setting2,-setting)
   plotData[setting!="2-sample",condF := ""]
   
   plotData$` ` <- paste(rep(" ", 50), collapse = " ")
-  plotData$`Estimate [95% CI]` <- ifelse(is.na(plotData$SE), "",
+  plotData$`Estimate \n[95% CI]` <- ifelse(is.na(plotData$SE), "",
                                          sprintf("%.2f [%.2f, %.2f]",
                                                  plotData$beta, plotData$lowerCI95, plotData$upperCI95))
   plotData[,Setting := gsub(" - MAIN","",Setting)]
@@ -106,19 +106,27 @@ for(i in 1:3){
   plotData[,Setting := gsub("RIsigma","RI sigma",Setting)]
   plotData[,Setting := gsub("sampleSet","data subset",Setting)]
   plotData[is.na(flag),` ` := ""]
-  plotData[is.na(flag),`Estimate [95% CI]`:= ""]
+  plotData[is.na(flag),`Estimate \n[95% CI]`:= ""]
   plotData[is.na(flag),condF := ""]
   
   dummy = plotData$Setting
+  if(i==1){
+    dummy[!grepl("MV",dummy)] = "#FBE3D6"
+    dummy[grepl("MV",dummy)] = "#F2AA84"
+  }else if(i==2){
+    dummy[!grepl("MV",dummy)] = "#C2F1C8"
+    dummy[grepl("MV",dummy)] = "#47D45A"
+  }else if(i==3){
+    dummy[!grepl("MV",dummy)] = "#CAEEFB"
+    dummy[grepl("MV",dummy)] = "#61CBF4"
+  }
   dummy2 = plotData$flag
   dummy[is.na(dummy2)] = "white"
-  dummy[grepl("2-sample",dummy) & grepl("UV",dummy)] = "#E2F0D9"
-  dummy[grepl("2-sample",dummy) & grepl("MV",dummy)] = "#70AD47"
-  dummy[grepl("1-sample",dummy) & grepl("UV",dummy)] = "#DEEBF7"
-  dummy[grepl("1-sample",dummy) & grepl("MV",dummy)] = "#5B9BD5"
   tm1<- forest_theme(core=list(bg_params=list(fill = dummy)))
   
   myXlab = paste0("Causal effect of the ",myExposureTypes[i]," of TC on CAD")
+  setnames(plotData,"condF","(cond) \nF-stat")
+  setnames(plotData,"Setting", "Setting \n   MR approach")
   
   p2<- forest(plotData[,c(10,11,12,6)],
               est = plotData$beta,
@@ -127,7 +135,7 @@ for(i in 1:3){
               sizes = 0.5,
               ci_column = 2,
               ref_line = 0,
-              title = myXlab,
+              #title = myXlab,
               theme = tm1)
   
   plot(p2)
@@ -139,7 +147,7 @@ for(i in 1:3){
   
 }
 
-#' # Loop 1 ####
+#' # Loop 2 ####
 #' ***
 #' I want one plot per exposure type. These plots should include 
 #' 
@@ -183,8 +191,8 @@ for(i in 1:3){
   plotData2 = plotData2[,c(1,2,8,9,10,11)]
   names(plotData2)[3:6] = c("beta","SE","pval","condF")
   
-  plotData2[,setting2 := "UV"]
-  plotData[,setting2 := "MV"]
+  plotData2[,setting2 := "MR"]
+  plotData[,setting2 := "MVMR"]
   plotData = rbind(plotData,plotData2)
   
   plotData[,lowerCI95 := beta-1.96*SE]
@@ -193,11 +201,11 @@ for(i in 1:3){
   setnames(plotData,"Grouping","Setting")
   plotData[,condF := round(condF,2)]
   plotData[,condF := as.character(condF)]
-  setorder(plotData,flag,setting2,-setting)
+  setorder(plotData,flag,-setting2,-setting)
   plotData[setting!="2-sample",condF := ""]
   
   plotData$` ` <- paste(rep(" ", 50), collapse = " ")
-  plotData$`Estimate [95% CI]` <- ifelse(is.na(plotData$SE), "",
+  plotData$`Estimate \n[95% CI]` <- ifelse(is.na(plotData$SE), "",
                                          sprintf("%.2f [%.2f, %.2f]",
                                                  plotData$beta, plotData$lowerCI95, plotData$upperCI95))
   plotData[,Setting := gsub(" - MAIN","",Setting)]
@@ -218,19 +226,27 @@ for(i in 1:3){
   plotData[,Setting := gsub("sampleSet","data subset",Setting)]
   plotData[,Setting := gsub("SNPset","SNP cherry picking",Setting)]
   plotData[is.na(flag),` ` := ""]
-  plotData[is.na(flag),`Estimate [95% CI]`:= ""]
+  plotData[is.na(flag),`Estimate \n[95% CI]`:= ""]
   plotData[is.na(flag),condF := ""]
   
   dummy = plotData$Setting
+  if(i==1){
+    dummy[!grepl("MV",dummy)] = "#FBE3D6"
+    dummy[grepl("MV",dummy)] = "#F2AA84"
+  }else if(i==2){
+    dummy[!grepl("MV",dummy)] = "#C2F1C8"
+    dummy[grepl("MV",dummy)] = "#47D45A"
+  }else if(i==3){
+    dummy[!grepl("MV",dummy)] = "#CAEEFB"
+    dummy[grepl("MV",dummy)] = "#61CBF4"
+  }
   dummy2 = plotData$flag
   dummy[is.na(dummy2)] = "white"
-  dummy[grepl("2-sample",dummy) & grepl("UV",dummy)] = "#E2F0D9"
-  dummy[grepl("2-sample",dummy) & grepl("MV",dummy)] = "#70AD47"
-  dummy[grepl("1-sample",dummy) & grepl("UV",dummy)] = "#DEEBF7"
-  dummy[grepl("1-sample",dummy) & grepl("MV",dummy)] = "#5B9BD5"
   tm1<- forest_theme(core=list(bg_params=list(fill = dummy)))
   
   myXlab = paste0("Causal effect of the ",myExposureTypes[i]," of TC on CAD")
+  setnames(plotData,"condF","(cond) \nF-stat")
+  setnames(plotData,"Setting", "Setting \n   MR approach")
   
   p2<- forest(plotData[,c(10,11,12,6)],
               est = plotData$beta,
@@ -239,7 +255,7 @@ for(i in 1:3){
               sizes = 0.5,
               ci_column = 2,
               ref_line = 0,
-              title = myXlab,
+              #title = myXlab,
               theme = tm1)
   
   plot(p2)

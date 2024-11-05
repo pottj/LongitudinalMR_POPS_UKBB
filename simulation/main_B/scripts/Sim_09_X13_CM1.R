@@ -44,7 +44,7 @@
 {
   n_samples = 10000
   n_times = 15
-  n_sim = 100
+  n_sim = 500
   outfiles_dir = "results/"
   save_data_perSim = F
   do_plotting = F
@@ -78,13 +78,13 @@
 #' ## Specific settings ####
 #' These parameters change between the scenarios!
 {
-  outfiles_prefix = "Sim_07_X123_CM3"
+  outfiles_prefix = "Sim_09_X13_CM1"
   
   #SNPs_classes = c(rep("AB",SNPs_NR/3*2), rep("C",SNPs_NR/3))
   SNPs_classes = c(rep("ABC",SNPs_NR))
   SNP_beta_cov = -0.9
-  X_Sim_AS = "AS1_AS2_AS3"
-  Y_alpha = c(-1.2,0.3,1)
+  X_Sim_AS = "AS1_AS3"
+  Y_alpha = c(0.3,0.3,1)
   
 }
 

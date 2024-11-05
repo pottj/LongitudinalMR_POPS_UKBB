@@ -44,7 +44,7 @@
 {
   n_samples = 10000
   n_times = 15
-  n_sim = 100
+  n_sim = 500
   outfiles_dir = "results/"
   save_data_perSim = F
   do_plotting = F

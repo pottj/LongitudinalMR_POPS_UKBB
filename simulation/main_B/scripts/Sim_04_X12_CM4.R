@@ -44,7 +44,7 @@
 {
   n_samples = 10000
   n_times = 15
-  n_sim = 100
+  n_sim = 500
   outfiles_dir = "results/"
   save_data_perSim = F
   do_plotting = F
@@ -78,12 +78,12 @@
 #' ## Specific settings ####
 #' These parameters change between the scenarios!
 {
-  outfiles_prefix = "Sim_08_X123_CM4"
+  outfiles_prefix = "Sim_04_X12_CM4"
   
   #SNPs_classes = c(rep("AB",SNPs_NR/3*2), rep("C",SNPs_NR/3))
   SNPs_classes = c(rep("ABC",SNPs_NR))
   SNP_beta_cov = -0.9
-  X_Sim_AS = "AS1_AS2_AS3"
+  X_Sim_AS = "AS1_AS2"
   Y_alpha = c(-0.3,0.3,1)
   
 }
@@ -203,6 +203,7 @@ SimTab = foreach(s = 1:n_sim)%dorng%{
     CoVarMatrix_SNPs[3,1] = 0.5
     CoVarMatrix_SNPs[2,3] = -0.3
     CoVarMatrix_SNPs[3,2] = -0.3
+    
     REff_SNPs = MASS::mvrnorm(SNPs_NR, 
                               mu=SNP_beta_mean, 
                               Sigma=(CoVarMatrix_SNPs))

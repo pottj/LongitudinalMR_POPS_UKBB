@@ -204,7 +204,7 @@ source("../../SourceFile_HPC.R")
     if(settings[i]!="SENS_GBR3"){
       myAssocs_Y = myAssocs_Y[population == "all",]
     }else{
-      myAssocs_Y = myAssocs_Y[population == "GBR3",]
+      myAssocs_Y = myAssocs_Y[population == "GBR",]
     }
     myAssocs_Y = myAssocs_Y[rsID %in% tab2.3$rsID,]
     myAssocs_Y = myAssocs_Y[phenotype == "pn_bw",]

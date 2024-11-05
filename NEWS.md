@@ -2,6 +2,18 @@
 
 Here I want to track my progress
 
+## 2024/11/05
+
+- I think I did update now all relevant scripts
+- Now paper writing
+
+## 2024/10/25
+
+- run analysis with random intercept in sigma model 
+    - EGG: no difference
+    - UKBB: some difficulties because of run time - split the SNP set into 7 subsets and run in parallel was easier than getting more cores / nodes / time when using 1 scripts. But at the end it worked. No big difference (just when using "all" SNPs, and not the signigicant ones)
+    - simulation: chaos, because it seems to take forever. I reduced to 10 simulations each. Still have a run time of 15 hours. Some weird problems with scenario 5, which doesn't make sense as the code is the same as for scenario 6, which finished after 13 h (after 36 h scenario 5 still not finished, just reached SNP 3) - workaround in place, but I want scenario 5 to run through as well. Maybe increase to 50 simulations? Should not affect run time as I could increase the requested cores? (I don't expect a big change here, but 50 sounds nicer than 10 simulations)
+    
 ## 2024/10/11
 
 - welcome back from holiday

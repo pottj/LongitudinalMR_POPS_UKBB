@@ -20,13 +20,14 @@ source("../../../SourceFile_HPC.R")
 #' Index j: all 10 sensitivity runs
 #' Index i: all 12 settings per run
 #' 
-mySensitivityRuns = list.dirs(path = "../..",recursive = F)
-mySensitivityRuns = mySensitivityRuns[-1]
+mySimulationRuns = list.dirs(path = "../..",recursive = F)
+mySimulationRuns = mySimulationRuns[-1]
 
-myNames = gsub("../../","",mySensitivityRuns)
+myNames = gsub("../../","",mySimulationRuns)
+myNames
 
 dumTab0 = foreach(j = 1:length(myNames))%do%{
-  #j=7
+  #j=1
   message("Working on Sensitivity run ",myNames[j]," (",j," of ",length(myNames),")")
   outdir_results = paste0("../results/_figures_",myNames[j])
   if(dir.exists(outdir_results)==F){
@@ -37,7 +38,7 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
   }
   
   # Find the 12 simulation data sets
-  mySims = list.files(path = paste0(mySensitivityRuns[j],"/results/"),pattern = "_SimAll.RData")
+  mySims = list.files(path = paste0(mySimulationRuns[j],"/results/"),pattern = "_SimAll.RData")
   ToDoFile = data.table(NR = 1:length(mySims),
                         file = mySims)
   dummy = unlist(strsplit(mySims,"_"))
@@ -54,20 +55,22 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
   
   # Loop to load all the data sets
   dumTab = foreach(i = 1:dim(ToDoFile)[1])%do%{
-    #i=10
+    #i=9
     myRow = ToDoFile[i,]
     message("Working on ",myRow$file)
-    load(paste0(mySensitivityRuns[j],"/results/",myRow$file))
+    load(paste0(mySimulationRuns[j],"/results/",myRow$file))
     
     # restrict to the first 100 simulations 
-    SimTab = SimTab[n_sim <=100,]
+    if(!grepl("main",myNames[j])){
+      SimTab = SimTab[n_sim <=100,]
+    }
     
     SimTab[exposure %in% c("mean"),exposure := "X1"]
     SimTab[exposure %in% c("slope"),exposure := "X2"]
     SimTab[exposure %in% c("var"),exposure := "X3"]
     
     # correct estimates for outcome age
-    if(myNames[j] %in% c("samplesAsPOPS","weakInstrumentBias")){
+    if(grepl("sampleSize",myNames[j])){
       SimTab[exposure == "X2",beta_IVW := beta_IVW/30]
       SimTab[exposure == "X2",SE_IVW := SE_IVW/30]
     }else{
@@ -75,11 +78,27 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
       SimTab[exposure == "X2",SE_IVW := SE_IVW/70]
     }
     
-    
     # correct estimates for Allele score factor
-    SimTab[exposure == "X3",beta_IVW := beta_IVW*0.5]
-    SimTab[exposure == "X3",SE_IVW := SE_IVW*0.5]
+    if(grepl("_B_",myNames[j])){
+      SimTab[exposure == "X3",beta_IVW := beta_IVW*0.3]
+      SimTab[exposure == "X3",SE_IVW := SE_IVW*0.3]
+    }else{
+      SimTab[exposure == "X3",beta_IVW := beta_IVW*0.5]
+      SimTab[exposure == "X3",SE_IVW := SE_IVW*0.5]
+    }
     
+    # correct estimates for age (X13 only, mean covers slope effect, but mean not yet corrected for age)
+    # mean and slope highly correlated --> mean effect = -0.2, slope effect = 0.01 --> mean = -0.05 x slope ( x exposure age)
+    # that is an additional factor on top of the true mean effect!
+    # Y3 should be 0, but mean will be -0.9 as -0.05 (SNP effect of slope attributed now to mean) x 0.3 (slope causal effect) x 60 (exposure mean max age) = -0.9
+    # if(myRow$SimX=="X13" & grepl("sampleSize",myNames[j])){
+    #   SimTab[exposure == "X1" & outcome %in% c("Y3","Y5","Y7","Y8"),beta_IVW := beta_IVW - (-0.05 * myRow$theta2 * 20)]
+    #   SimTab[exposure == "X1" & outcome %in% c("Y3","Y5","Y7","Y8"),pval_IVW := 2*pnorm(-abs(beta_IVW/SE_IVW))]
+    # }else if(myRow$SimX=="X13" & !grepl("sampleSize",myNames[j]) & !grepl("posCor",myNames[j])){
+    #   SimTab[exposure == "X1" & outcome %in% c("Y3","Y5","Y7","Y8"),beta_IVW := beta_IVW - (-0.05 * myRow$theta2 * 60)]
+    #   SimTab[exposure == "X1" & outcome %in% c("Y3","Y5","Y7","Y8"),pval_IVW := 2*pnorm(-abs(beta_IVW/SE_IVW))]
+    # }
+    # 
     # add true value
     SimTab[,theta1 := 0]
     SimTab[outcome %in% c("Y2","Y5","Y6","Y8"),theta1 := myRow$theta1]
@@ -178,7 +197,7 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
   names(myTab)
   
   # in case of "noSlope" and "noVar", there is a different number of columns
-  if(myNames[j] %in% c("noSlope","noVariability","noSlopeCorrelatedShared")){
+  if(myNames[j] %in% c("sens_A_noSlope","sens_A_noVar","sens_B_noSlope")){
     myTab = myTab[,c(1:4,
                      7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,
                      8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40)]
@@ -195,13 +214,13 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
     dumTab = copy(myTab)
     dumTab[,dumID1 := paste(Sim_X,Sim_Y,sep="_")]
     
-    if(myNames[j] == "noSlope" | myNames[j]=="noSlopeCorrelatedShared"){
+    if(grepl("noSlope",myNames[j])){
       dumTab_X1 <- dcast(dumTab, outcome ~ dumID1, value.var="power_X1")
       dumTab_X3 <- dcast(dumTab, outcome ~ dumID1, value.var="power_X3")
       dumTab2 = cbind(dumTab_X1,dumTab_X3[,-1])
       dumMat = as.matrix(dumTab2[,-1])
       colnames(dumMat) = paste(colnames(dumMat),rep(c("X1","X3"),each=12),sep=" - ")
-    }else if(myNames[j] == "noVariability"){
+    }else if(myNames[j] == "sens_A_noVar"){
       dumTab_X1 <- dcast(dumTab, outcome ~ dumID1, value.var="power_X1")
       dumTab_X2 <- dcast(dumTab, outcome ~ dumID1, value.var="power_X2")
       dumTab2 = cbind(dumTab_X1,dumTab_X2[,-1])
@@ -248,13 +267,13 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
     dumTab = copy(myTab)
     dumTab[,dumID1 := paste(Sim_X,Sim_Y,sep="_")]
     
-    if(myNames[j] == "noSlope" | myNames[j] == "noSlopeCorrelatedShared"){
+    if(grepl("noSlope",myNames[j])){
       dumTab_X1 <- dcast(dumTab, outcome ~ dumID1, value.var="coverage_X1")
       dumTab_X3 <- dcast(dumTab, outcome ~ dumID1, value.var="coverage_X3")
       dumTab2 = cbind(dumTab_X1,dumTab_X3[,-1])
       dumMat = as.matrix(dumTab2[,-1])
       colnames(dumMat) = paste(colnames(dumMat),rep(c("X1","X3"),each=12),sep=" - ")
-    }else if(myNames[j] == "noVariability"){
+    }else if(myNames[j] == "sens_A_noVar"){
       dumTab_X1 <- dcast(dumTab, outcome ~ dumID1, value.var="coverage_X1")
       dumTab_X2 <- dcast(dumTab, outcome ~ dumID1, value.var="coverage_X2")
       dumTab2 = cbind(dumTab_X1,dumTab_X2[,-1])
@@ -308,7 +327,7 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
       dumTab2[,type := "slope"]
     }
     
-    if(myNames[j] != "noVariability"){
+    if(myNames[j] != "sens_A_noVar"){
       dumTab3 = copy(dumTab)
       dumTab3[,bias_X1 := bias_X3]
       dumTab3[,bias_SE_X1 := bias_SE_X3]
@@ -318,7 +337,7 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
     
     if(grepl("noSlope",myNames[j])){
       dumTab4 = rbind(dumTab,dumTab3)
-    }else if(myNames[j] == "noVariability"){ 
+    }else if(myNames[j] == "sens_A_noVar"){ 
       dumTab4 = rbind(dumTab,dumTab2)
     }else{
       dumTab4 = rbind(dumTab,dumTab2,dumTab3)  
@@ -390,7 +409,7 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
       dumTab2[,type := "slope"]
     }
     
-    if(myNames[j] != "noVariability"){
+    if(myNames[j] != "sens_A_noVar"){
       dumTab3 = copy(dumTab)
       dumTab3[,empSE_X1 := empSE_X3]
       dumTab3[,empSE_SE_X1 := empSE_SE_X3]
@@ -399,7 +418,7 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
     
     if(grepl("noSlope",myNames[j])){
       dumTab4 = rbind(dumTab,dumTab3)
-    }else if(myNames[j] == "noVariability"){ 
+    }else if(myNames[j] == "sens_A_noVar"){ 
       dumTab4 = rbind(dumTab,dumTab2)
     }else{
       dumTab4 = rbind(dumTab,dumTab2,dumTab3)  
@@ -474,7 +493,7 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
       dumTab2[,type := "slope"]
     }
     
-    if(myNames[j] != "noVariability"){
+    if(myNames[j] != "sens_A_noVar"){
       dumTab3 = copy(dumTab)
       dumTab3[,mean_betaIVW_X1 := mean_betaIVW_X3]
       dumTab3[,empSE_X1 := empSE_X3]
@@ -483,7 +502,7 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
     
     if(grepl("noSlope",myNames[j])){
       dumTab4 = rbind(dumTab,dumTab3)
-    }else if(myNames[j] == "noVariability"){ 
+    }else if(myNames[j] == "sens_A_noVar"){ 
       dumTab4 = rbind(dumTab,dumTab2)
     }else{
       dumTab4 = rbind(dumTab,dumTab2,dumTab3)  
@@ -562,7 +581,7 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
       dumTab2[,type := "slope"]
     }
     
-    if(myNames[j] != "noVariability"){
+    if(myNames[j] != "sens_A_noVar"){
       dumTab3 = copy(dumTab)
       dumTab3[,condFStats_median_X1 := condFStats_median_X3]
       dumTab3[,condFStats_1stQ_X1 := condFStats_1stQ_X3]
@@ -572,7 +591,7 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
 
     if(grepl("noSlope",myNames[j])){
       dumTab4 = rbind(dumTab,dumTab3)
-    }else if(myNames[j] == "noVariability"){ 
+    }else if(myNames[j] == "sens_A_noVar"){ 
       dumTab4 = rbind(dumTab,dumTab2)
     }else{
       dumTab4 = rbind(dumTab,dumTab2,dumTab3)  

@@ -75,34 +75,26 @@ module load plink/2.00-alpha
 
 ## Section 3: Run your application
 
-# Scripts for Main Evaluations
-R CMD BATCH --vanilla ../scripts/01_Eval_Simulation_Main_v1.R ../scripts/01_Eval_Simulation_Main_v1.R.out
-cp Rplots.pdf 01_Eval_Main_v1_RPlots.pdf
+# Scripts for general evaluations
+R CMD BATCH --vanilla ../scripts/01_Eval_Simulation.R ../scripts/01_Eval_Simulation.R.out
+cp Rplots.pdf 01_Eval_RPlots.pdf
 rm Rplots.pdf
 
-R CMD BATCH --vanilla ../scripts/01_Eval_Simulation_Main_v2.R ../scripts/01_Eval_Simulation_Main_v2.R.out
-cp Rplots.pdf 01_Eval_Main_v2_RPlots.pdf
+# Scripts for Main Figures
+R CMD BATCH --vanilla ../scripts/02_MainFigures.R ../scripts/02_MainFigures.R.out
+cp Rplots.pdf 02_MainFigures_RPlots.pdf
 rm Rplots.pdf
-
-# Scripts for Sensitivity Evaluations
-R CMD BATCH --vanilla ../scripts/01_Eval_Simulation_Sensitivity.R ../scripts/01_Eval_Simulation_Sensitivity.R.out
-cp Rplots.pdf 01_Eval_Sens_RPlots.pdf
-rm Rplots.pdf
-
-# Scripts for Main Tables
-R CMD BATCH --vanilla ../scripts/02_MainTables.R ../scripts/02_MainTables.R.out
-R CMD BATCH --vanilla ../scripts/02_MainTables_X13correction.R ../scripts/02_MainTables_X13correction.R.out
 
 # Scripts for Supplemental Tables
 R CMD BATCH --vanilla ../scripts/03_SupplementalTables.R ../scripts/03_SupplementalTables.R.out
 
 # Scripts for Supplemental Figures
-R CMD BATCH --vanilla ../scripts/04_SupplementalFigures_Bias_Estimate.R ../scripts/04_SupplementalFigures_Bias_Estimate.R.out
-cp Rplots.pdf 04_Main_Bias_RPlots.pdf
+R CMD BATCH --vanilla ../scripts/04_SupFigures_Power.R ../scripts/04_SupFigures_Power.R.out
+cp Rplots.pdf 04_SupFig_Power_RPlots.pdf
 rm Rplots.pdf
 
-R CMD BATCH --vanilla ../scripts/04_SupplementalFigures_Power.R ../scripts/04_SupplementalFigures_Power.R.out
-cp Rplots.pdf 04_Sens_Power_RPlots.pdf
+R CMD BATCH --vanilla ../scripts/05_SupFigures_CondFStats.R ../scripts/05_SupFigures_CondFStats.R.out
+cp Rplots.pdf 05_SupFig_condF_RPlots.pdf
 rm Rplots.pdf
 
 ###############################################################

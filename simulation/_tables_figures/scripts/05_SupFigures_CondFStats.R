@@ -95,6 +95,29 @@ plot_X13 = ggplot(dumTab4[Sim_X == "X13"], aes(x=check, y=condFStats_median_mean
   xlab("Scenarios") + ylab("Conditional F-Statistics") 
 plot_X13
 
+dumTab5 = copy(dumTab4)
+dumTab5 = dumTab5[check %in% c("A","B","A - noSlope","B - noSlope"),]
+
+dumTab5[,type2:= "main"]
+dumTab5[grepl("noSlope",check),type2:= "no slope"]
+
+dumTab5[,flag2:= "A"]
+dumTab5[grepl("B",check),flag2:= "B"]
+
+plot_main = ggplot(dumTab5, aes(x=flag2, y=condFStats_median_mean, col = type2)) +
+  facet_grid2(type~ Sim_X,scales = "free",independent = "y") +
+  geom_hline(yintercept = 0,color="grey") +
+  geom_hline(yintercept = 10,color="black",linetype = "dashed") +
+  geom_point(position=position_dodge(0.5),size=3) +
+  geom_errorbar(aes(ymin=condFStats_1stQ_mean, 
+                    ymax=condFStats_3rdQ_mean), width=.2,
+                position=position_dodge(0.5)) +
+  theme_bw(base_size = 15) + 
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  #theme(legend.position = "none") +
+  xlab("scenarios") + ylab("conditional F-Statistics") + labs(col = "GAMLSS \nmodel")
+plot_main
+
 filename = paste0(outdir_results,"/CondFStats_X123.png")
 png(filename = filename,width = 3200, height = 1600, res=200)
 print(plot_X123)
@@ -108,6 +131,11 @@ dev.off()
 filename = paste0(outdir_results,"/CondFStats_X12.png")
 png(filename = filename,width = 3200, height = 1600, res=200)
 print(plot_X12)
+dev.off()
+
+filename = paste0(outdir_results,"/CondFStats_main.png")
+png(filename = filename,width = 2400, height = 1400, res=200)
+print(plot_main)
 dev.off()
 
 #' # Session Info ####

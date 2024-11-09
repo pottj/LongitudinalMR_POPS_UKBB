@@ -77,24 +77,22 @@ module load plink/2.00-alpha
 
 # Scripts for general evaluations
 R CMD BATCH --vanilla ../scripts/01_Eval_Simulation.R ../scripts/01_Eval_Simulation.R.out
-cp Rplots.pdf 01_Eval_RPlots.pdf
-rm Rplots.pdf
 
 # Scripts for Main Figures
 R CMD BATCH --vanilla ../scripts/02_MainFigures.R ../scripts/02_MainFigures.R.out
-cp Rplots.pdf 02_MainFigures_RPlots.pdf
-rm Rplots.pdf
 
 # Scripts for Supplemental Tables
 R CMD BATCH --vanilla ../scripts/03_SupplementalTables.R ../scripts/03_SupplementalTables.R.out
 
 # Scripts for Supplemental Figures
 R CMD BATCH --vanilla ../scripts/04_SupFigures_Power.R ../scripts/04_SupFigures_Power.R.out
-cp Rplots.pdf 04_SupFig_Power_RPlots.pdf
-rm Rplots.pdf
 
 R CMD BATCH --vanilla ../scripts/05_SupFigures_CondFStats.R ../scripts/05_SupFigures_CondFStats.R.out
 cp Rplots.pdf 05_SupFig_condF_RPlots.pdf
+rm Rplots.pdf
+
+R CMD BATCH --vanilla ../scripts/06_SupFigures_rawValues.R ../scripts/06_SupFigures_rawValues.R.out
+cp Rplots.pdf 06_SupFig_rawValues_RPlots.pdf
 rm Rplots.pdf
 
 ###############################################################

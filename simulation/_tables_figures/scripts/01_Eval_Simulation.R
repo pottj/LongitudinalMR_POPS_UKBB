@@ -21,7 +21,7 @@ source("../../../SourceFile_HPC.R")
 #' Index i: all 12 settings per run
 #' 
 mySimulationRuns = list.dirs(path = "../..",recursive = F)
-mySimulationRuns = mySimulationRuns[-1]
+mySimulationRuns = mySimulationRuns[grepl("main",mySimulationRuns) | grepl("sens",mySimulationRuns)]
 
 myNames = gsub("../../","",mySimulationRuns)
 myNames

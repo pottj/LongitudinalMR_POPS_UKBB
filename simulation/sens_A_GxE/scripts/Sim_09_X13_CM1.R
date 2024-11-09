@@ -199,11 +199,7 @@ SimTab = foreach(s = 1:n_sim)%dorng%{
     CoVarMatrix_SNPs = diag(x=SNP_beta_sd,nrow = 3)
     CoVarMatrix_SNPs[1,2] = SNP_beta_cov
     CoVarMatrix_SNPs[2,1] = SNP_beta_cov
-    CoVarMatrix_SNPs[1,3] = 0.5
-    CoVarMatrix_SNPs[3,1] = 0.5
-    CoVarMatrix_SNPs[2,3] = -0.3
-    CoVarMatrix_SNPs[3,2] = -0.3
-    
+
     REff_SNPs = MASS::mvrnorm(SNPs_NR, 
                               mu=SNP_beta_mean, 
                               Sigma=(CoVarMatrix_SNPs))

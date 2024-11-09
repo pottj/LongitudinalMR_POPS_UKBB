@@ -167,7 +167,7 @@ GetAssociation = function(data,method,genotypes,dep_var_name,time_var_name,growt
     
   }else if(method == "gamlssIARS"){
     modTab = foreach(j = 1:SNPs_NR)%do%{
-    #j=1
+      #j=1
       Gj = genotypes[,j]
       helper = data.table(ID = sample_NR,
                           SNP = Gj)
@@ -176,30 +176,32 @@ GetAssociation = function(data,method,genotypes,dep_var_name,time_var_name,growt
       data2[,mySNP := helper[matched,SNP]]
       data2[,myVar := get(dep_var_name)]
       
-      if(growth_var == "linear"){
-        message("working on SNP ",j)
-        modX_G = gamlss(myVar ~ mySNP * time + re(random=~1+time|as.factor(ID)), 
-                        sigma.formula = ~ mySNP + time + re(random=~1|as.factor(ID)), 
-                        data = data2, family = "NO")
-        message("finished SNP ",j)
-      }else if(growth_var != "linear"){
-        message("working on SNP ",j)
-        #browser()
-        modX_G = gamlss(formula = myVar ~ mySNP * time + age2 + re(random=~1+time|as.factor(ID)),
+      message("working on SNP ",j)
+      result = tryCatch({
+        modX_G = gamlss(formula = myVar ~ mySNP * time + age2 + re(random=~1|as.factor(ID)),
                         sigma.formula = ~ mySNP + time + re(random=~1|as.factor(ID)),
-                        data=data2, family = "NO")
-        message("finished SNP ",j)
-      }
-      dummy1 = summary(modX_G)
-      dummy1 = dummy1[grepl("mySNP",rownames(dummy1)),]
+                        data=data2, family = "NO")    
+        dummy1 = summary(modX_G)
+        dummy1 = dummy1[grepl("mySNP",rownames(dummy1)),]
+        
+        res = data.table(SNP = c(j,j,j),
+                         exposure = c("mean","slope","var"),
+                         beta = dummy1[,1],
+                         SE = dummy1[,2],
+                         tval = dummy1[,3],
+                         pval = dummy1[,4])
+      }, error = function(e) {
+        res = data.table(SNP = c(j,j,j),
+                         exposure = c("mean","slope","var"),
+                         beta = c(0,0,0),
+                         SE = c(1,1,1),
+                         tval = c(0,0,0),
+                         pval = c(1,1,1))
+        return(res)
+      })
+      message("finished SNP ",j)
       
-      res = data.table(SNP = c(j,j,j),
-                       exposure = c("mean","slope","var"),
-                       beta = dummy1[,1],
-                       SE = dummy1[,2],
-                       tval = dummy1[,3],
-                       pval = dummy1[,4])
-      res
+      result
     }
     
   }else if(method == "gamlssNoIA"){

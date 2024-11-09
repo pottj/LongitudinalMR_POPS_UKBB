@@ -57,7 +57,7 @@ archive/
 temp/
 data/
 results/
-simulation_test/
+simulation/_test/
 simulation2/
 simulation/results_old/
 simulation_main/results_old2/

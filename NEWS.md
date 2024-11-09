@@ -4,8 +4,7 @@ Here I want to track my progress
 
 ## 2024/11/05
 
-- I think I did update now all relevant scripts
-- Now paper writing
+- Found an error in the sens_A_GxE scripts
 
 ## 2024/10/25
 

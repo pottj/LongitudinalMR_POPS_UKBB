@@ -56,7 +56,7 @@ ggp2  = ggplot(plotData, aes(x=ga, y=logefwcomb, group=POPSID,
 ggp2
 
 filename = paste0("../results/_figures/SupFigs/Trajectory_EFWL_MAIN.png")
-png(filename = filename,width=1500,height=1200,res = 200)
+png(filename = filename,width = 1800, height = 1000, res=200)
 plot(ggp2)
 dev.off()
 

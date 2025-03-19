@@ -2,6 +2,10 @@
 
 Here I want to track my progress
 
+## 2025/03/19
+
+- submit manuscript to _Statistics in Medicine_
+
 ## 2024/11/05
 
 - Found an error in the sens_A_GxE scripts

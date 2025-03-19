@@ -1,6 +1,6 @@
 # MVMR of longitudinal exposure data
 
-last updated: 20/09/24
+last updated: 19/03/25
 
 This repository includes code relevant for my project **MVMR using longitudinal exposure data**. It consists of simulation studies and real data applications in POPS (Pregnancy Outcome Prediction Study)  and UK Biobank (UKB). 
 
@@ -37,6 +37,10 @@ Total cholesterol (TC) has a causal effect on coronary artery disease (CAD). Sim
 ### helperfunctions
 
 Various helperfunctions which I source in (**check which one of them are really necessary!**). I will try and document them as if they were within an R package (see YAML header in function for documentation).
+
+### paper
+
+Supplemental material for the manuscript as submitted to _Statistics in Medicine_. 
 
 ### realdata_EGG 
 
@@ -84,25 +88,15 @@ Scripts to run UKB analysis
 
 4) Scripts to create figures and tables
 
-### simulation_main 
+### simulation
 
-Test hypothesis 1 in 12 scenarios: 
+Code for all tested scenarios. In each scenario, we tested 12 settings regarding the exposure simulation:
 
 - 3 ways to simulate the longitudinal exposure: 
     - $X_{12}$: SNPs affecting the mean and slope
     - $X_{13}$: SNPs affecting the mean and variability
     - $X_{123}$: SNPs affecting the mean, slope, and variability
 - 4 causal models: causal effect of mean on outcome, $\theta_1$, either 0.3, 1.2, -1.2, or -0.3. The other causal effects are fixed with $\theta_2 = 0.3$ and $\theta_3 = 1$
-
-### simulation_sensitivity
-
-Run some sensitivity checks on simulation 
-
-- using binary outcomes
-- changing the correlation between the SNPs
-- changing the GAMLSS model
-- changing the SNPs specificity for mean and slope vs variability (completely shared or completely distinct)
-- reducing the sample size 
 
 ## Abbreviations
 

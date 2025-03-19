@@ -25,6 +25,7 @@ suppressPackageStartupMessages(library(WriteXLS))
 suppressPackageStartupMessages(library(grid))
 suppressPackageStartupMessages(library(forestploter))
 suppressPackageStartupMessages(library(xtable))
+suppressPackageStartupMessages(library(ggh4x))
 
 #############################
 # path to data (only if not within the repository)

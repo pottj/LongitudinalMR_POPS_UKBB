@@ -2,6 +2,8 @@
 
 last updated: 19/03/25
 
+[![DOI](https://zenodo.org/badge/662550343.svg)](https://doi.org/10.5281/zenodo.15052247)
+
 This repository includes code relevant for my project **MVMR using longitudinal exposure data**. It consists of simulation studies and real data applications in POPS (Pregnancy Outcome Prediction Study)  and UK Biobank (UKB). 
 
 ## Overview

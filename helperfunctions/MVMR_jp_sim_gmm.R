@@ -18,9 +18,9 @@ MVMR_jp_sim_gmm = function(data_GX_long, data_GY_long, filterBadSNPs = T, filter
   # data_GX_long = copy(myTab_SNPAssocs_A)
   # data_GY_long = copy(myTab_SNPAssocs_Y)
   # filterBadSNPs = MR_filterBadSNPs
-  # filterBadSNPs_threshold = 1e-6
-  # sampleSize_GX = n_samples * n_times
-  # sampleSize_GY = n_samples
+  # filterBadSNPs_threshold = MR_filterBadSNPs_treshold
+  # sampleSize_GX = dim(myTabX_long)[1]
+  # sampleSize_GY = dim(myTabY)[1]
 
   data_GX_wide = dcast(data_GX_long, SNP ~ exposure, value.var = c("beta","SE","tval","pval"))
   outcomes = unique(data_GY_long$outcome)

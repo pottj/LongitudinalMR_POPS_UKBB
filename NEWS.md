@@ -2,6 +2,23 @@
 
 Here I want to track my progress
 
+## 2025/09
+
+- updating simulation during revision: simplify and organize better!
+- approx run times per simulation (s=500 replicates per scenario, 50 cores per scenario):
+  - main: 12.1h
+  - genetic correlation between all three exposure types: 14.4h
+  - no genetic correlation: 8.8h
+  - sample size similar to POPS: 2.5h
+  - sample size similar to UKB: 23.1h
+  - GAMLSS regression without SNP x time in mu-function: 12.1h
+  - GAMLSS regression without SNP in sigma-function: 11.8h
+  - MVMR with GMM: 12.0h
+- rename real data folder for study name 
+  - EGG --> POPS
+  - GLGC --> UKB
+- to do: update UKB analyses for GP data set
+
 ## 2025/03/19
 
 - submit manuscript to _Statistics in Medicine_

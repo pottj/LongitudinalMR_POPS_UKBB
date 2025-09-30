@@ -1,6 +1,6 @@
 # MVMR of longitudinal exposure data
 
-last updated: 19/03/25
+last updated: 30/09/2025
 
 [![DOI](https://zenodo.org/badge/662550343.svg)](https://doi.org/10.5281/zenodo.15052247)
 
@@ -44,7 +44,7 @@ Various helperfunctions which I source in (**check which one of them are really 
 
 Supplemental material for the manuscript as submitted to _Statistics in Medicine_. 
 
-### realdata_EGG 
+### realdata_POPS 
 
 Scripts to run POPS analysis
 
@@ -68,7 +68,7 @@ Scripts to run POPS analysis
 
 5) Scripts to create figures and tables
 
-### realdata_GLGC 
+### realdata_UKB 
 
 Scripts to run UKB analysis
 
@@ -92,13 +92,28 @@ Scripts to run UKB analysis
 
 ### simulation
 
-Code for all tested scenarios. In each scenario, we tested 12 settings regarding the exposure simulation:
+Code for all tested scenarios. In each scenario, we tested 3 simulated exposures on 8 simulated outcomes:
 
 - 3 ways to simulate the longitudinal exposure: 
-    - $X_{12}$: SNPs affecting the mean and slope
-    - $X_{13}$: SNPs affecting the mean and variability
-    - $X_{123}$: SNPs affecting the mean, slope, and variability
-- 4 causal models: causal effect of mean on outcome, $\theta_1$, either 0.3, 1.2, -1.2, or -0.3. The other causal effects are fixed with $\theta_2 = 0.3$ and $\theta_3 = 1$
+    - $X^{(MS)}$: genetic effect on $X^{(M)}$ and $X^{(S)}$
+    - $X^{(MV)}$: genetic effect on $X^{(M)}$ and $X^{(V)}$
+    - $X^{(MSV)}$: genetic effect on $X^{(M)}$, $X^{(S)}$, and $X^{(V)}$
+- 8 ways to simulate the cross-sectional outcome: 
+    - $Y_1$: independent of X
+    - $Y_2$: affected by $X^{(M)}$
+    - $Y_3$: affected by $X^{(S)}$
+    - $Y_4$: affected by $X^{(V)}$
+    - $Y_5$: affected by $X^{(M)}$ and $X^{(S)}$
+    - $Y_6$: affected by $X^{(M)}$ and $X^{(V)}$
+    - $Y_7$: affected by $X^{(S)}$ and $X^{(V)}$
+    - $Y_8$: affected by $X^{(M)}$, $X^{(S)}$ and $X^{(V)}$
+
+The first scenario is the main one. In addition, there are 7 other scenarios: 
+
+- changing the sample size: either like POPS data or UKB data set
+- changing the genetic correlation structure: either no correlation at all, or full correlation between everything
+- changing the GAMLSS regression: either leaving out the SNP x time term in the mu-function, or the SNP term in the sigma-function
+- changing the MVMR approach: using GMM instead of IVW
 
 ## Abbreviations
 

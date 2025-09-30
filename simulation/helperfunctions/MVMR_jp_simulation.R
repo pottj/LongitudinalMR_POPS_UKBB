@@ -13,15 +13,22 @@
 #' }
 #' @rdname MVMR_jp
 #' @export
-MVMR_jp_sim_gmm = function(data_GX_long, data_GY_long, filterBadSNPs = T, filterBadSNPs_threshold = 1e-6,sampleSize_GX=15000,sampleSize_GY){
+MVMR_jp_sim = function(data_GX_long, 
+                       data_GY_long, 
+                       filterBadSNPs=T, 
+                       filterBadSNPs_threshold=1e-6,
+                       sampleSize_GX=10000,
+                       sampleSize_GY=10000,
+                       MVMR_method="IVW"){
   #debug
-  # data_GX_long = copy(myTab_SNPAssocs_A)
+  # data_GX_long = copy(myTab_SNPAssocs_X_MSV)
   # data_GY_long = copy(myTab_SNPAssocs_Y)
   # filterBadSNPs = MR_filterBadSNPs
   # filterBadSNPs_threshold = MR_filterBadSNPs_treshold
   # sampleSize_GX = dim(myTabX_long)[1]
   # sampleSize_GY = dim(myTabY)[1]
-
+  # MVMR_method = MVMR_model
+  
   data_GX_wide = dcast(data_GX_long, SNP ~ exposure, value.var = c("beta","SE","tval","pval"))
   outcomes = unique(data_GY_long$outcome)
   exposures = unique(data_GX_long$exposure)
@@ -72,7 +79,7 @@ MVMR_jp_sim_gmm = function(data_GX_long, data_GY_long, filterBadSNPs = T, filter
     }
     
     dumTab_MR = foreach(i = 1:length(outcomes))%do%{
-      #i=1
+      #i=8
       myOutcome = outcomes[i]
       myTab_GY = copy(data_GY_long)
       myTab_GY = myTab_GY[outcome == myOutcome,]
@@ -81,6 +88,7 @@ MVMR_jp_sim_gmm = function(data_GX_long, data_GY_long, filterBadSNPs = T, filter
       data_beta = copy(data_GX_wide)
       data_beta = data_beta[,filt1,with=F]
       corTab = cor(data_beta)
+      
       filt2 = grepl("SE",names(data_GX_wide))
       data_SE = copy(data_GX_wide)
       data_SE = data_SE[,filt2,with=F]
@@ -94,25 +102,29 @@ MVMR_jp_sim_gmm = function(data_GX_long, data_GY_long, filterBadSNPs = T, filter
                               exposure = exposures2,
                               outcome = myOutcome)
         
-        result = tryCatch({
-          res2 = mr_mvgmm(mvmr_obj,nx = sampleSize_GX,ny = sampleSize_GY,cor.x = corTab)    
-
-        }, error = function(e) {
-          res2 = mr_mvivw(mvmr_obj,nx = sampleSize_GX)
-          return(res2)
-        })
+        if(MVMR_method == "GMM"){
+          result = tryCatch({
+            res2 = mr_mvgmm(mvmr_obj,nx = sampleSize_GX,ny = sampleSize_GY,cor.x = corTab)    
+            
+          }, error = function(e) {
+            res2 = mr_mvivw(mvmr_obj,nx = sampleSize_GX)
+            return(res2)
+          })
+        }else{
+          result = mr_mvivw(mvmr_obj,nx = sampleSize_GX)    
+        }
+        
         res = data.table(exposure = c(result@Exposure),
                          outcome = rep(result@Outcome,NR_exposures),
                          NR_SNPs_total = rep(length(goodSNPs),NR_exposures),
                          NR_SNPs_type = SNPs_per_type,
-                         beta_IVW = c(result@Estimate),
-                         SE_IVW = c(result@StdError),
-                         pval_IVW = c(result@Pvalue),
+                         beta = c(result@Estimate),
+                         SE = c(result@StdError),
+                         pval = c(result@Pvalue),
                          condFStats = c(result@CondFstat),
                          HeteroStat = rep(result@Heter.Stat[1],NR_exposures),
                          HeteroStat_pval = rep(result@Heter.Stat[2],NR_exposures),
                          comment = class(result)[1])
-
       }else{
         mr_obj = mr_input(bx = data_GX_wide$beta_mean,
                           bxse = data_GX_wide$SE_mean,
@@ -125,12 +137,12 @@ MVMR_jp_sim_gmm = function(data_GX_long, data_GY_long, filterBadSNPs = T, filter
                          outcome = res2@Outcome,
                          NR_SNPs_total = rep(length(goodSNPs),NR_exposures),
                          NR_SNPs_type = SNPs_per_type,
-                         beta_IVW = res2@Estimate,
-                         SE_IVW = res2@StdError,
-                         pval_IVW = res2@Pvalue,
+                         beta = res2@Estimate,
+                         SE = res2@StdError,
+                         pval = res2@Pvalue,
                          HeteroStat = res2@Heter.Stat[1],
                          HeteroStat_pval = res2@Heter.Stat[2],
-                         comment = comment)
+                         comment = class(res2)[1])
         
       }
       res

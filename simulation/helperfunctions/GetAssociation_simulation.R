@@ -15,12 +15,12 @@
 #' @export
 GetAssociation = function(data,method,genotypes,dep_var_name,time_var_name,growth_var,getIA=T){
   # debug
-  # genotypes = G
-  # method = "gamlssIARS"
   # data = copy(myTabX_long)
-  # dep_var_name = "A"
+  # method = GAMLSS_model
+  # genotypes = G
+  # dep_var_name = "X_MSV"
   # time_var_name = "age"
-  # growth_var = set_growth
+  # growth_var = "quadradic"
   # getIA=T
   
   stopifnot(method %in% c("linReg","glm","linMixed","gamlssIA","gamlssIARS","gamlssNoIA","gamlssNoVar"))
@@ -36,7 +36,7 @@ GetAssociation = function(data,method,genotypes,dep_var_name,time_var_name,growt
     modTab = foreach(j = 1:SNPs_NR)%do%{
       #j=1
       Gj = genotypes[,j]
-      helper = data.table(ID = sample_NR,
+      helper = data.table(ID = rownames(genotypes),
                           SNP = Gj)
       data2 = copy(data)
       matched = match(data2$ID,helper$ID)
@@ -65,7 +65,7 @@ GetAssociation = function(data,method,genotypes,dep_var_name,time_var_name,growt
     modTab = foreach(j = 1:SNPs_NR)%do%{
       #j=1
       Gj = genotypes[,j]
-      helper = data.table(ID = sample_NR,
+      helper = data.table(ID = rownames(genotypes),
                           SNP = Gj)
       data2 = copy(data)
       matched = match(data2$ID,helper$ID)
@@ -94,7 +94,7 @@ GetAssociation = function(data,method,genotypes,dep_var_name,time_var_name,growt
     modTab = foreach(j = 1:SNPs_NR)%do%{
       #j=1
       Gj = genotypes[,j]
-      helper = data.table(ID = sample_NR,
+      helper = data.table(ID = rownames(genotypes),
                           SNP = Gj)
       data2 = copy(data)
       matched = match(data2$ID,helper$ID)
@@ -137,7 +137,7 @@ GetAssociation = function(data,method,genotypes,dep_var_name,time_var_name,growt
     modTab = foreach(j = 1:SNPs_NR)%do%{
         #j=1
         Gj = genotypes[,j]
-        helper = data.table(ID = sample_NR,
+        helper = data.table(ID = rownames(genotypes),
                             SNP = Gj)
         data2 = copy(data)
         matched = match(data2$ID,helper$ID)
@@ -169,7 +169,7 @@ GetAssociation = function(data,method,genotypes,dep_var_name,time_var_name,growt
     modTab = foreach(j = 1:SNPs_NR)%do%{
       #j=1
       Gj = genotypes[,j]
-      helper = data.table(ID = sample_NR,
+      helper = data.table(ID = rownames(genotypes),
                           SNP = Gj)
       data2 <<- copy(data)
       matched = match(data2$ID,helper$ID)
@@ -208,7 +208,7 @@ GetAssociation = function(data,method,genotypes,dep_var_name,time_var_name,growt
     modTab = foreach(j = 1:SNPs_NR)%do%{
       #j=1
       Gj = genotypes[,j]
-      helper = data.table(ID = sample_NR,
+      helper = data.table(ID = rownames(genotypes),
                           SNP = Gj)
       data2 = copy(data)
       matched = match(data2$ID,helper$ID)
@@ -240,7 +240,7 @@ GetAssociation = function(data,method,genotypes,dep_var_name,time_var_name,growt
     modTab = foreach(j = 1:SNPs_NR)%do%{
       #j=1
       Gj = genotypes[,j]
-      helper = data.table(ID = sample_NR,
+      helper = data.table(ID = rownames(genotypes),
                           SNP = Gj)
       data2 = copy(data)
       matched = match(data2$ID,helper$ID)

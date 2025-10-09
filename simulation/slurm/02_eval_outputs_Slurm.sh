@@ -8,7 +8,7 @@
 ## Full documentation can be found here: https://slurm.schedmd.com/sbatch.html
 
 ## Enter a short name for the job, to be shown in SLURM output
-#SBATCH -J Sim_eval
+#SBATCH -J Sim_eval_out
 
 ## Enter the wall-clock time limit for your jobs.
 ## If jobs reach this limit they are automatically killed.
@@ -75,15 +75,23 @@ module load R/4.3.1-icelake
 
 ## Section 3: Run your application
 
-R CMD BATCH --vanilla ../scripts/02_evaluation_1_power_bias.R ../scripts/02_evaluation_1_power_bias.R.out
-cp Rplots.pdf 02_Evaluation_1_RPlots.pdf
+R CMD BATCH --vanilla ../scripts/02_eval_1_power_bias.R ../scripts/02_eval_1_power_bias.R.out
+cp Rplots.pdf 02_eval_1_RPlots.pdf
 rm Rplots.pdf
 
-R CMD BATCH --vanilla ../scripts/02_evaluation_2_correlation.R ../scripts/02_evaluation_2_correlation.R.out
-cp Rplots.pdf 02_Evaluation_2_RPlots.pdf
+R CMD BATCH --vanilla ../scripts/02_eval_2_correlation.R ../scripts/02_eval_2_correlation.R.out
+cp Rplots.pdf 02_eval_2_RPlots.pdf
 rm Rplots.pdf
 
-R CMD BATCH --vanilla ../scripts/03_SupplementalTables.R ../scripts/03_SupplementalTables.R.out
+R CMD BATCH --vanilla ../scripts/03_output_1_SupTabs.R ../scripts/03_output_1_SupTabs.R.out
+
+R CMD BATCH --vanilla ../scripts/03_output_2_SupFigs.R ../scripts/03_output_2_SupFigs.R.out
+cp Rplots.pdf 03_output_2_RPlots.pdf
+rm Rplots.pdf
+
+R CMD BATCH --vanilla ../scripts/03_output_3_MainFigs.R ../scripts/03_output_3_MainFigs.R.out
+cp Rplots.pdf 03_output_3_RPlots.pdf
+rm Rplots.pdf
 
 ###############################################################
 ### You should not have to change anything below this line ####

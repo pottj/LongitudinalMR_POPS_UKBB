@@ -49,6 +49,9 @@ suppressPackageStartupMessages(library(WriteXLS))
   tab1a = rbind(dummy, tab1a)
   
   tab1b = tab1b[,-2]
+  tab1b[,scenario_NR := c("0","2B","2A","1A","1B","3A","3B","4A","4B","5A","5B")]
+  tab1b[,scenario_NR1 := c(1:11)]
+  setorder(tab1b,scenario_NR)
   
 }
 
@@ -75,6 +78,10 @@ suppressPackageStartupMessages(library(WriteXLS))
   tab2 = copy(myTab)
   setnames(tab2,"Sim_NR","Scenario_NR")
   setnames(tab2,"Sim_name","Scenario_name")
+  
+  matched = match(tab2$Scenario_NR,tab1b$scenario_NR1)
+  tab2[,Scenario_NR := tab1b[matched,scenario_NR]]
+  setorder(tab2,Scenario_NR)
 }
 
 #' # Get Sup Tab 3 ####
@@ -96,6 +103,10 @@ suppressPackageStartupMessages(library(WriteXLS))
   tab3 = copy(myTab)
   setnames(tab3,"Sim_NR","Scenario_NR")
   setnames(tab3,"Sim_name","Scenario_name")
+  
+  matched = match(tab3$Scenario_NR,tab1b$scenario_NR1)
+  tab3[,Scenario_NR := tab1b[matched,scenario_NR]]
+  setorder(tab3,Scenario_NR)
 }
 
 #' # Save ####

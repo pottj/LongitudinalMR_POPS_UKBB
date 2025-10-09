@@ -29,6 +29,10 @@ fixed_parameters = fread("../temp/parameters_fixed.txt")
 Y_theta = fixed_parameters[parameter %in% paste0("Y_theta_",c("M","S","V")),value]
 
 mySims = list.files(path = "../result/",pattern = "_SimAll.RData")
+mySims_NR = gsub("_.*","",mySims)
+mySims_NR = as.numeric(mySims_NR)
+ordering = order(mySims_NR)
+mySims = mySims[ordering]
 
 dumTab0 = foreach(j = 1:length(mySims))%do%{
   #j=1
@@ -136,6 +140,12 @@ myTab = rbindlist(dumTab0, fill=T)
 names(myTab)
 myTab = myTab[grepl("Y",outcome)]
 
+matchingTab = data.table(number1 = c(1:11),
+                         number2 = c("0","2B","2A","1A","1B","3A","3B","4A","4B","5A","5B"))
+matched = match(myTab$Sim_NR,matchingTab$number1)
+table(is.na(matched))
+myTab[,Sim_NR2 := matchingTab[matched,number2]]
+
 #' # Check 1: Detection rates ####
 #' ***
 #' Also known as power (if there should be an effect) or type 1 error (if there should not be an effect)
@@ -149,7 +159,7 @@ myTab = myTab[grepl("Y",outcome)]
   }
   
   dumTab = copy(myTab)
-  dumTab[,dumID1 := paste(exposure,Sim_NR,Sim_name,sep="_")]
+  dumTab[,dumID1 := paste(exposure,Sim_NR2,sep="_")]
   
   # Power to detect mean effect over all scenarios
   dumTab_mean <- dcast(dumTab, outcome ~ dumID1, value.var="power_mean")
@@ -163,7 +173,7 @@ myTab = myTab[grepl("Y",outcome)]
   
   # Power to detect slope effect over all scenarios
   dumTab_slope <- dcast(dumTab, outcome ~ dumID1, value.var="power_slope")
-  filt = grepl("_6",names(dumTab_slope))
+  filt = grepl("_3A",names(dumTab_slope))
   dumTab_slope = dumTab_slope[,!filt,with = F]
   dumMat = as.matrix(dumTab_slope[,-1])
   filename = paste0(outdir_results,"/Slope_allScenarios.png")
@@ -175,7 +185,7 @@ myTab = myTab[grepl("Y",outcome)]
   
   # Power to detect variability effect over all scenarios
   dumTab_var <- dcast(dumTab, outcome ~ dumID1, value.var="power_var")
-  filt = grepl("_7",names(dumTab_var))
+  filt = grepl("_3B",names(dumTab_var))
   dumTab_var = dumTab_var[,!filt,with = F]
   dumMat = as.matrix(dumTab_var[,-1])
   filename = paste0(outdir_results,"/Variability_allScenarios.png")
@@ -190,9 +200,9 @@ myTab = myTab[grepl("Y",outcome)]
   filt = grepl("MSV",names(dumTab2))
   dumTab2 = dumTab2[,filt,with = F]
   dumMat = as.matrix(dumTab2)
-  colnames(dumMat)[1:7] = gsub("MSV","mean",colnames(dumMat)[1:7])
-  colnames(dumMat)[8:13] = gsub("MSV","slope",colnames(dumMat)[8:13])
-  colnames(dumMat)[14:19] = gsub("MSV","var",colnames(dumMat)[14:19])
+  colnames(dumMat)[1:11] = gsub("MSV","mean",colnames(dumMat)[1:11])
+  colnames(dumMat)[12:21] = gsub("MSV","slope",colnames(dumMat)[12:21])
+  colnames(dumMat)[22:31] = gsub("MSV","var",colnames(dumMat)[22:31])
   filename = paste0(outdir_results,"/MSV_allScenarios_allTypes.png")
   png(filename = filename,width = 2600, height = 1400, res=200)
   corrplot(dumMat, is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'), 
@@ -205,9 +215,9 @@ myTab = myTab[grepl("Y",outcome)]
   filt = grepl("MS_",names(dumTab2))
   dumTab2 = dumTab2[,filt,with = F]
   dumMat = as.matrix(dumTab2)
-  colnames(dumMat)[1:7] = gsub("MS","mean",colnames(dumMat)[1:7])
-  colnames(dumMat)[8:13] = gsub("MS","slope",colnames(dumMat)[8:13])
-  colnames(dumMat)[14:19] = gsub("MS","var",colnames(dumMat)[14:19])
+  colnames(dumMat)[1:11] = gsub("MS","mean",colnames(dumMat)[1:11])
+  colnames(dumMat)[12:21] = gsub("MS","slope",colnames(dumMat)[12:21])
+  colnames(dumMat)[22:31] = gsub("MS","var",colnames(dumMat)[22:31])
   filename = paste0(outdir_results,"/MS_allScenarios_allTypes.png")
   png(filename = filename,width = 2600, height = 1400, res=200)
   corrplot(dumMat, is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'), 
@@ -220,9 +230,9 @@ myTab = myTab[grepl("Y",outcome)]
   filt = grepl("MV_",names(dumTab2))
   dumTab2 = dumTab2[,filt,with = F]
   dumMat = as.matrix(dumTab2)
-  colnames(dumMat)[1:7] = gsub("MV","mean",colnames(dumMat)[1:7])
-  colnames(dumMat)[8:13] = gsub("MV","slope",colnames(dumMat)[8:13])
-  colnames(dumMat)[14:19] = gsub("MV","var",colnames(dumMat)[14:19])
+  colnames(dumMat)[1:11] = gsub("MV","mean",colnames(dumMat)[1:11])
+  colnames(dumMat)[12:21] = gsub("MV","slope",colnames(dumMat)[12:21])
+  colnames(dumMat)[22:31] = gsub("MV","var",colnames(dumMat)[22:31])
   filename = paste0(outdir_results,"/MV_allScenarios_allTypes.png")
   png(filename = filename,width = 2600, height = 1400, res=200)
   corrplot(dumMat, is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'), 
@@ -232,7 +242,7 @@ myTab = myTab[grepl("Y",outcome)]
  
   # Power to detect effects in main scenario 
   dumTab2 = cbind(dumTab_mean,dumTab_slope[,-1],dumTab_var[,-1])
-  filt = grepl("1_main",names(dumTab2))
+  filt = grepl("_0",names(dumTab2))
   dumTab2 = dumTab2[,filt,with = F]
   dumMat = as.matrix(dumTab2)
   colnames(dumMat)[1:3] = paste0(colnames(dumMat)[1:3],"_mean")
@@ -259,7 +269,7 @@ myTab = myTab[grepl("Y",outcome)]
   }
   
   dumTab = copy(myTab)
-  dumTab[,dumID1 := paste(exposure,Sim_NR,Sim_name,sep="_")]
+  dumTab[,dumID1 := paste(exposure,Sim_NR2,sep="_")]
   
   # mean effect over all scenarios
   dumTab_mean <- dcast(dumTab, outcome ~ dumID1, value.var="coverage_mean")
@@ -300,9 +310,9 @@ myTab = myTab[grepl("Y",outcome)]
   filt = grepl("MSV",names(dumTab2))
   dumTab2 = dumTab2[,filt,with = F]
   dumMat = as.matrix(dumTab2)
-  colnames(dumMat)[1:7] = gsub("MSV","mean",colnames(dumMat)[1:7])
-  colnames(dumMat)[8:13] = gsub("MSV","slope",colnames(dumMat)[8:13])
-  colnames(dumMat)[14:19] = gsub("MSV","var",colnames(dumMat)[14:19])
+  colnames(dumMat)[1:11] = gsub("MSV","mean",colnames(dumMat)[1:11])
+  colnames(dumMat)[12:21] = gsub("MSV","slope",colnames(dumMat)[12:21])
+  colnames(dumMat)[22:31] = gsub("MSV","var",colnames(dumMat)[22:31])
   filename = paste0(outdir_results,"/MSV_allScenarios_allTypes.png")
   png(filename = filename,width = 2600, height = 1400, res=200)
   corrplot(dumMat, is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'),
@@ -315,9 +325,9 @@ myTab = myTab[grepl("Y",outcome)]
   filt = grepl("MS_",names(dumTab2))
   dumTab2 = dumTab2[,filt,with = F]
   dumMat = as.matrix(dumTab2)
-  colnames(dumMat)[1:7] = gsub("MS","mean",colnames(dumMat)[1:7])
-  colnames(dumMat)[8:13] = gsub("MS","slope",colnames(dumMat)[8:13])
-  colnames(dumMat)[14:19] = gsub("MS","var",colnames(dumMat)[14:19])
+  colnames(dumMat)[1:11] = gsub("MS","mean",colnames(dumMat)[1:11])
+  colnames(dumMat)[12:21] = gsub("MS","slope",colnames(dumMat)[12:21])
+  colnames(dumMat)[22:31] = gsub("MS","var",colnames(dumMat)[22:31])
   filename = paste0(outdir_results,"/MS_allScenarios_allTypes.png")
   png(filename = filename,width = 2600, height = 1400, res=200)
   corrplot(dumMat, is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'),
@@ -330,9 +340,9 @@ myTab = myTab[grepl("Y",outcome)]
   filt = grepl("MV_",names(dumTab2))
   dumTab2 = dumTab2[,filt,with = F]
   dumMat = as.matrix(dumTab2)
-  colnames(dumMat)[1:7] = gsub("MV","mean",colnames(dumMat)[1:7])
-  colnames(dumMat)[8:13] = gsub("MV","slope",colnames(dumMat)[8:13])
-  colnames(dumMat)[14:19] = gsub("MV","var",colnames(dumMat)[14:19])
+  colnames(dumMat)[1:11] = gsub("MV","mean",colnames(dumMat)[1:11])
+  colnames(dumMat)[12:21] = gsub("MV","slope",colnames(dumMat)[12:21])
+  colnames(dumMat)[22:31] = gsub("MV","var",colnames(dumMat)[22:31])
   filename = paste0(outdir_results,"/MV_allScenarios_allTypes.png")
   png(filename = filename,width = 2600, height = 1400, res=200)
   corrplot(dumMat, is.corr = FALSE,col.lim = c(0, 1),#col = COL1('Reds'),
@@ -342,7 +352,7 @@ myTab = myTab[grepl("Y",outcome)]
   
   # effects in main scenario 
   dumTab2 = cbind(dumTab_mean,dumTab_slope[,-1],dumTab_var[,-1])
-  filt = grepl("1_main",names(dumTab2))
+  filt = grepl("_0",names(dumTab2))
   dumTab2 = dumTab2[,filt,with = F]
   dumMat = as.matrix(dumTab2)
   colnames(dumMat)[1:3] = paste0(colnames(dumMat)[1:3],"_mean")
@@ -383,11 +393,10 @@ myTab = myTab[grepl("Y",outcome)]
   dumTab3[,bias_SE := bias_SE_var]
   dumTab4 = rbind(dumTab1,dumTab2,dumTab3)  
   dumTab4 = dumTab4[!is.na(bias),]
-  dumTab4 = dumTab4[,c(1:4,50:52)]
-  dumTab4[,dumID1 := paste(Sim_NR,Sim_name,sep="_")]
+  dumTab4 = dumTab4[,c(1:4,50:53)]
   
   # mean effect over all scenarios
-  plot5 = ggplot(dumTab4[type=="mean"], aes(x=dumID1, y=bias, color = outcome)) +
+  plot5 = ggplot(dumTab4[type=="mean"], aes(x=Sim_NR2, y=bias, color = outcome)) +
     facet_wrap(~ exposure,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_point(position=position_dodge(0.5),size=3) +
@@ -405,7 +414,7 @@ myTab = myTab[grepl("Y",outcome)]
   dev.off()
   
   # slope effect over all scenarios
-  plot5 = ggplot(dumTab4[type=="slope"], aes(x=dumID1, y=bias, color = outcome)) +
+  plot5 = ggplot(dumTab4[type=="slope"], aes(x=Sim_NR2, y=bias, color = outcome)) +
     facet_wrap(~ exposure,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_point(position=position_dodge(0.5),size=3) +
@@ -423,7 +432,7 @@ myTab = myTab[grepl("Y",outcome)]
   dev.off()
   
   # variability effect over all scenarios
-  plot5 = ggplot(dumTab4[type=="var"], aes(x=dumID1, y=bias, color = outcome)) +
+  plot5 = ggplot(dumTab4[type=="var"], aes(x=Sim_NR2, y=bias, color = outcome)) +
     facet_wrap(~ exposure,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_point(position=position_dodge(0.5),size=3) +
@@ -441,7 +450,7 @@ myTab = myTab[grepl("Y",outcome)]
   dev.off()
   
   # effects of MSV exposure over all scenarios and all exposure types
-  plot5 = ggplot(dumTab4[exposure=="MSV"], aes(x=dumID1, y=bias, color = outcome)) +
+  plot5 = ggplot(dumTab4[exposure=="MSV"], aes(x=Sim_NR2, y=bias, color = outcome)) +
     facet_wrap(~ type,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_point(position=position_dodge(0.5),size=3) +
@@ -459,7 +468,7 @@ myTab = myTab[grepl("Y",outcome)]
   dev.off()
   
   # effects of MS exposure over all scenarios and all exposure types
-  plot5 = ggplot(dumTab4[exposure=="MS"], aes(x=dumID1, y=bias, color = outcome)) +
+  plot5 = ggplot(dumTab4[exposure=="MS"], aes(x=Sim_NR2, y=bias, color = outcome)) +
     facet_wrap(~ type,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_point(position=position_dodge(0.5),size=3) +
@@ -477,7 +486,7 @@ myTab = myTab[grepl("Y",outcome)]
   dev.off()
   
   # effects of MV exposure over all scenarios and all exposure types
-  plot5 = ggplot(dumTab4[exposure=="MV"], aes(x=dumID1, y=bias, color = outcome)) +
+  plot5 = ggplot(dumTab4[exposure=="MV"], aes(x=Sim_NR2, y=bias, color = outcome)) +
     facet_wrap(~ type,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_point(position=position_dodge(0.5),size=3) +
@@ -495,7 +504,7 @@ myTab = myTab[grepl("Y",outcome)]
   dev.off()
   
   # effects in main scenario 
-  plot5 = ggplot(dumTab4[dumID1=="1_main"], aes(x=exposure, y=bias, color = outcome)) +
+  plot5 = ggplot(dumTab4[Sim_NR2=="0"], aes(x=exposure, y=bias, color = outcome)) +
     facet_wrap(~ type,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_point(position=position_dodge(0.5),size=3) +
@@ -540,11 +549,10 @@ myTab = myTab[grepl("Y",outcome)]
   dumTab3[,empSE_SE := empSE_SE_var]
   dumTab4 = rbind(dumTab1,dumTab2,dumTab3)  
   dumTab4 = dumTab4[!is.na(empSE),]
-  dumTab4 = dumTab4[,c(1:4,50:52)]
-  dumTab4[,dumID1 := paste(Sim_NR,Sim_name,sep="_")]
-  
+  dumTab4 = dumTab4[,c(1:4,50:53)]
+
   # mean effect over all scenarios
-  plot5 = ggplot(dumTab4[type=="mean"], aes(x=dumID1, y=empSE, color = outcome)) +
+  plot5 = ggplot(dumTab4[type=="mean"], aes(x=Sim_NR2, y=empSE, color = outcome)) +
     facet_wrap(~ exposure,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_point(position=position_dodge(0.5),size=3) +
@@ -562,7 +570,7 @@ myTab = myTab[grepl("Y",outcome)]
   dev.off()
   
   # slope effect over all scenarios
-  plot5 = ggplot(dumTab4[type=="slope"], aes(x=dumID1, y=empSE, color = outcome)) +
+  plot5 = ggplot(dumTab4[type=="slope"], aes(x=Sim_NR2, y=empSE, color = outcome)) +
     facet_wrap(~ exposure,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_point(position=position_dodge(0.5),size=3) +
@@ -580,7 +588,7 @@ myTab = myTab[grepl("Y",outcome)]
   dev.off()
   
   # variability effect over all scenarios
-  plot5 = ggplot(dumTab4[type=="var"], aes(x=dumID1, y=empSE, color = outcome)) +
+  plot5 = ggplot(dumTab4[type=="var"], aes(x=Sim_NR2, y=empSE, color = outcome)) +
     facet_wrap(~ exposure,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_point(position=position_dodge(0.5),size=3) +
@@ -598,7 +606,7 @@ myTab = myTab[grepl("Y",outcome)]
   dev.off()
   
   # effects of MSV exposure over all scenarios and all exposure types
-  plot5 = ggplot(dumTab4[exposure=="MSV"], aes(x=dumID1, y=empSE, color = outcome)) +
+  plot5 = ggplot(dumTab4[exposure=="MSV"], aes(x=Sim_NR2, y=empSE, color = outcome)) +
     facet_wrap(~ type,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_point(position=position_dodge(0.5),size=3) +
@@ -616,7 +624,7 @@ myTab = myTab[grepl("Y",outcome)]
   dev.off()
   
   # effects of MS exposure over all scenarios and all exposure types
-  plot5 = ggplot(dumTab4[exposure=="MS"], aes(x=dumID1, y=empSE, color = outcome)) +
+  plot5 = ggplot(dumTab4[exposure=="MS"], aes(x=Sim_NR2, y=empSE, color = outcome)) +
     facet_wrap(~ type,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_point(position=position_dodge(0.5),size=3) +
@@ -634,7 +642,7 @@ myTab = myTab[grepl("Y",outcome)]
   dev.off()
   
   # effects of MV exposure over all scenarios and all exposure types
-  plot5 = ggplot(dumTab4[exposure=="MV"], aes(x=dumID1, y=empSE, color = outcome)) +
+  plot5 = ggplot(dumTab4[exposure=="MV"], aes(x=Sim_NR2, y=empSE, color = outcome)) +
     facet_wrap(~ type,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_point(position=position_dodge(0.5),size=3) +
@@ -652,7 +660,7 @@ myTab = myTab[grepl("Y",outcome)]
   dev.off()
   
   # effects in main scenario 
-  plot5 = ggplot(dumTab4[dumID1=="1_main"], aes(x=exposure, y=empSE, color = outcome)) +
+  plot5 = ggplot(dumTab4[Sim_NR2=="0"], aes(x=exposure, y=empSE, color = outcome)) +
     facet_wrap(~ type,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_point(position=position_dodge(0.5),size=3) +
@@ -697,11 +705,10 @@ myTab = myTab[grepl("Y",outcome)]
   dumTab3[,empSE_SE := empSE_SE_var]
   dumTab4 = rbind(dumTab1,dumTab2,dumTab3)  
   dumTab4 = dumTab4[!is.na(mean_beta),]
-  dumTab4 = dumTab4[,c(1:4,50:52)]
-  dumTab4[,dumID1 := paste(Sim_NR,Sim_name,sep="_")]
+  dumTab4 = dumTab4[,c(1:4,50:53)]
   
   # mean effect over all scenarios
-  plot5 = ggplot(dumTab4[type=="mean"], aes(x=dumID1, y=mean_beta, color = outcome)) +
+  plot5 = ggplot(dumTab4[type=="mean"], aes(x=Sim_NR2, y=mean_beta, color = outcome)) +
     facet_wrap(~ exposure,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_hline(yintercept = Y_theta[1],color="black",linetype = "dotted")+
@@ -720,7 +727,7 @@ myTab = myTab[grepl("Y",outcome)]
   dev.off()
   
   # slope effect over all scenarios
-  plot5 = ggplot(dumTab4[type=="slope"], aes(x=dumID1, y=mean_beta, color = outcome)) +
+  plot5 = ggplot(dumTab4[type=="slope"], aes(x=Sim_NR2, y=mean_beta, color = outcome)) +
     facet_wrap(~ exposure,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_hline(yintercept = Y_theta[2],color="black",linetype = "dotted")+
@@ -739,7 +746,7 @@ myTab = myTab[grepl("Y",outcome)]
   dev.off()
   
   # variability effect over all scenarios
-  plot5 = ggplot(dumTab4[type=="var"], aes(x=dumID1, y=mean_beta, color = outcome)) +
+  plot5 = ggplot(dumTab4[type=="var"], aes(x=Sim_NR2, y=mean_beta, color = outcome)) +
     facet_wrap(~ exposure,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_hline(yintercept = Y_theta[3],color="black",linetype = "dotted")+
@@ -760,7 +767,7 @@ myTab = myTab[grepl("Y",outcome)]
   # effects of MSV exposure over all scenarios and all exposure types
   data_hlines = data.frame(type = unique(dumTab4$type),
                            mylines = Y_theta)
-  plot5 = ggplot(dumTab4[exposure=="MSV"], aes(x=dumID1, y=mean_beta, color = outcome)) +
+  plot5 = ggplot(dumTab4[exposure=="MSV"], aes(x=Sim_NR2, y=mean_beta, color = outcome)) +
     facet_wrap(~ type,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_hline(data = data_hlines, aes(yintercept = mylines),linetype="dashed", show.legend = FALSE) +
@@ -779,7 +786,7 @@ myTab = myTab[grepl("Y",outcome)]
   dev.off()
   
   # effects of MS exposure over all scenarios and all exposure types
-  plot5 = ggplot(dumTab4[exposure=="MS"], aes(x=dumID1, y=mean_beta, color = outcome)) +
+  plot5 = ggplot(dumTab4[exposure=="MS"], aes(x=Sim_NR2, y=mean_beta, color = outcome)) +
     facet_wrap(~ type,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_hline(data = data_hlines, aes(yintercept = mylines),linetype="dashed", show.legend = FALSE) +
@@ -798,7 +805,7 @@ myTab = myTab[grepl("Y",outcome)]
   dev.off()
   
   # effects of MV exposure over all scenarios and all exposure types
-  plot5 = ggplot(dumTab4[exposure=="MV"], aes(x=dumID1, y=mean_beta, color = outcome)) +
+  plot5 = ggplot(dumTab4[exposure=="MV"], aes(x=Sim_NR2, y=mean_beta, color = outcome)) +
     facet_wrap(~ type,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_hline(data = data_hlines, aes(yintercept = mylines),linetype="dashed", show.legend = FALSE) +
@@ -817,7 +824,7 @@ myTab = myTab[grepl("Y",outcome)]
   dev.off()
   
   # effects in main scenario 
-  plot5 = ggplot(dumTab4[dumID1=="1_main"], aes(x=exposure, y=mean_beta, color = outcome)) +
+  plot5 = ggplot(dumTab4[Sim_NR2=="0"], aes(x=exposure, y=mean_beta, color = outcome)) +
     facet_wrap(~ type,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_hline(data = data_hlines, aes(yintercept = mylines),linetype="dashed", show.legend = FALSE) +
@@ -866,13 +873,12 @@ myTab = myTab[grepl("Y",outcome)]
   dumTab3[,condFStats_3rdQ := condFStats_3rdQ_var]
   dumTab4 = rbind(dumTab1,dumTab2,dumTab3)  
   dumTab4 = dumTab4[!is.na(condFStats_median),]
-  dumTab4 = dumTab4[,c(1:4,50:53)]
-  dumTab4[,dumID1 := paste(Sim_NR,Sim_name,sep="_")]
+  dumTab4 = dumTab4[,c(1:4,50:54)]
   dumTab4 = dumTab4[outcome=="Y8",]
   
   # mean effect over all scenarios
   plot5 = ggplot(dumTab4[type=="mean"], aes(x=exposure, y=condFStats_median,color=exposure)) +
-    facet_wrap(~ dumID1,scales = "free_y") +
+    facet_wrap(~ Sim_NR2,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_hline(yintercept = 10,color="black",linetype = "dashed") +
     geom_point(position=position_dodge(0.5),size=3) +
@@ -892,7 +898,7 @@ myTab = myTab[grepl("Y",outcome)]
   
   # slope effect over all scenarios
   plot5 = ggplot(dumTab4[type=="slope"], aes(x=exposure, y=condFStats_median,color=exposure)) +
-    facet_wrap(~ dumID1,scales = "free_y") +
+    facet_wrap(~ Sim_NR2,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_hline(yintercept = 10,color="black",linetype = "dashed") +
     geom_point(position=position_dodge(0.5),size=3) +
@@ -912,7 +918,7 @@ myTab = myTab[grepl("Y",outcome)]
   
   # variability effect over all scenarios
   plot5 = ggplot(dumTab4[type=="var"], aes(x=exposure, y=condFStats_median,color=exposure)) +
-    facet_wrap(~ dumID1,scales = "free_y") +
+    facet_wrap(~ Sim_NR2,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_hline(yintercept = 10,color="black",linetype = "dashed") +
     geom_point(position=position_dodge(0.5),size=3) +
@@ -931,7 +937,7 @@ myTab = myTab[grepl("Y",outcome)]
   dev.off()
   
   # MSV effect over all scenarios
-  plot5 = ggplot(dumTab4[exposure=="MSV"], aes(x=dumID1, y=condFStats_median,color=exposure)) +
+  plot5 = ggplot(dumTab4[exposure=="MSV"], aes(x=Sim_NR2, y=condFStats_median,color=exposure)) +
     facet_wrap(~ type,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_hline(yintercept = 10,color="black",linetype = "dashed") +
@@ -951,7 +957,7 @@ myTab = myTab[grepl("Y",outcome)]
   dev.off()
   
   # MS effect over all scenarios
-  plot5 = ggplot(dumTab4[exposure=="MS"], aes(x=dumID1, y=condFStats_median,color=exposure)) +
+  plot5 = ggplot(dumTab4[exposure=="MS"], aes(x=Sim_NR2, y=condFStats_median,color=exposure)) +
     facet_wrap(~ type,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_hline(yintercept = 10,color="black",linetype = "dashed") +
@@ -971,7 +977,7 @@ myTab = myTab[grepl("Y",outcome)]
   dev.off()
   
   # MV effect over all scenarios
-  plot5 = ggplot(dumTab4[exposure=="MV"], aes(x=dumID1, y=condFStats_median,color=exposure)) +
+  plot5 = ggplot(dumTab4[exposure=="MV"], aes(x=Sim_NR2, y=condFStats_median,color=exposure)) +
     facet_wrap(~ type,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_hline(yintercept = 10,color="black",linetype = "dashed") +
@@ -991,7 +997,7 @@ myTab = myTab[grepl("Y",outcome)]
   dev.off()
   
   # MV effect over all scenarios
-  plot5 = ggplot(dumTab4[dumID1=="1_main"], aes(x=type, y=condFStats_median,color=exposure)) +
+  plot5 = ggplot(dumTab4[Sim_NR2=="0"], aes(x=type, y=condFStats_median,color=exposure)) +
     facet_wrap(~ exposure,scales = "free_y") +
     geom_hline(yintercept = 0,color="grey") +
     geom_hline(yintercept = 10,color="black",linetype = "dashed") +

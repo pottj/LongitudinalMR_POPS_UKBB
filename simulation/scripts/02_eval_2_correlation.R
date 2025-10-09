@@ -22,7 +22,7 @@ suppressPackageStartupMessages(library(ggplot2))
 #' ***
 variable_parameters = fread("../temp/parameters_variable.txt")
 variable_parameters[,NR := 1:dim(variable_parameters)[1]]
-myNames = paste(1:8,variable_parameters$scenario,sep="_")
+myNames = paste(variable_parameters$NR,variable_parameters$scenario,sep="_")
 
 fixed_parameters = fread("../temp/parameters_fixed.txt")
 Y_theta = fixed_parameters[parameter %in% paste0("Y_theta_",c("M","S","V")),value]
@@ -75,9 +75,14 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
 myTab = rbindlist(dumTab0, fill=T)
 names(myTab)
 
+matchingTab = data.table(number1 = c(1:11),
+                         number2 = c("0","2B","2A","1A","1B","3A","3B","4A","4B","5A","5B"))
+matched = match(myTab$Sim_NR,matchingTab$number1)
+table(is.na(matched))
+myTab[,Sim_NR2 := matchingTab[matched,number2]]
+
 #' # Check correlation per combination ####
 #' ***
-myTab[,dumID1 := paste(Sim_NR,Sim_name,sep="_")]
 
 outdir_results = "../result/_figures_genCor/"
 if(dir.exists(outdir_results)==F){
@@ -90,7 +95,7 @@ myTypes = unique(myTab$exposure_types)
 
 # mean vs slope over all scenarios
 plot5 = ggplot(myTab[exposure_types==myTypes[1]], 
-               aes(x=dumID1, y=mean_correlation, color = exposure)) +
+               aes(x=Sim_NR2, y=mean_correlation, color = exposure)) +
   facet_wrap(~ exposure,scales = "free_y") +
   geom_hline(yintercept = 0,color="grey") +
   geom_hline(yintercept = -0.9,color="black",linetype="dashed") +
@@ -111,7 +116,7 @@ dev.off()
 
 # mean vs var over all scenarios
 plot5 = ggplot(myTab[exposure_types==myTypes[2]], 
-               aes(x=dumID1, y=mean_correlation, color = exposure)) +
+               aes(x=Sim_NR2, y=mean_correlation, color = exposure)) +
   facet_wrap(~ exposure,scales = "free_y") +
   geom_hline(yintercept = 0.5,color="grey",linetype="dotted") +
   geom_hline(yintercept = 0,color="black",linetype="dashed") +
@@ -132,7 +137,7 @@ dev.off()
 
 # slope vs var over all scenarios
 plot5 = ggplot(myTab[exposure_types==myTypes[3]], 
-               aes(x=dumID1, y=mean_correlation, color = exposure)) +
+               aes(x=Sim_NR2, y=mean_correlation, color = exposure)) +
   facet_wrap(~ exposure,scales = "free_y") +
   geom_hline(yintercept = -0.3,color="grey",linetype="dotted") +
   geom_hline(yintercept = 0,color="black",linetype="dashed") +
@@ -156,7 +161,7 @@ data_hlines = data.frame(exposure_types = unique(myTab$exposure_types),
                          mylines1 = c(-0.9,0,0),
                          mylines2 = c(-0.9,0.5,-0.3))
 plot5 = ggplot(myTab, 
-               aes(x=dumID1, y=mean_correlation, color = exposure)) +
+               aes(x=Sim_NR2, y=mean_correlation, color = exposure)) +
   facet_wrap(~ exposure_types,scales = "free_y") +
   geom_hline(data = data_hlines, aes(yintercept = mylines1),
              linetype="dashed", show.legend = FALSE) +

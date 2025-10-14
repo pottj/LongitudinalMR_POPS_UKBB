@@ -49,6 +49,7 @@ po/*~
 rsconnect/
 
 # other stuff
+SourceFile.R
 SourceFile_HPC.R
 SourceFile_BSUlaptop.R
 _archive/

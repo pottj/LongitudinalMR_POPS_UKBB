@@ -2,6 +2,21 @@
 
 Here I want to track my progress
 
+## 2025/10 
+
+- updating simulation
+  - MVMR with GMM & genetic correlation: 15.2h
+  - Age - Outcome during exposure: 13.4h
+  - Age - wrong age correction: 13.3h
+- update real data UKB
+  - use only BSU UKB application for primary care data
+  - rerun GAMLSS in UKB data set
+  - do age correction on GAMLSS output
+  - update all tables and figures
+- update real data POPS
+  - do age correction on GAMLSS output
+  - update all tables and figures
+
 ## 2025/09
 
 - updating simulation during revision: simplify and organize better!

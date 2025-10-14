@@ -20,16 +20,14 @@
 rm(list = ls())
 time0<-Sys.time()
 
-source("../../SourceFile_HPC.R")
-
-tag = format(Sys.time(), "%Y-%m-%d")
-tag = gsub("2024-","24-",tag)
-tag = gsub("-","",tag)
+source("../../SourceFile.R")
 
 #' # Load data ####
 #' ***
 load("../results/_tables/SupplementalTables_GLGC.RData")
+tab2[flag == "SENS_sampleSet",flag := "SENS_sampleSet1"]
 myNames = names(tab2)[grepl("UKB_TC_beta",names(tab2))]
+
 data_wide = dcast(tab2, rsID ~ flag, value.var=myNames)
 data_wide
 names(data_wide) = gsub("UKB_TC_beta_","",names(data_wide))
@@ -40,7 +38,10 @@ data_wide_matrix = as.matrix(data_wide[,-1])
 CorTab = cor(data_wide_matrix,use = "pairwise.complete.obs")
 filt1 = rownames(CorTab) %in% c("slope_SENS_noSlope","var_SENS_noVar") 
 CorTab = CorTab[!filt1,!filt1]
-colnames(CorTab) = rep(" ",13)
+filt2 = grepl("ageCorr",rownames(CorTab))
+CorTab = CorTab[!filt2,!filt2]
+
+colnames(CorTab) = rep(" ",16)
 corrplot(CorTab,order = "hclust",
          #col= colorRampPalette(c("#7D0722","white", "#053061"))(10),
          tl.col = "black", tl.srt = 45)

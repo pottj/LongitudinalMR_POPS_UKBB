@@ -20,31 +20,24 @@
 rm(list = ls())
 time0<-Sys.time()
 
-source("../../SourceFile_HPC.R")
+source("../../SourceFile.R")
 .libPaths()
 
 #' # Load and prep UKB data ####
 #' ***
 #' Load data (genetic data & phenotype data)
-load(paste0(UKB_phenotypes_filtered,"/01_Prep_01_UKB_GP_TC_GLGC.RData"))
-load(paste0(UKB_phenotypes_filtered,"/01_Prep_04_SNPData_GLGC.RData"))
+load(paste0(UKB_phenotypes_filtered,"/01_Prep_01_BL_FU_GP_merged_filtered.RData"))
+load(paste0(UKB_genotypes_filtered,"UKB_merged.RData"))
 
-stopifnot(is.element(myTab7$ID,psam$FID))
+stopifnot(is.element(myTab_long$ID,psam$FID))
 stopifnot(pvar$ID == colnames(geno_mat))
 stopifnot(psam$FID == rownames(geno_mat))
 pvar[,rsID := ID]
 
 #' # Get effects ####
 #' ***
-matched = match(myTab6$BSU_ID,myTab7$ID)
-myTab_long = cbind(myTab6,myTab7[matched,c(2,7:16)])
-myTab_long[sex==0,sex:=2]
-myTab_long[,exposure_type := NULL]
-
 data1 = copy(myTab_long)
-setnames(data1,"exposure_value","TC")
-setnames(data1,"BSU_ID","ID")
-names(data1)[11:20] = gsub("_","",names(data1)[11:20])
+names(data1)[8:17] = gsub("_","",names(data1)[8:17])
 
 # prepare loop over SNPs
 mySNPs = pvar$ID
@@ -61,9 +54,9 @@ dumTab2 = foreach(i = 1:length(mySNPs))%dorng%{
   data2 = copy(data1)
   data2[,myG := mySNP[matched]]
   
-  mod2 = gamlss(TC ~ sex + myG*exposure_age + lipLowMed +
+  mod2 = gamlss(TC ~ sex + myG*age + statin +
                   PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + random(x = as.factor(ID)),   
-                sigma.formula = ~ myG + sex + exposure_age + lipLowMed, 
+                sigma.formula = ~ myG + sex + age + statin, 
                 data = na.omit(data2), family = "NO")
   
   dummy2 = summary(mod2)

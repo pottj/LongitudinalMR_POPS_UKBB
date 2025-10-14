@@ -26,11 +26,7 @@
 rm(list = ls())
 time0 = Sys.time()
 
-source("../../SourceFile_HPC.R")
-
-tag = format(Sys.time(), "%Y-%m-%d")
-tag = gsub("2024-","24-",tag)
-tag = gsub("-","",tag)
+source("../../SourceFile.R")
 
 #' # Get content table (tab0) ####
 #' ***
@@ -64,60 +60,19 @@ tag = gsub("-","",tag)
 #' - mean (SD) age of start of statin treatment
 #' 
 {
-  load(paste0(UKB_phenotypes_filtered,"/01_Prep_01_UKB_GP_TC_GLGC.RData"))
-  
-  test1 = myTab6[,.N,by=BSU_ID]
-  test2 = copy(myTab6)
-  test2 = test2[lipLowMed == 1,]
-  test2 = test2[!duplicated(BSU_ID),]
-  
-  tab1a = data.table(setting = "MAIN", 
-                     sampleSize = dim(myTab7)[1],
-                     NR_measurements_median = as.numeric(summary(test1$N)[3]),
-                     NR_measurements_1stQ = as.numeric(summary(test1$N)[2]),
-                     NR_measurements_3rdQ = as.numeric(summary(test1$N)[5]),
-                     TC_mean = mean(myTab6$exposure_value),
-                     TC_SD = sd(myTab6$exposure_value),
-                     Female_absolute = dim(myTab7[sex==0,])[1],
-                     Female_percent = dim(myTab7[sex==0,])[1]/dim(myTab7)[1],
-                     Age_mean = mean(myTab6$exposure_age),
-                     Age_SD = sd(myTab6$exposure_age),
-                     Statin_absolut = dim(test2)[1],
-                     Statin_percent = dim(test2)[1]/dim(myTab7)[1],
-                     Age_1st_statin_mean = mean(test2$exposure_age),
-                     Age_1st_statin_SD = sd(test2$exposure_age) )
-  
-  load(paste0(UKB_phenotypes_filtered,"/01_Prep_05_UKB_GP_TC_GLGC_sens.RData"))
-  
-  test1 = myTab6[,.N,by=BSU_ID]
-  test2 = copy(myTab6)
-  test2 = test2[lipLowMed == 1,]
-  test2 = test2[!duplicated(BSU_ID),]
-  
-  tab1b = data.table(setting = "SENS_SampleSet", 
-                     sampleSize = dim(myTab7)[1],
-                     NR_measurements_median = as.numeric(summary(test1$N)[3]),
-                     NR_measurements_1stQ = as.numeric(summary(test1$N)[2]),
-                     NR_measurements_3rdQ = as.numeric(summary(test1$N)[5]),
-                     TC_mean = mean(myTab6$exposure_value),
-                     TC_SD = sd(myTab6$exposure_value),
-                     Female_absolute = dim(myTab7[sex==0,])[1],
-                     Female_percent = dim(myTab7[sex==0,])[1]/dim(myTab7)[1],
-                     Age_mean = mean(myTab6$exposure_age),
-                     Age_SD = sd(myTab6$exposure_age),
-                     Statin_absolut = dim(test2)[1],
-                     Statin_percent = dim(test2)[1]/dim(myTab7)[1],
-                     Age_1st_statin_mean = mean(test2$exposure_age),
-                     Age_1st_statin_SD = sd(test2$exposure_age) )
-  
-  tab1 = rbind(tab1a,tab1b)
+  load(paste0(UKB_phenotypes_filtered,"/01_Prep_01_BL_FU_GP_merged_filtered.RData"))
+  tab1 = fread("../results/01_Prep_01_summary.txt")
   
   # round the numbers
   tab1[,TC_mean := round(TC_mean,2)]
   tab1[,TC_SD := round(TC_SD,2)]
+  tab1[,TC_BL_mean := round(TC_BL_mean,2)]
+  tab1[,TC_BL_SD := round(TC_BL_SD,2)]
   tab1[,Female_percent := round(Female_percent,3)*100]
   tab1[,Age_mean := round(Age_mean,2)]
   tab1[,Age_SD := round(Age_SD,2)]
+  tab1[,Age_BL_mean := round(Age_BL_mean,2)]
+  tab1[,Age_BL_SD := round(Age_BL_SD,2)]
   tab1[,Statin_percent := round(Statin_percent,3)*100]
   tab1[,Age_1st_statin_mean := round(Age_1st_statin_mean,2)]
   tab1[,Age_1st_statin_SD := round(Age_1st_statin_SD,2)]
@@ -125,13 +80,15 @@ tag = gsub("-","",tag)
   # merge some columns
   tab1[,measurements := paste0(NR_measurements_median," (",NR_measurements_1stQ,", ",NR_measurements_3rdQ,")")]
   tab1[,TC := paste0(TC_mean," (",TC_SD,")")]
+  tab1[,TC_BL := paste0(TC_BL_mean," (",TC_BL_SD,")")]
   tab1[,Female := paste0(Female_absolute," (",Female_percent,")")]
   tab1[,Age := paste0(Age_mean, " (",Age_SD,")")]
+  tab1[,Age_BL := paste0(Age_BL_mean, " (",Age_BL_SD,")")]
   tab1[,Statins := paste0(Statin_absolut," (",Statin_percent,")")]
   tab1[,Age_1st_statin := paste0(Age_1st_statin_mean, " (",Age_1st_statin_SD,")")]
   
   # restrict to relevant columns
-  tab1 = tab1[,c(1,2,16:21)]
+  tab1 = tab1[,c(2,3,21:28)]
   tab1
 }
 
@@ -149,23 +106,11 @@ tag = gsub("-","",tag)
   names(tab2)
   tab2 = tab2[,c(1:9,14,10:13,15,16,21,22,17:20,23,24,29,30,25:28)]
   
-  if(!file.exists("../results/02_SNPs_05_SENS_RandomEffectSigma.RData")){
-    input = list.files(path = "../results/",pattern = "02_SNPs_05")
-    dumTab = foreach(i=1:length(input))%do%{
-      #i=1
-      load(paste0("../results/",input[i]))
-      myAssocs_X
-    }
-    myAssocs_X = rbindlist(dumTab)
-    save(myAssocs_X,file = "../results/02_SNPs_05_SENS_RandomEffectSigma.RData")
-  }
-
   mySumStats = list.files(path = "../results/",pattern = "02_SNPs_0")
   mySumStats = mySumStats[!grepl("SNPset",mySumStats)]
   
   settings = gsub(".RData","",mySumStats)
   settings = gsub("02_SNPs_0._","",settings)
-  settings[grepl("RandomEffect",settings)] = "SENS_RIsigma"
   
   dumTab = foreach(i = 1:length(mySumStats))%do%{
     #i=1
@@ -183,6 +128,10 @@ tag = gsub("-","",tag)
   }
   tab2 = rbindlist(dumTab,fill=T)
   tab2 = tab2[,c(44,1:43)]
+  tab2[, UKB_TC_beta_slope_ageCorrected := UKB_TC_beta_slope * 55.654]
+  tab2[, UKB_TC_SE_slope_ageCorrected := UKB_TC_SE_slope * 55.654]
+  tab2 = tab2[,c(1:16,45,46,17:44)]
+  
 }
 
 #' # Get Sup Tab 3 ####
@@ -214,17 +163,20 @@ tag = gsub("-","",tag)
   }
   tab3 = rbindlist(dumTab4,fill=T)
   names(tab3)
-  tab3[,beta_slope_adj := beta_slope/55.654]
-  tab3[,SE_slope_adj := SE_slope/55.654]
   x1 = grep("mean",names(tab3))
   x2 = grep("slope",names(tab3))
-  x2 = x2[c(1,2,6,3,7,4,5)]
   x3 = grep("var",names(tab3))
   x = c(1:8,x1,x2,x3)
   tab3 = tab3[,x,with=F]
-  tab3[flag == "main",flag:="MAIN"]
-  tab3[,flag:=gsub("sens","SENS",flag)]
-  tab3[,flag:=gsub("randomEffectSigma","RIsigma",flag)]
+  tab3[flag == "main",flag:="0 - MAIN"]
+  tab3[flag == "sens_noSlope",flag:="1B - SENS - no slope"]
+  tab3[flag == "sens_noVar",flag:="1A - SENS - no variability"]
+  tab3[flag == "sens_sampleSet1",flag:="2A - SENS - no statins"]
+  tab3[flag == "sens_sampleSet2",flag:="2B - SENS - after BL"]
+  tab3[flag == "sens_sampleSet3",flag:="2C - SENS - before BL"]
+  tab3[flag == "sens_SNPset1",flag:="3A - SENS - GxE enriched SNPs"]
+  tab3[flag == "sens_SNPset2",flag:="3B - SENS - mean and var indep."]
+  tab3[flag == "sens_SNPset3",flag:="3C - SENS - top 20"]
   
 }  
 
@@ -255,15 +207,16 @@ tag = gsub("-","",tag)
   }
   tab4 = rbindlist(dumTab4,fill=T)
   names(tab4)
-  tab4.1 = copy(tab4)
-  tab4.1 = tab4.1[exposure_type == "slope",]
-  tab4.1[,beta := beta/55.654]
-  tab4.1[,SE := SE/55.654]
-  tab4.1[,exposure_type := "slope_adj",]
-  tab4 = rbind(tab4,tab4.1)
-  tab4[flag == "main",flag:="MAIN"]
-  tab4[,flag:=gsub("sens","SENS",flag)]
-  tab4[,flag:=gsub("randomEffectSigma","RIsigma",flag)]
+  tab4[flag == "main",flag:="0 - MAIN"]
+  tab4[flag == "sens_noSlope",flag:="1B - SENS - no slope"]
+  tab4[flag == "sens_noVar",flag:="1A - SENS - no variability"]
+  tab4[flag == "sens_sampleSet1",flag:="2A - SENS - no statins"]
+  tab4[flag == "sens_sampleSet2",flag:="2B - SENS - after BL"]
+  tab4[flag == "sens_sampleSet3",flag:="2C - SENS - before BL"]
+  tab4[flag == "sens_SNPset1",flag:="3A - SENS - GxE enriched SNPs"]
+  tab4[flag == "sens_SNPset2",flag:="3B - SENS - mean and var indep."]
+  tab4[flag == "sens_SNPset3",flag:="3C - SENS - top 20"]
+  
 }  
 
 #' # Save tables ###

@@ -1,0 +1,206 @@
+#' ---
+#' title: "MVMR - sensitivity analysis: SNP selection"
+#' subtitle: "Longitudinal MVMR in UKB"
+#' author: "Janne Pott"
+#' date: "Last compiled on `r format(Sys.time(), '%d %B, %Y')`"
+#' output:
+#'   html_document:
+#'     toc: true
+#'     number_sections: true
+#'     toc_float: true
+#'     code_folding: show
+#' ---
+#'
+#' # Introduction ####
+#' ***
+#' 
+#' # Initialize ####
+#' ***
+rm(list = ls())
+time0<-Sys.time()
+
+source("../../SourceFile.R")
+source("../../helperfunctions/MVMR_jp_POPS.R")
+
+#' # Get data ####
+#' ***
+#' ## SNP info
+#' Get high quality SNPs only
+load("../results/01_Prep_04_LD.RData")
+LDTab[,SNP2 := as.character(SNP2)]
+load("../results/01_Prep_03_SNPList.RData")
+
+#' ## Exposure
+load("../results/02_SNPs_01_MAIN.RData")
+length(unique(myAssocs_X$SNP))
+
+#' SNP set 1: same 44 SNPs as in previous version of UKB data
+mySNPlist1 = c("rs7549174","rs267733","rs2296288","rs1375131","rs10184673","rs113867238","rs733925","rs887829",
+               "rs9837622","rs55921103","rs3732359","rs9289196","rs2011442","rs407258","rs138204164","rs112838464",
+               "rs6457374","rs6458949","rs4946713","rs4425613","rs62441842","rs10455872","rs7808613","rs799157",
+               "rs709821","rs34265667","rs10955991","rs12551960","rs9410206","rs10733608","rs3780190","rs7903402",
+               "rs11601507","rs174564","rs4647594","rs2170640","rs888192","rs75588192","rs17532371","rs4771674",
+               "rs79391862","rs7216105","rs1963676","rs7410608")
+
+#' SNP set 2: SNPs with p_mean<5e-8 & p_var>0.05 or p_mean>0.05 & p_var<5e-8
+mySNPlist2 = myAssocs_X[(pval_mean<5e-8 & pval_var>0.05) | (pval_mean>0.05 & pval_var<5e-8),SNP]
+
+#' SNP set 3: top20, best associated SNPs per type
+myAssocs_X[,NR := 1:346]
+
+setorder(myAssocs_X,pval_mean)
+myAssocs_X[1:20,flag:=T]
+setorder(myAssocs_X,pval_slope)
+myAssocs_X[1:20,flag:=T]
+setorder(myAssocs_X,pval_var)
+myAssocs_X[1:20,flag:=T]
+
+setorder(myAssocs_X,NR)
+mySNPlist3 = myAssocs_X[flag==T,SNP]
+
+#' Check the GX associations
+myAssocs_X[SNP %in% mySNPlist1,cor.test(beta_mean,beta_slope),by=model]
+myAssocs_X[SNP %in% mySNPlist2,cor.test(beta_mean,beta_slope),by=model]
+myAssocs_X[SNP %in% mySNPlist3,cor.test(beta_mean,beta_slope),by=model]
+
+myAssocs_X[SNP %in% mySNPlist1,cor.test(beta_mean,beta_var),by=model]
+myAssocs_X[SNP %in% mySNPlist2,cor.test(beta_mean,beta_var),by=model]
+myAssocs_X[SNP %in% mySNPlist3,cor.test(beta_mean,beta_var),by=model]
+
+myAssocs_X[SNP %in% mySNPlist1,cor.test(beta_slope,beta_var),by=model]
+myAssocs_X[SNP %in% mySNPlist2,cor.test(beta_slope,beta_var),by=model]
+myAssocs_X[SNP %in% mySNPlist3,cor.test(beta_slope,beta_var),by=model]
+
+#' Transform into long format
+data_long1 = melt(myAssocs_X,
+                  id.vars=names(myAssocs_X)[1:3],
+                  measure.vars=c("beta_mean", "beta_slope", "beta_var"),
+                  variable.name="type",
+                  value.name="beta")
+data_long2 = melt(myAssocs_X,
+                  id.vars=names(myAssocs_X)[1:3],
+                  measure.vars=c("SE_mean", "SE_slope", "SE_var"),
+                  variable.name="type",
+                  value.name="SE")
+data_long3 = melt(myAssocs_X,
+                  id.vars=names(myAssocs_X)[1:3],
+                  measure.vars=c("tval_mean", "tval_slope", "tval_var"),
+                  variable.name="type",
+                  value.name="tval")
+data_long4 = melt(myAssocs_X,
+                  id.vars=names(myAssocs_X)[1:3],
+                  measure.vars=c("pval_mean", "pval_slope", "pval_var"),
+                  variable.name="type",
+                  value.name="pval")
+
+myAssocs_X_long = cbind(data_long1,data_long2[,5],
+                        data_long3[,5],data_long4[,5])
+myAssocs_X_long[,type := gsub("beta_","",type)]
+myAssocs_X_long = myAssocs_X_long[!is.na(beta),]
+
+#' Correct the slope estimates for average age in Aragam data: 55.654
+myAssocs_X_long[type=="slope", beta := beta * 55.654]
+myAssocs_X_long[type=="slope", SE := SE * 55.654]
+
+#' ## Outcome
+data_long5 = melt(SNPList,
+                  id.vars=names(SNPList)[1:3],
+                  measure.vars=c("Aragam_beta", "UKB_beta"),
+                  variable.name="type",
+                  value.name="beta")
+data_long6 = melt(SNPList,
+                  id.vars=names(SNPList)[1:3],
+                  measure.vars=c("Aragam_SE", "UKB_SE"),
+                  variable.name="type",
+                  value.name="SE")
+data_long7 = melt(SNPList,
+                  id.vars=names(SNPList)[1:3],
+                  measure.vars=c("Aragam_tval", "UKB_tval"),
+                  variable.name="type",
+                  value.name="tval")
+data_long8 = melt(SNPList,
+                  id.vars=names(SNPList)[1:3],
+                  measure.vars=c("Aragam_pval", "UKB_pval"),
+                  variable.name="type",
+                  value.name="pval")
+data_long9 = melt(SNPList,
+                  id.vars=names(SNPList)[1:3],
+                  measure.vars=c("Aragam_sampleSize", "UKB_sampleSize"),
+                  variable.name="type",
+                  value.name="sampleSize")
+
+myAssocs_Y_long = cbind(data_long9[,c(1,4,5)],data_long5[,5],data_long6[,5],
+                        data_long7[,5],data_long8[,5])
+myAssocs_Y_long[,type := gsub("_sampleSize","",type)]
+myAssocs_Y_long = myAssocs_Y_long[!is.na(beta),]
+
+myAssocs_Y_long = myAssocs_Y_long[rsID %in% myAssocs_X_long$SNP,]
+
+#' ## save as temporary files
+save(myAssocs_X_long,myAssocs_Y_long, file = paste0("../temp/03_MVMRInput_SENS_SNPset.RData"))
+
+#' # Do MVMR ####
+#' ***
+mySampleSize = c(68467)
+myOutcomes = unique(myAssocs_Y_long$type)
+myFlag = paste0("sens_SNPset",1:3)
+mySet = paste0("mySNPlist",1:3)
+
+names(myAssocs_Y_long) = c("SNP", "phenotype","sampleSize","beta_mean","SE_mean","tval_mean","pval_mean" )
+
+# filter data
+myAssocs_X_long[,phenotype := paste0("TC_",model)]
+
+dumTab2 = foreach(j = 1:length(myFlag))%do%{
+  #j=1
+  myAssocs_X_long2 = copy(myAssocs_X_long)
+  myAssocs_X_long2[,dumID := myFlag[j]]
+  myAssocs_X_long2 = myAssocs_X_long2[SNP %in% get(mySet[j])]
+  
+  dumTab3 = foreach(k = 1:length(myOutcomes))%do%{
+    #k=1
+    myOutcome = myOutcomes[k]
+    myExposure = unique(myAssocs_X_long2$phenotype)
+    myAssocs_Y2 = copy(myAssocs_Y_long)
+    myAssocs_Y2 = myAssocs_Y2[phenotype == myOutcome,]
+    
+    # do MVMRs
+    MVMR0 = MVMR_jp_POPS(data_exposure = myAssocs_X_long2,
+                         data_outcome = myAssocs_Y2,
+                         exposure_name = myExposure, 
+                         outcome_name = myOutcome,
+                         flag = myFlag[j],
+                         GX_pval_treshold = 1,
+                         getPlot = F,
+                         corTab = LDTab,
+                         corTab_threshold = 0.1,sampleSize_GX = mySampleSize,
+                         random = F,getCondF = T,getUni = T)
+    
+    MVMR2 = MVMR_jp_POPS(data_exposure = myAssocs_X_long2,
+                         data_outcome = myAssocs_Y2,
+                         exposure_name = myExposure, 
+                         outcome_name = myOutcome,
+                         flag = myFlag[j],
+                         GX_pval_treshold = 5e-8,
+                         getPlot = F,
+                         corTab = LDTab,
+                         corTab_threshold = 0.1,sampleSize_GX = mySampleSize,
+                         random = F,getCondF = T,getUni = T)
+    
+    MVMR0[,threshold := "all_SNPs"]
+    MVMR2[,threshold := "gw_SNPs"]
+    MVMR = rbind(MVMR0,MVMR2,fill=T)
+    MVMR
+    
+  }
+  MVMR_results2 = rbindlist(dumTab3,fill = T)
+  MVMR_results2
+}
+
+MVMR_results = rbindlist(dumTab2,fill = T)
+save(MVMR_results,file = paste0("../results/03_MVMR_07_SENS_SNPsets.RData"))
+
+#' # Session Info ####
+#' ***
+sessionInfo()
+message("\nTOTAL TIME : " ,round(difftime(Sys.time(),time0,units = "mins"),3)," minutes")

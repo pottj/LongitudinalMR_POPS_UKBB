@@ -29,7 +29,7 @@
 rm(list = ls())
 time0<-Sys.time()
 
-source("../../SourceFile_HPC.R")
+source("../../SourceFile.R")
 .libPaths()
 suppressPackageStartupMessages(library(SNPlocs.Hsapiens.dbSNP150.GRCh38))
 source("../../helperfunctions/getSmallestDist.R")
@@ -85,8 +85,8 @@ GLGC_data[,dumID6 := paste0(CHROM,":",pos_b38,":",REF,":",ALT)]
 
 #' # Extract SNPs in exposure data ####
 #' ***
-pvar = fread(paste0(UKB_genotypes_filtered, '/UKB_TC_GLGC_merged.pvar'))
-pvar_AF = fread(paste0(UKB_genotypes_filtered, '/UKB_TC_GLGC_merged_AF.afreq'))
+pvar = fread(paste0(UKB_genotypes_filtered, '/UKB_merged.pvar'))
+pvar_AF = fread(paste0(UKB_genotypes_filtered, '/UKB_merged_AF.afreq'))
 
 stopifnot(pvar$ID == pvar_AF$ID)
 stopifnot(pvar$REF == pvar_AF$REF)
@@ -292,14 +292,14 @@ n0;n1;n2;n3b;n4
 #' # Create PLINK call ####
 #' ***
 #' I want to create a plink call to extract those 343 SNPs from the larger sample set
-write.table(unique(SNPList$rsID),file = paste0(UKB_phenotypes_filtered,"/01_Prep_03_SNPList2.txt"), 
+write.table(unique(SNPList$rsID),file = paste0(UKB_genotypes_filtered,"/01_Prep_03_SNPList_outcomeFiltered.txt"), 
             col.names = F, row.names = F, quote = F)
 
 call1 = paste0("plink2", 
-               " --pfile ",UKB_genotypes_filtered, "/UKB_TC_GLGC_merged",
-               " --extract ",UKB_phenotypes_filtered,"/01_Prep_03_SNPList2.txt", 
-               " --keep-fam ",UKB_phenotypes_filtered,"/01_Prep_01_SampleList_TC_GLGC.txt",
-               " --make-pgen --out ",UKB_genotypes_filtered,"/UKB_TC_GLGC_filtered")
+               " --pfile ",UKB_genotypes_filtered, "/UKB_merged",
+               " --extract ",UKB_genotypes_filtered,"/01_Prep_03_SNPList_outcomeFiltered.txt", 
+               " --keep-fam ",UKB_phenotypes_filtered,"/01_Prep_01_UKB_filtered_samples.txt",
+               " --make-pgen --out ",UKB_genotypes_filtered,"/UKB_filtered")
 print(call1)
 
 #' # Session Info ####

@@ -24,16 +24,16 @@
 rm(list = ls())
 time0<-Sys.time()
 
-source("../../SourceFile_HPC.R")
+source("../../SourceFile.R")
 .libPaths()
 
 #' # Load genetic data ####
 #' ***
 UKB_genotypes_filtered = gsub("~","../../../",UKB_genotypes_filtered)
-pvar1 = NewPvar(paste0(UKB_genotypes_filtered, 'UKB_TC_GLGC_filtered.pvar'))
-pgen = NewPgen(paste0(UKB_genotypes_filtered,'UKB_TC_GLGC_filtered.pgen'), pvar=pvar1)
-pvar = fread(paste0(UKB_genotypes_filtered,'UKB_TC_GLGC_filtered.pvar'))
-psam = fread(paste0(UKB_genotypes_filtered,'UKB_TC_GLGC_filtered.psam'))
+pvar1 = NewPvar(paste0(UKB_genotypes_filtered, 'UKB_filtered.pvar'))
+pgen = NewPgen(paste0(UKB_genotypes_filtered,'UKB_filtered.pgen'), pvar=pvar1)
+pvar = fread(paste0(UKB_genotypes_filtered,'UKB_filtered.pvar'))
+psam = fread(paste0(UKB_genotypes_filtered,'UKB_filtered.psam'))
 
 load("../results/01_Prep_03_SNPList.RData")
 table(pvar$ID == SNPList$rsID)
@@ -46,24 +46,27 @@ colnames(geno_mat) = pvar[,ID]
 rownames(geno_mat) = psam$IID
 
 # filt samples
-load(paste0(UKB_phenotypes_filtered,"/01_Prep_01_UKB_GP_TC_GLGC.RData"))
-filt = psam$IID %in% myTab7$ID
+load(paste0(UKB_phenotypes_filtered,"/01_Prep_01_BL_FU_GP_merged_filtered.RData"))
+filt = psam$IID %in% myTab_long$ID
 table(filt)
 head(psam)
 setnames(psam, "#FID","FID")
+
+psam = psam[filt,]
+geno_mat = geno_mat[filt,]
 
 pvar[,EAF := colSums(geno_mat)/(2*dim(psam)[1])]
 pvar[,MAF := EAF]
 pvar[EAF>0.5,MAF := 1-EAF]
 pvar[,table(MAF<0.01)]
-pvar_AF = fread(paste0(UKB_genotypes_filtered, '/UKB_TC_GLGC_merged_AF.afreq'))
+pvar_AF = fread(paste0(UKB_genotypes_filtered, '/UKB_merged_AF.afreq'))
 pvar_AF = pvar_AF[ID %in% pvar$ID]
 stopifnot(pvar$ID == pvar_AF$ID)
 pvar[,EAF_fullUKB := pvar_AF$ALT_FREQS]
 plot(pvar$EAF,pvar$EAF_fullUKB)
 pvar[,EAF_fullUKB := NULL]
 
-save(pvar, psam, geno_mat, file = paste0(UKB_genotypes_filtered,"UKB_TC_GLGC_merged.RData"))
+save(pvar, psam, geno_mat, file = paste0(UKB_genotypes_filtered,"UKB_merged.RData"))
 
 #' # LD checks ####
 #' ***
@@ -97,7 +100,6 @@ table(pvar$comment_LD)
 #' 
 #' # Save data ####
 #' ***
-save(pvar, psam, geno_mat, file = paste0(UKB_phenotypes_filtered,"/01_Prep_04_SNPData_GLGC.RData"))
 save(LDTab, file = paste0("../results/01_Prep_04_LD.RData"))
 
 #' # SessionInfo ####

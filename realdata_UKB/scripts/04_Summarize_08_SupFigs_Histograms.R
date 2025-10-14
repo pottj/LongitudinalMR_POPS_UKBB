@@ -23,12 +23,12 @@
 rm(list = ls())
 time0 = Sys.time()
 
-source("../../SourceFile_HPC.R")
+source("../../SourceFile.R")
 
 #' # Main data set ####
 #' ***
-load(paste0(UKB_phenotypes_filtered,"/01_Prep_01_UKB_GP_TC_GLGC.RData"))
-plotData = myTab6[,.N,by=BSU_ID]
+load(paste0(UKB_phenotypes_filtered,"/01_Prep_01_BL_FU_GP_merged_filtered.RData"))
+plotData = copy(myTab_long)[,.N,by=ID]
 
 ggp1 = ggplot(plotData, aes(x=N)) +
   geom_histogram( binwidth=0.5, fill="#69b3a2", color="#e9ecef", alpha=0.9) +
@@ -38,8 +38,7 @@ ggsave(ggp1,file = "../results/_figures/SupFigs/Histogram_observations_main.png"
 
 #' # Sensitivity check data set ####
 #' ***
-load(paste0(UKB_phenotypes_filtered,"/01_Prep_05_UKB_GP_TC_GLGC_sens.RData"))
-plotData = myTab6[,.N,by=BSU_ID]
+plotData = copy(myTab_long[sens1==T,])[,.N,by=ID]
 
 ggp2 = ggplot(plotData, aes(x=N)) +
   geom_histogram( binwidth=0.5, fill="#69b3a2", color="#e9ecef", alpha=0.9) +

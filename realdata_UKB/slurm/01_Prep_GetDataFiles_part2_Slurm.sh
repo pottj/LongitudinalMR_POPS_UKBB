@@ -81,16 +81,11 @@ cp Rplots.pdf 01_Prep_03_Rplots.pdf
 rm Rplots.pdf
 
 # PLINK call to filter pgen (generated in script above)
-plink2 --pfile ~/rds/hpc-work/LongitudinalMR_UKBB//UKB_TC_GLGC_merged --extract ~/rds/hpc-work/data/UKB_phenotypes//01_Prep_03_SNPList2.txt --keep-fam ~/rds/hpc-work/data/UKB_phenotypes//01_Prep_01_SampleList_TC_GLGC.txt --make-pgen --out ~/rds/hpc-work/LongitudinalMR_UKBB//UKB_TC_GLGC_filtered
+plink2 --pfile ~/rds/hpc-work/LongitudinalMR_POPS_UKBB/UKB_data/genotypes//UKB_merged --extract ~/rds/hpc-work/LongitudinalMR_POPS_UKBB/UKB_data/genotypes//01_Prep_03_SNPList_outcomeFiltered.txt --keep-fam ~/rds/hpc-work/LongitudinalMR_POPS_UKBB/UKB_data/phenotypes//01_Prep_01_UKB_filtered_samples.txt --make-pgen --out ~/rds/hpc-work/LongitudinalMR_POPS_UKBB/UKB_data/genotypes//UKB_filtered
 
 # Script for genetic checks
 R CMD BATCH --vanilla ../scripts/01_Prep_04_checkUKBgenedosages.R ../scripts/01_Prep_04_checkUKBgenedosages.R.out
 cp Rplots.pdf 01_Prep_04_Rplots.pdf
-rm Rplots.pdf
-
-# Script for sensitivity sample set
-R CMD BATCH --vanilla ../scripts/01_Prep_05_checkUKB_sensSampleSet.R ../scripts/01_Prep_05_checkUKB_sensSampleSet.R.out
-cp Rplots.pdf 01_Prep_05_Rplots.pdf
 rm Rplots.pdf
 
 ###############################################################

@@ -20,252 +20,198 @@
 rm(list = ls())
 time0 = Sys.time()
 
-source("../../SourceFile_HPC.R")
+source("../../SourceFile.R")
 
 #' # Load data ####
 #' ***
-load("../results/_tables/SupplementalTables_GLGC.RData")
-
-#' # Loop 1 ####
-#' ***
-#' I want one plot per exposure type. These plots should include 
+#' I only want the 2-sample MVMR using Aragam data and all SNPs 
 #' 
-#' - only the nominal SNP approaches
-#' - 1- vs 2-sample approach
-#' - uni- vs multivariable
-#' - main vs sensitivity setting
-#' - not the cherry picking SNP set 
-#' 
-myTab = copy(tab3)
-myTab = myTab[threshold == "nominal_SNPs",]
-myExposureTypes = c("mean","slope","variability")
-myTab = myTab[flag != "SENS_SNPset"]
+myFiles = list.files(path = "../results/", pattern = "03_MVMR")
+mySettings = gsub(".RData","",myFiles)
+mySettings = gsub("03_MVMR_0._","",mySettings)
+mySettings
+mySettings2 = c("0","1A","1B","2A","2B","2C","3A","3B","3C")
 
-myTab2 = copy(tab4)
-myTab2 = myTab2[exposure_type %in% c("mean","slope_adj","var"),]
-myTab2 = myTab2[threshold == "nominal_SNPs",]
-myTab2 = myTab2[flag != "SENS_SNPset"]
-setorder(myTab2,setting,exposure_type)
-
-for(i in 1:3){
+dumTab2 = foreach(i = 1:length(myFiles))%do%{
   #i=1
-  plotData = copy(myTab)
-  #plotData = plotData[setting == "2-sample"]
-  plotData2 = copy(myTab2)
-  #plotData2 = plotData2[setting == "2-sample"]
-  if(i==1){
-    plotData = plotData[,c(1,2,10:13)]
-    myHeight = 1400
-    plotData2 = plotData2[exposure_type == myExposureTypes[i]]
-  }else if(i==2){
-    plotData = plotData[,c(1,2,16,18:20)]
-    myHeight = 1200
-    plotData2 = plotData2[exposure_type == "slope_adj"]
-  }else if(i==3){
-    plotData = plotData[,c(1,2,22:25)]
-    myHeight = 1200
-    plotData2 = plotData2[exposure_type == "var"]
-  }
-  names(plotData)[3:6] = c("beta","SE","pval","condF")
-  plotData = plotData[!is.na(beta),]
-  
-  plotData2 = plotData2[,c(1,2,8,9,10,11)]
-  names(plotData2)[3:6] = c("beta","SE","pval","condF")
-  
-  plotData2[,setting2 := "MR"]
-  plotData[,setting2 := "MVMR"]
-  plotData = rbind(plotData,plotData2)
-  
-  plotData[,lowerCI95 := beta-1.96*SE]
-  plotData[,upperCI95 := beta+1.96*SE]
-  plotData[,Grouping := paste(setting,setting2,flag,sep=" - ")]
-  setnames(plotData,"Grouping","Setting")
-  plotData[,condF := round(condF,2)]
-  plotData[,condF := as.character(condF)]
-  setorder(plotData,flag,-setting2,-setting)
-  plotData[setting!="2-sample",condF := ""]
-  
-  plotData$` ` <- paste(rep(" ", 50), collapse = " ")
-  plotData$`Estimate \n[95% CI]` <- ifelse(is.na(plotData$SE), "",
-                                         sprintf("%.2f [%.2f, %.2f]",
-                                                 plotData$beta, plotData$lowerCI95, plotData$upperCI95))
-  plotData[,Setting := gsub(" - MAIN","",Setting)]
-  plotData[,Setting := gsub(" - SENS.*","",Setting)]
-  plotData[,Setting := paste0("    ",Setting)]
-  
-  dummy = data.table(Setting = unique(plotData$flag))
-  plotData = rbind(plotData,dummy, fill=T)
-  if(i==1){
-    plotData = plotData[c(21,1:4,25,17:20,22,5:8,23,9:12,24,13:16)]
-  }else{
-    plotData = plotData[c(17,1:4,20,13:16,18,5:8,19,9:12)]  
-  }
-  plotData[,Setting := gsub("SENS_","sens: ",Setting)]
-  plotData[,Setting := gsub("noSlope","no slope",Setting)]
-  plotData[,Setting := gsub("noVar","no variability",Setting)]
-  plotData[,Setting := gsub("RIsigma","RI sigma",Setting)]
-  plotData[,Setting := gsub("sampleSet","data subset",Setting)]
-  plotData[is.na(flag),` ` := ""]
-  plotData[is.na(flag),`Estimate \n[95% CI]`:= ""]
-  plotData[is.na(flag),condF := ""]
-  
-  dummy = plotData$Setting
-  if(i==1){
-    dummy[!grepl("MV",dummy)] = "#FBE3D6"
-    dummy[grepl("MV",dummy)] = "#F2AA84"
-  }else if(i==2){
-    dummy[!grepl("MV",dummy)] = "#C2F1C8"
-    dummy[grepl("MV",dummy)] = "#47D45A"
-  }else if(i==3){
-    dummy[!grepl("MV",dummy)] = "#CAEEFB"
-    dummy[grepl("MV",dummy)] = "#61CBF4"
-  }
-  dummy2 = plotData$flag
-  dummy[is.na(dummy2)] = "white"
-  tm1<- forest_theme(core=list(bg_params=list(fill = dummy)))
-  
-  myXlab = paste0("Causal effect of the ",myExposureTypes[i]," of TC on CAD")
-  setnames(plotData,"condF","(cond) \nF-stat")
-  setnames(plotData,"Setting", "Setting \n   MR approach")
-  
-  p2<- forest(plotData[,c(10,11,12,6)],
-              est = plotData$beta,
-              lower = plotData$lowerCI95, 
-              upper = plotData$upperCI95,
-              sizes = 0.5,
-              ci_column = 2,
-              ref_line = 0,
-              #title = myXlab,
-              theme = tm1)
-  
-  plot(p2)
-  
-  filename = paste0("../results/_figures/SupFigs/ForestPlot_",myExposureTypes[i],"_nom.png")
-  png(filename = filename,width = 1700, height = myHeight, res=200)
-  plot(p2)
-  dev.off()
-  
+  load(paste0("../results/",myFiles[i]))
+  MVMR = copy(MVMR_results)
+  #MVMR = MVMR[outcome == "Aragam"]
+  MVMR = MVMR[setting == "multivariate"]
+  MVMR = MVMR[threshold == "all_SNPs"]
+  MVMR[,flag := mySettings2[i]]
+  MVMR
 }
 
-#' # Loop 2 ####
+MVMR = rbindlist(dumTab2)
+
+#' # Plotting ####
 #' ***
-#' I want one plot per exposure type. These plots should include 
+#' ## UKB ####
 #' 
-#' - only the nominal SNP approaches
-#' - 1- vs 2-sample approach
-#' - uni- vs multivariable
-#' - main vs sensitivity setting
-#' - including the cherry picking SNP set 
-#' 
-myTab = copy(tab3)
-myTab = myTab[threshold == "nominal_SNPs",]
-myExposureTypes = c("mean","slope","variability")
+MVMR2 = copy(MVMR)
+MVMR2 = MVMR2[outcome == "UKB"]
+MVMR2 = MVMR2[flag %in% c("0","1A","1B","2A")]
+setorder(MVMR2,flag)
+MVMR2[,rank := 2]
+dummy = data.table(exposure_type = unique(MVMR2$exposure_type),rank=1)
+data4 = rbind(MVMR2,dummy, fill=T)
+data4[,subgroup := paste0("   ", flag)]
+data4[is.na(threshold),subgroup := exposure_type]
 
-myTab2 = copy(tab4)
-myTab2 = myTab2[exposure_type %in% c("mean","slope_adj","var"),]
-myTab2 = myTab2[threshold == "nominal_SNPs",]
-setorder(myTab2,setting,exposure_type)
+data4[,lowerCI95 := beta_IVW-1.96*SE_IVW]
+data4[,upperCI95 := beta_IVW+1.96*SE_IVW]
+data4$` ` <- paste(rep(" ", 50), collapse = " ")
+data4$`Estimate \n[95% CI]` <- ifelse(is.na(data4$SE_IVW), "",
+                                      sprintf("%.2f [%.2f, %.2f]",
+                                              data4$beta_IVW, data4$lowerCI95, data4$upperCI95))
 
-for(i in 1:3){
-  #i=1
-  plotData = copy(myTab)
-  #plotData = plotData[setting == "2-sample"]
-  plotData2 = copy(myTab2)
-  #plotData2 = plotData2[setting == "2-sample"]
-  if(i==1){
-    plotData = plotData[,c(1,2,10:13)]
-    myHeight = 1600
-    plotData2 = plotData2[exposure_type == myExposureTypes[i]]
-  }else if(i==2){
-    plotData = plotData[,c(1,2,16,18:20)]
-    myHeight = 1400
-    plotData2 = plotData2[exposure_type == "slope_adj"]
-  }else if(i==3){
-    plotData = plotData[,c(1,2,22:25)]
-    myHeight = 1400
-    plotData2 = plotData2[exposure_type == "var"]
-  }
-  names(plotData)[3:6] = c("beta","SE","pval","condF")
-  plotData = plotData[!is.na(beta),]
-  
-  plotData2 = plotData2[,c(1,2,8,9,10,11)]
-  names(plotData2)[3:6] = c("beta","SE","pval","condF")
-  
-  plotData2[,setting2 := "MR"]
-  plotData[,setting2 := "MVMR"]
-  plotData = rbind(plotData,plotData2)
-  
-  plotData[,lowerCI95 := beta-1.96*SE]
-  plotData[,upperCI95 := beta+1.96*SE]
-  plotData[,Grouping := paste(setting,setting2,flag,sep=" - ")]
-  setnames(plotData,"Grouping","Setting")
-  plotData[,condF := round(condF,2)]
-  plotData[,condF := as.character(condF)]
-  setorder(plotData,flag,-setting2,-setting)
-  plotData[setting!="2-sample",condF := ""]
-  
-  plotData$` ` <- paste(rep(" ", 50), collapse = " ")
-  plotData$`Estimate \n[95% CI]` <- ifelse(is.na(plotData$SE), "",
-                                         sprintf("%.2f [%.2f, %.2f]",
-                                                 plotData$beta, plotData$lowerCI95, plotData$upperCI95))
-  plotData[,Setting := gsub(" - MAIN","",Setting)]
-  plotData[,Setting := gsub(" - SENS.*","",Setting)]
-  plotData[,Setting := paste0("    ",Setting)]
-  
-  dummy = data.table(Setting = unique(plotData$flag))
-  plotData = rbind(plotData,dummy, fill=T)
-  if(i==1){
-    plotData = plotData[c(25,1:4,30,21:24,26,5:8,28,13:16,29,17:20,27,9:12)]
-  }else{
-    plotData = plotData[c(21,1:4,25,17:20,22,5:8,24,13:16,23,9:12)]  
-  }
-  plotData[,Setting := gsub("SENS_","sens: ",Setting)]
-  plotData[,Setting := gsub("noSlope","no slope",Setting)]
-  plotData[,Setting := gsub("noVar","no variability",Setting)]
-  plotData[,Setting := gsub("RIsigma","RI sigma",Setting)]
-  plotData[,Setting := gsub("sampleSet","data subset",Setting)]
-  plotData[,Setting := gsub("SNPset","SNP cherry picking",Setting)]
-  plotData[is.na(flag),` ` := ""]
-  plotData[is.na(flag),`Estimate \n[95% CI]`:= ""]
-  plotData[is.na(flag),condF := ""]
-  
-  dummy = plotData$Setting
-  if(i==1){
-    dummy[!grepl("MV",dummy)] = "#FBE3D6"
-    dummy[grepl("MV",dummy)] = "#F2AA84"
-  }else if(i==2){
-    dummy[!grepl("MV",dummy)] = "#C2F1C8"
-    dummy[grepl("MV",dummy)] = "#47D45A"
-  }else if(i==3){
-    dummy[!grepl("MV",dummy)] = "#CAEEFB"
-    dummy[grepl("MV",dummy)] = "#61CBF4"
-  }
-  dummy2 = plotData$flag
-  dummy[is.na(dummy2)] = "white"
-  tm1<- forest_theme(core=list(bg_params=list(fill = dummy)))
-  
-  myXlab = paste0("Causal effect of the ",myExposureTypes[i]," of TC on CAD")
-  setnames(plotData,"condF","(cond) \nF-stat")
-  setnames(plotData,"Setting", "Setting \n   MR approach")
-  
-  p2<- forest(plotData[,c(10,11,12,6)],
-              est = plotData$beta,
-              lower = plotData$lowerCI95, 
-              upper = plotData$upperCI95,
-              sizes = 0.5,
-              ci_column = 2,
-              ref_line = 0,
-              #title = myXlab,
-              theme = tm1)
-  
-  plot(p2)
-  
-  filename = paste0("../results/_figures/SupFigs/ForestPlot_",myExposureTypes[i],"_nom_inclSNPset.png")
-  png(filename = filename,width = 1800, height = myHeight, res=200)
-  plot(p2)
-  dev.off()
-  
-}
+setorder(data4,exposure_type,rank)
+data4[exposure_type=="var" & is.na(setting),subgroup:= "variability"]
+data4[grepl("0",subgroup), subgroup := gsub("0","main analysis",subgroup)]
+data4[grepl("1A",subgroup), subgroup := gsub("1A","1A - no variability",subgroup)]
+data4[grepl("1B",subgroup), subgroup := gsub("1B","1B - no slope",subgroup)]
+data4[grepl("2A",subgroup), subgroup := gsub("2A","2A - no statins",subgroup)]
+
+dummy = c("white","#F2AA84", "#FBE3D6", "#FBE3D6", "#FBE3D6",
+          "white","#47D45A", "#C2F1C8", "#C2F1C8", 
+          "white","#61CBF4", "#CAEEFB", "#CAEEFB")
+tm1<- forest_theme(core=list(bg_params=list(fill = dummy)))
+
+myXlab =  "logOR for CAD risk (95% CI) per 1-SD increment in TC levels, yearly increase, and variability"
+
+data4[,condF := round(condFstat,1)]
+data4[,condF := as.character(condF)]
+data4[is.na(setting),condF := ""]
+setnames(data4,"condF","cond. \nF-stat")
+setnames(data4,"subgroup", "exposure type \n   MR approach")
+
+p2<- forest(data4[,c(17,20,21,22)],
+            est = data4$beta_IVW,
+            lower = data4$lowerCI95, 
+            upper = data4$upperCI95,
+            sizes = 0.5,
+            ci_column = 2,
+            ref_line = 0,
+            #title = myXlab,
+            xlab = myXlab,
+            theme = tm1)
+
+plot(p2)
+
+filename = paste0("../results/_figures/SupFigs/TC_CAD_UKB.png")
+png(filename = filename,width = 1700, height = 900, res=200)
+plot(p2)
+dev.off()
+
+#' ## Main and different SNP selections ####
+MVMR2 = copy(MVMR)
+MVMR2 = MVMR2[outcome == "UKB"]
+MVMR2 = MVMR2[flag %in% c("0","3A","3B","3C")]
+MVMR2[,rank := 2]
+dummy = data.table(exposure_type = unique(MVMR2$exposure_type),rank=1)
+data4 = rbind(MVMR2,dummy, fill=T)
+data4[,subgroup := paste0("   ", flag)]
+data4[is.na(threshold),subgroup := exposure_type]
+
+data4[,lowerCI95 := beta_IVW-1.96*SE_IVW]
+data4[,upperCI95 := beta_IVW+1.96*SE_IVW]
+data4$` ` <- paste(rep(" ", 50), collapse = " ")
+data4$`Estimate \n[95% CI]` <- ifelse(is.na(data4$SE_IVW), "",
+                                      sprintf("%.2f [%.2f, %.2f]",
+                                              data4$beta_IVW, data4$lowerCI95, data4$upperCI95))
+
+setorder(data4,exposure_type,rank)
+data4[exposure_type=="var" & is.na(setting),subgroup:= "variability"]
+data4[grepl("0",subgroup), subgroup := gsub("0","main analysis",subgroup)]
+data4[grepl("sens_SNPset1",ID), subgroup := gsub("3A","3A - GxE enriched",subgroup)]
+data4[grepl("sens_SNPset2",ID), subgroup := gsub("3A","3B - M and V independent",subgroup)]
+data4[grepl("sens_SNPset3",ID), subgroup := gsub("3A","3C - top20",subgroup)]
+
+dummy = c("white","#F2AA84", "#FBE3D6", "#FBE3D6", "#FBE3D6",
+          "white","#47D45A", "#C2F1C8", "#C2F1C8", "#C2F1C8", 
+          "white","#61CBF4", "#CAEEFB", "#CAEEFB", "#CAEEFB")
+tm1<- forest_theme(core=list(bg_params=list(fill = dummy)))
+
+myXlab =  "logOR for CAD risk (95% CI) per 1-SD increment in TC levels, yearly increase, and variability"
+
+data4[,condF := round(condFstat,1)]
+data4[,condF := as.character(condF)]
+data4[is.na(setting),condF := ""]
+setnames(data4,"condF","cond. \nF-stat")
+setnames(data4,"subgroup", "exposure type \n   MR approach")
+
+p2<- forest(data4[,c(17,20,21,22)],
+            est = data4$beta_IVW,
+            lower = data4$lowerCI95, 
+            upper = data4$upperCI95,
+            sizes = 0.5,
+            ci_column = 2,
+            ref_line = 0,
+            #title = myXlab,
+            xlab = myXlab,
+            theme = tm1)
+
+plot(p2)
+
+filename = paste0("../results/_figures/SupFigs/TC_CAD_main_vs_SNPSelection.png")
+png(filename = filename,width = 1900, height = 1000, res=200)
+plot(p2)
+dev.off()
+
+#' ## Both outcomes ###
+MVMR2 = copy(MVMR)
+MVMR2 = MVMR2[flag == "0",]
+setorder(MVMR2,flag)
+MVMR2[,rank := 2]
+dummy = data.table(exposure_type = unique(MVMR2$exposure_type),rank=1)
+data4 = rbind(MVMR2,dummy, fill=T)
+data4[,subgroup := paste0("   ", flag)]
+data4[is.na(threshold),subgroup := exposure_type]
+
+data4[,lowerCI95 := beta_IVW-1.96*SE_IVW]
+data4[,upperCI95 := beta_IVW+1.96*SE_IVW]
+data4$` ` <- paste(rep(" ", 50), collapse = " ")
+data4$`Estimate \n[95% CI]` <- ifelse(is.na(data4$SE_IVW), "",
+                                      sprintf("%.2f [%.2f, %.2f]",
+                                              data4$beta_IVW, data4$lowerCI95, data4$upperCI95))
+
+setorder(data4,exposure_type,rank)
+data4[exposure_type=="var" & is.na(setting),subgroup:= "variability"]
+data4[grepl("Aragam",outcome), subgroup := gsub("0","outcome 1: Aragam et al. data",subgroup)]
+data4[grepl("UKB",outcome), subgroup := gsub("0","outcome 2: UKB data",subgroup)]
+setorder(data4,exposure_type,rank,subgroup)
+
+dummy = c("white","#F2AA84", "#FBE3D6", 
+          "white","#47D45A", "#C2F1C8", 
+          "white","#61CBF4", "#CAEEFB")
+tm1<- forest_theme(core=list(bg_params=list(fill = dummy)))
+
+myXlab =  "logOR for CAD risk (95% CI) per 1-SD increment in TC levels, yearly increase, and variability"
+
+data4[,condF := round(condFstat,1)]
+data4[,condF := as.character(condF)]
+data4[is.na(setting),condF := ""]
+setnames(data4,"condF","cond. \nF-stat")
+setnames(data4,"subgroup", "exposure type \n   MR approach")
+
+p2<- forest(data4[,c(17,20,21,22)],
+            est = data4$beta_IVW,
+            lower = data4$lowerCI95, 
+            upper = data4$upperCI95,
+            sizes = 0.5,
+            ci_column = 2,
+            ref_line = 0,
+            #title = myXlab,
+            xlab = myXlab,
+            theme = tm1)
+
+plot(p2)
+
+filename = paste0("../results/_figures/SupFigs/TC_CAD_allOutcomes.png")
+png(filename = filename,width = 1900, height = 1000, res=200)
+plot(p2)
+dev.off()
 
 #' # SessionInfo ####
 #' ***

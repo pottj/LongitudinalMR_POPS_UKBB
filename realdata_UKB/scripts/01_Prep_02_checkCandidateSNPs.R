@@ -19,7 +19,7 @@
 rm(list = ls())
 time0<-Sys.time()
 
-source("../../SourceFile_HPC.R")
+source("../../SourceFile.R")
 .libPaths()
 
 #' # Load data ####
@@ -61,7 +61,8 @@ length(unique(TC_data$rsID))
 #' # Save data #### 
 #' ***
 save(TC_data, file="../results/01_Prep_02_SNPList_GLGC.RData")
-write.table(unique(TC_data$rsID),file = paste0(UKB_phenotypes_filtered,"/01_Prep_02_SNPList_GLGC.txt"), 
+#load("../results/01_Prep_02_SNPList_GLGC.RData")
+write.table(unique(TC_data$rsID),file = paste0(UKB_genotypes_filtered,"/01_Prep_02_SNPList_GLGC.txt"), 
             col.names = F, row.names = F, quote = F)
 
 #' # Create PLINK2 calls ####
@@ -88,15 +89,15 @@ dumTab = foreach(i = 1:length(myCHR))%do%{
                  " 'ref-last'", 
                  " --sample ",UKB_SNP_data,"ukb22828_c",myCHR[i],"_b0_v3_s487160.sample",
                  " --chr ", myCHR[i],
-                 " --keep-fam ",UKB_phenotypes_filtered,"/01_Prep_01_SampleList_TC_GLGC_maxSamples.txt",
-                 " --extract ",UKB_phenotypes_filtered,"/01_Prep_02_SNPList_GLGC.txt", 
+                 " --keep-fam ",UKB_phenotypes_filtered,"/01_Prep_01_UKB_filtered_samples.txt",
+                 " --extract ",UKB_genotypes_filtered,"/01_Prep_02_SNPList_GLGC.txt", 
                  " --mach-r2-filter 0.8 2",
                  " --maf 0.01", 
                  " --threads 20",
                  " --export bgen-1.2 bits=8 id-delim='-'",
-                 " --out ",UKB_genotypes_filtered,"/temp/UKB_TC_GLGC_chr",myCHR[i])
+                 " --out ",UKB_genotypes_filtered,"/temp/UKB_chr",myCHR[i])
   print(call2)
-  out_filename = paste0(UKB_genotypes_filtered,"/temp/UKB_TC_GLGC_chr",myCHR[i],".bgen")
+  out_filename = paste0(UKB_genotypes_filtered,"/temp/UKB_chr",myCHR[i],".bgen")
   out_filename
 }
 
@@ -107,22 +108,22 @@ for(i in 1:length(myCHR)){
   call3 = paste(call3,dumTab[[i]])
 }
 
-call3 = paste0(call3, " -og ",UKB_genotypes_filtered, "/temp/UKB_TC_GLGC_merged.bgen")
+call3 = paste0(call3, " -og ",UKB_genotypes_filtered, "/temp/UKB_merged.bgen")
 print(call3)
 
 call4 = paste0("plink2",
-               " --bgen ",UKB_genotypes_filtered, "/temp/UKB_TC_GLGC_merged.bgen",
+               " --bgen ",UKB_genotypes_filtered, "/temp/UKB_merged.bgen",
                " 'ref-last'",
-               " --sample ",UKB_genotypes_filtered, "/temp/UKB_TC_GLGC_chr1.sample",
-               " --make-pgen --out ",UKB_genotypes_filtered,"/UKB_TC_GLGC_merged")
+               " --sample ",UKB_genotypes_filtered, "/temp/UKB_chr1.sample",
+               " --make-pgen --out ",UKB_genotypes_filtered,"/UKB_merged")
 print(call4)
 
 call5 = paste0("rm -rf ",UKB_genotypes_filtered,"/temp")
 print(call5)
 
 call6 = paste0("plink2",
-               " --pfile ",UKB_genotypes_filtered, "/UKB_TC_GLGC_merged",
-               " --freq --out ",UKB_genotypes_filtered,"/UKB_TC_GLGC_merged_AF")
+               " --pfile ",UKB_genotypes_filtered, "/UKB_merged",
+               " --freq --out ",UKB_genotypes_filtered,"/UKB_merged_AF")
 print(call6)
 
 #' # SessionInfo ####

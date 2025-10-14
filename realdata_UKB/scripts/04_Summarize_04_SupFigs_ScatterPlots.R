@@ -24,7 +24,7 @@
 rm(list = ls())
 time0 = Sys.time()
 
-source("../../SourceFile_HPC.R")
+source("../../SourceFile.R")
 source("../../helperfunctions/MVMR_jp_POPS_plots.R")
 
 #' # Load data ####
@@ -49,7 +49,8 @@ MVMR0 = MVMR_jp_POPS_plots(data_exposure = myAssocs_X_long,
                      GX_pval_treshold = 1,
                      getPlot = T,
                      corTab = LDTab,
-                     corTab_threshold = 0.1,sampleSize_GX = 73778,random = F,getCondF = T,getUni = T,
+                     corTab_threshold = 0.1,sampleSize_GX = 68467,
+                     random = F,getCondF = T,getUni = T,
                      filename1 = "../results/_figures/SupFigs/ScatterPlot_MAIN_all_2Sample.png")
 
 MVMR1 = MVMR_jp_POPS_plots(data_exposure = myAssocs_X_long,
@@ -60,7 +61,8 @@ MVMR1 = MVMR_jp_POPS_plots(data_exposure = myAssocs_X_long,
                            GX_pval_treshold = 5e-8,
                            getPlot = T,
                            corTab = LDTab,
-                           corTab_threshold = 0.1,sampleSize_GX = 73778,random = F,getCondF = T,getUni = T,
+                           corTab_threshold = 0.1,sampleSize_GX = 68467,
+                           random = F,getCondF = T,getUni = T,
                            filename1 = "../results/_figures/SupFigs/ScatterPlot_MAIN_nominal_2Sample.png")
 
 #' # SessionInfo ####

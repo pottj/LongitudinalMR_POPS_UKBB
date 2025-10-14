@@ -1,5 +1,5 @@
 #' ---
-#' title: "Get association of SNPs on TC (SENS: random effect in sigma function)"
+#' title: "Get association of SNPs on TC (SENS: sample set)"
 #' subtitle: "Longitudinal MVMR"
 #' author: "Janne Pott"
 #' date: "Last compiled on `r format(Sys.time(), '%d %B, %Y')`"
@@ -13,46 +13,34 @@
 #'
 #' # Introduction ####
 #' ***
-#' Here, I want to estimate the SNP effects in a **gamlssIA** model for TC. 
-#' 
-#' Script 2: SNPs 51:100
-#' 
-#' Estimated time: 3:00h (SNP 1 about 80 min, first (failed) run with averaged 3.8h ... stopped after SNP 104)
+#' Here, I want to estimate the SNP effects in a **gamlssIA** model for TC. I will estimate estimate all the SNP effects **in a different sample set** (UKB baseline and before baseline).
 #' 
 #' # Initialize ####
 #' ***
 rm(list = ls())
 time0<-Sys.time()
 
-source("../../SourceFile_HPC.R")
+source("../../SourceFile.R")
 .libPaths()
 
 #' # Load and prep UKB data ####
 #' ***
 #' Load data (genetic data & phenotype data)
-load(paste0(UKB_phenotypes_filtered,"/01_Prep_01_UKB_GP_TC_GLGC.RData"))
-load(paste0(UKB_phenotypes_filtered,"/01_Prep_04_SNPData_GLGC.RData"))
+load(paste0(UKB_phenotypes_filtered,"/01_Prep_01_BL_FU_GP_merged_filtered.RData"))
+load(paste0(UKB_genotypes_filtered,"UKB_merged.RData"))
 
-stopifnot(is.element(myTab7$ID,psam$FID))
+stopifnot(is.element(myTab_long$ID,psam$FID))
 stopifnot(pvar$ID == colnames(geno_mat))
 stopifnot(psam$FID == rownames(geno_mat))
 pvar[,rsID := ID]
 
 #' # Get effects ####
 #' ***
-matched = match(myTab6$BSU_ID,myTab7$ID)
-myTab_long = cbind(myTab6,myTab7[matched,c(2,7:16)])
-myTab_long[sex==0,sex:=2]
-myTab_long[,exposure_type := NULL]
-
 data1 = copy(myTab_long)
-setnames(data1,"exposure_value","TC")
-setnames(data1,"BSU_ID","ID")
-names(data1)[11:20] = gsub("_","",names(data1)[11:20])
+names(data1)[8:17] = gsub("_","",names(data1)[8:17])
+data1 = data1[sens3==T,]
 
 # prepare loop over SNPs
-pvar = pvar[51:100,]
-geno_mat = geno_mat[,51:100]
 mySNPs = pvar$ID
 matched = match(data1$ID,psam$FID)
 table(is.na(matched))
@@ -67,13 +55,10 @@ dumTab2 = foreach(i = 1:length(mySNPs))%dorng%{
   data2 = copy(data1)
   data2[,myG := mySNP[matched]]
   
-  time1<-Sys.time()
-  mod2 = gamlss(TC ~ sex + myG*exposure_age + lipLowMed +
+  mod2 = gamlss(TC ~ sex + myG*age + 
                   PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + random(x = as.factor(ID)),   
-                sigma.formula = ~ myG + sex + exposure_age + lipLowMed  + random(x = as.factor(ID)), 
+                sigma.formula = ~ myG + sex + age, 
                 data = na.omit(data2), family = "NO")
-  time2<-Sys.time()
-  message("\nTOTAL TIME : " ,round(difftime(time2,time1,units = "mins"),3)," minutes")
   
   dummy2 = summary(mod2)
   dummy2 = dummy2[grepl("myG",rownames(dummy2)),]
@@ -100,7 +85,7 @@ dumTab2 = foreach(i = 1:length(mySNPs))%dorng%{
 myAssocs_X = rbindlist(dumTab2)
 myAssocs_X
 
-save(myAssocs_X,file=paste0("../results/02_SNPs_05_SENS_RandomEffectSigma_SNPset2.RData"))
+save(myAssocs_X,file=paste0("../results/02_SNPs_06_SENS_sampleSet3.RData"))
 
 #' # Session Info ####
 #' ***

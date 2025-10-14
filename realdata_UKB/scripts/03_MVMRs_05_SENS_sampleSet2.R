@@ -1,5 +1,5 @@
 #' ---
-#' title: "MVMR - sensitivity analysis: SNP selection"
+#' title: "MVMR - sensitivity analysis: different sample set"
 #' subtitle: "Longitudinal MVMR in UKB"
 #' author: "Janne Pott"
 #' date: "Last compiled on `r format(Sys.time(), '%d %B, %Y')`"
@@ -19,13 +19,8 @@
 rm(list = ls())
 time0<-Sys.time()
 
-source("../../SourceFile_HPC.R")
+source("../../SourceFile.R")
 source("../../helperfunctions/MVMR_jp_POPS.R")
-source("../../helperfunctions/MVMR_jp_POPS_top20.R")
-
-tag = format(Sys.time(), "%Y-%m-%d")
-tag = gsub("202.-","24-",tag)
-tag = gsub("-","",tag)
 
 #' # Get data ####
 #' ***
@@ -36,15 +31,8 @@ LDTab[,SNP2 := as.character(SNP2)]
 load("../results/01_Prep_03_SNPList.RData")
 
 #' ## Exposure
-load("../results/02_SNPs_01_MAIN.RData")
+load("../results/02_SNPs_05_SENS_sampleSet2.RData")
 length(unique(myAssocs_X$SNP))
-
-myAssocs_X[,flag := F]
-myAssocs_X[pval_mean<5e-8 & pval_var>0.05,flag := T]
-myAssocs_X[pval_var<5e-8 & pval_mean>0.05,flag := T]
-myAssocs_X[,table(flag)]
-myAssocs_X = myAssocs_X[flag==T,]
-myAssocs_X[,table(pval_mean<5e-8)]
 
 #' Check the GX associations
 myAssocs_X[,table(pval_mean==0)]
@@ -87,6 +75,10 @@ myAssocs_X_long = cbind(data_long1,data_long2[,5],
 myAssocs_X_long[,type := gsub("beta_","",type)]
 myAssocs_X_long = myAssocs_X_long[!is.na(beta),]
 
+#' Correct the slope estimates for average age in Aragam data: 55.654
+myAssocs_X_long[type=="slope", beta := beta * 55.654]
+myAssocs_X_long[type=="slope", SE := SE * 55.654]
+
 #' ## Outcome
 data_long5 = melt(SNPList,
                   id.vars=names(SNPList)[1:3],
@@ -119,87 +111,61 @@ myAssocs_Y_long = cbind(data_long9[,c(1,4,5)],data_long5[,5],data_long6[,5],
 myAssocs_Y_long[,type := gsub("_sampleSize","",type)]
 myAssocs_Y_long = myAssocs_Y_long[!is.na(beta),]
 
-myAssocs_Y_long = myAssocs_Y_long[rsID %in% myAssocs_X_long$SNP,]
-
 #' ## save as temporary files
-save(myAssocs_X_long,myAssocs_Y_long, file = paste0("../temp/03_MVMRInput_SENS_SNPset.RData"))
+save(myAssocs_X_long,myAssocs_Y_long, file = paste0("../temp/03_MVMRInput_SENS_sampleSet2"))
 
 #' # Do MVMR ####
 #' ***
-#' I want 
 #' 
-#' - all SNPs (including all non-significant ones)
-#' - nominal significant SNPs
-#' - top 20 overlap
-#' - top 20 distinct (as good as possible)
-#' 
-#' I want to do this classically (all three exposures mean, slope and variability), and seperated for mean and variability or slope and variability.
-#' 
-myExposures = unique(myAssocs_X_long$model)
-mySampleSize = c(73778, 35726, 38052)
+mySampleSize = c(58002)
 myOutcomes = unique(myAssocs_Y_long$type)
-myFlag = "sens_SNPset"
+myFlag = "sens_sampleSet2"
 
 names(myAssocs_Y_long) = c("SNP", "phenotype","sampleSize","beta_mean","SE_mean","tval_mean","pval_mean" )
 
-dumTab2 = foreach(j = 1:length(myExposures))%do%{
-  #j=1
-  source("../../SourceFile_HPC.R")
-  source("../../helperfunctions/MVMR_jp_POPS.R")
-  source("../../helperfunctions/MVMR_jp_POPS_top20.R")
+# filter data
+myAssocs_X_long[,phenotype := paste0("TC_",model)]
+myAssocs_X_long[,dumID := myFlag]
+
+dumTab3 = foreach(k = 1:length(myOutcomes))%do%{
+  #k=1
+  myOutcome = myOutcomes[k]
+  myExposure = unique(myAssocs_X_long$phenotype)
+  myAssocs_Y2 = copy(myAssocs_Y_long)
+  myAssocs_Y2 = myAssocs_Y2[phenotype == myOutcome,]
   
-  myExposure = myExposures[j]
+  # do MVMRs
+  MVMR0 = MVMR_jp_POPS(data_exposure = myAssocs_X_long,
+                       data_outcome = myAssocs_Y2,
+                       exposure_name = myExposure, 
+                       outcome_name = myOutcome,
+                       flag = myFlag,
+                       GX_pval_treshold = 1,
+                       getPlot = F,
+                       corTab = LDTab,
+                       corTab_threshold = 0.1,sampleSize_GX = mySampleSize,
+                       random = F,getCondF = T,getUni = T)
   
-  # filter data
-  myAssocs_X_long2 = copy(myAssocs_X_long)
-  myAssocs_X_long2 = myAssocs_X_long2[model == myExposure,]
-  myAssocs_X_long2[,phenotype := paste0("TC_",myExposure)]
-  myAssocs_X_long2[,dumID := myFlag]
+  MVMR2 = MVMR_jp_POPS(data_exposure = myAssocs_X_long,
+                       data_outcome = myAssocs_Y2,
+                       exposure_name = myExposure, 
+                       outcome_name = myOutcome,
+                       flag = myFlag,
+                       GX_pval_treshold = 5e-8,
+                       getPlot = F,
+                       corTab = LDTab,
+                       corTab_threshold = 0.1,sampleSize_GX = mySampleSize,
+                       random = F,getCondF = T,getUni = T)
   
-  dumTab3 = foreach(k = 1:length(myOutcomes))%do%{
-    #k=1
-    myOutcome = myOutcomes[k]
-    myAssocs_Y2 = copy(myAssocs_Y_long)
-    myAssocs_Y2 = myAssocs_Y2[phenotype == myOutcome,]
-    
-    message("Working on exposure ",myExposure," and outcome ",myOutcome," ...")
-    
-    # do MVMRs
-    MVMR0 = MVMR_jp_POPS(data_exposure = myAssocs_X_long2,
-                         data_outcome = myAssocs_Y2,
-                         exposure_name = paste0("TC_",myExposure), 
-                         outcome_name = myOutcome,
-                         flag = myFlag,
-                         GX_pval_treshold = 1,
-                         getPlot = F,
-                         corTab = LDTab,
-                         corTab_threshold = 0.1,sampleSize_GX = mySampleSize[j],
-                         random = F,getCondF = T,getUni = T)
-    
-    MVMR2 = MVMR_jp_POPS(data_exposure = myAssocs_X_long2,
-                         data_outcome = myAssocs_Y2,
-                         exposure_name = paste0("TC_",myExposure), 
-                         outcome_name = myOutcome,
-                         flag = myFlag,
-                         GX_pval_treshold = 5e-8,
-                         getPlot = F,
-                         corTab = LDTab,
-                         corTab_threshold = 0.1,sampleSize_GX = mySampleSize[j],
-                         random = F,getCondF = T,getUni = T)
-    
-    MVMR0[,threshold := "all_SNPs"]
-    MVMR2[,threshold := "nominal_SNPs"]
-    MVMR = rbind(MVMR0,MVMR2,fill=T)
-    MVMR
-    
-  }
-  MVMR_Tab1 = rbindlist(dumTab3)
-  MVMR_Tab1
+  MVMR0[,threshold := "all_SNPs"]
+  MVMR2[,threshold := "gw_SNPs"]
+  MVMR = rbind(MVMR0,MVMR2,fill=T)
+  MVMR
   
 }
 
-MVMR_results = rbindlist(dumTab2,fill = T)
-save(MVMR_results,file = paste0("../results/03_MVMR_06_SENS_SNPset.RData"))
+MVMR_results = rbindlist(dumTab3,fill = T)
+save(MVMR_results,file = paste0("../results/03_MVMR_05_SENS_sampleSet2.RData"))
 
 #' # Session Info ####
 #' ***

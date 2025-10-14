@@ -106,6 +106,12 @@ rm Rplots.pdf
 # Script to generate FUMA input
 R CMD BATCH --vanilla ../scripts/05_Summarize_07_FUMA.R ../scripts/05_Summarize_07_FUMA.R.out
 
+# Scripts to get histograms
+R CMD BATCH --vanilla ../scripts/05_Summarize_08_SupFigs_Histograms.R ../scripts/05_Summarize_08_SupFigs_Histograms.R.out
+cp Rplots.pdf 05_08_SupFig_Rplots.pdf
+rm Rplots.pdf
+
+
 ###############################################################
 ### You should not have to change anything below this line ####
 ###############################################################

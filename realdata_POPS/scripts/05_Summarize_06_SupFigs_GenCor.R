@@ -20,11 +20,7 @@
 rm(list = ls())
 time0<-Sys.time()
 
-source("../../SourceFile_HPC.R")
-
-tag = format(Sys.time(), "%Y-%m-%d")
-tag = gsub("2024-","24-",tag)
-tag = gsub("-","",tag)
+source("../../SourceFile.R")
 
 #' # Load data ####
 #' ***
@@ -40,7 +36,10 @@ data_wide_matrix = as.matrix(data_wide[,-1])
 CorTab = cor(data_wide_matrix,use = "pairwise.complete.obs")
 filt1 = rownames(CorTab) %in% c("slope_SENS_noSlope","var_SENS_noVar") 
 CorTab = CorTab[!filt1,!filt1]
-colnames(CorTab) = rep(" ",13)
+filt2 = grepl("ageCorrected",rownames(CorTab))
+CorTab = CorTab[!filt2,!filt2]
+
+colnames(CorTab) = rep(" ",10)
 corrplot(CorTab,order = "hclust",
          #col= colorRampPalette(c("#7D0722","white", "#053061"))(10),
          tl.col = "black", tl.srt = 45)

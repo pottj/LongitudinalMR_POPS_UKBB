@@ -26,7 +26,7 @@
 rm(list = ls())
 time0 = Sys.time()
 
-source("../../SourceFile_HPC.R")
+source("../../SourceFile.R")
 
 #' # Get content table (tab0) ####
 #' ***
@@ -218,6 +218,10 @@ source("../../SourceFile_HPC.R")
   }
   tab2 = rbindlist(dumTab,fill=T)
   tab2 = tab2[,c(35,1:34,36:39)]
+  tab2[, POPS_EFW_beta_slope_ageCorrected := POPS_EFW_beta_slope * 40.316]
+  tab2[, POPS_EFW_SE_slope_ageCorrected := POPS_EFW_SE_slope * 40.316]
+  tab2 = tab2[,c(1:16,40,41,17:39)]
+  
 }
 
 #' # Get Sup Tab 3 ####
@@ -249,19 +253,16 @@ source("../../SourceFile_HPC.R")
   }
   tab3 = rbindlist(dumTab4,fill=T)
   names(tab3)
-  tab3[,beta_slope_adj := beta_slope/40.316]
-  tab3[,SE_slope_adj := SE_slope/40.316]
   x1 = grep("mean",names(tab3))
   x2 = grep("slope",names(tab3))
-  x2 = x2[c(1,2,6,3,7,4,5)]
   x3 = grep("var",names(tab3))
   x = c(1:8,x1,x2,x3)
   tab3 = tab3[,x,with=F]
-  tab3[flag == "main",flag:="MAIN"]
-  tab3[,flag:=gsub("sens","SENS",flag)]
-  tab3[,flag:=gsub("randomEffectSigma","RIsigma",flag)]
-  tab3[,flag:=gsub("SENS_GBR","SENS_GBR3",flag)]
-  
+  tab3[flag == "main",flag:="0 - MAIN"]
+  tab3[flag == "sens_GBR",flag:="2 - SENS - GBR3"]
+  tab3[flag == "sens_noSlope",flag:="1B - SENS - no slope"]
+  tab3[flag == "sens_noVar",flag:="1A - SENS - no variability"]
+
 }  
 
 #' # Get Sup Tab 4 ####
@@ -291,16 +292,10 @@ source("../../SourceFile_HPC.R")
   }
   tab4 = rbindlist(dumTab4,fill=T)
   names(tab4)
-  tab4.1 = copy(tab4)
-  tab4.1 = tab4.1[exposure_type == "slope",]
-  tab4.1[,beta := beta/40.316]
-  tab4.1[,SE := SE/40.316]
-  tab4.1[,exposure_type := "slope_adj",]
-  tab4 = rbind(tab4,tab4.1)
-  tab4[flag == "main",flag:="MAIN"]
-  tab4[,flag:=gsub("sens","SENS",flag)]
-  tab4[,flag:=gsub("randomEffectSigma","RIsigma",flag)]
-  tab4[,flag:=gsub("SENS_GBR","SENS_GBR3",flag)]
+  tab4[flag == "main",flag:="0 - MAIN"]
+  tab4[flag == "sens_GBR",flag:="2 - SENS - GBR3"]
+  tab4[flag == "sens_noSlope",flag:="1B - SENS - no slope"]
+  tab4[flag == "sens_noVar",flag:="1A - SENS - no variability"]
   
 }  
 

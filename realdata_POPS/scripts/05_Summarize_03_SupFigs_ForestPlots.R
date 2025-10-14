@@ -20,130 +20,212 @@
 rm(list = ls())
 time0 = Sys.time()
 
-source("../../SourceFile_HPC.R")
+source("../../SourceFile.R")
 
 #' # Load data ####
 #' ***
-load("../results/_tables/SupplementalTables_EGG.RData")
+rm(list = ls())
+time0 = Sys.time()
 
-#' # Loop 1 ####
+source("../../SourceFile.R")
+
+#' # Load data ####
 #' ***
-#' I want one plot per exposure type. These plots should include 
+#' I only want the 2-sample MVMR using Aragam data and all SNPs 
 #' 
-#' - only the nominal SNP approaches
-#' - 1- vs 2-sample approach
-#' - uni- vs multivariable
-#' - main vs sensitivity setting
-#' 
-myTab = copy(tab3)
-myTab = myTab[threshold == "nominal_SNPs",]
-myExposureTypes = c("mean","slope","variability")
+myFiles = list.files(path = "../results/", pattern = "04_MVMR")
+mySettings = gsub(".RData","",myFiles)
+mySettings = gsub("04_MVMR_0._","",mySettings)
+mySettings
+mySettings2 = c("0","2","1A","1B")
 
-myTab2 = copy(tab4)
-myTab2 = myTab2[exposure_type %in% c("mean","slope_adj","var"),]
-myTab2 = myTab2[threshold == "nominal_SNPs",]
-setorder(myTab2,setting,exposure_type)
-
-for(i in 1:3){
+dumTab2 = foreach(i = 1:length(myFiles))%do%{
   #i=1
-  plotData = copy(myTab)
-  #plotData = plotData[setting == "2-sample"]
-  plotData2 = copy(myTab2)
-  #plotData2 = plotData2[setting == "2-sample"]
-  if(i==1){
-    plotData = plotData[,c(1,2,10:13)]
-    myHeight = 1400
-    plotData2 = plotData2[exposure_type == myExposureTypes[i]]
-  }else if(i==2){
-    plotData = plotData[,c(1,2,16,18:20)]
-    myHeight = 1200
-    plotData2 = plotData2[exposure_type == "slope_adj"]
-  }else if(i==3){
-    plotData = plotData[,c(1,2,22:25)]
-    myHeight = 1200
-    plotData2 = plotData2[exposure_type == "var"]
-  }
-  names(plotData)[3:6] = c("beta","SE","pval","condF")
-  plotData = plotData[!is.na(beta),]
-  
-  plotData2 = plotData2[,c(1,2,8,9,10,11)]
-  names(plotData2)[3:6] = c("beta","SE","pval","condF")
-  
-  plotData2[,setting2 := "MR"]
-  plotData[,setting2 := "MVMR"]
-  plotData = rbind(plotData,plotData2)
-  
-  plotData[,lowerCI95 := beta-1.96*SE]
-  plotData[,upperCI95 := beta+1.96*SE]
-  plotData[,Grouping := paste(setting,setting2,flag,sep=" - ")]
-  setnames(plotData,"Grouping","Setting")
-  plotData[,condF := round(condF,2)]
-  plotData[,condF := as.character(condF)]
-  setorder(plotData,flag,-setting2,-setting)
-  plotData[setting!="2-sample",condF := ""]
-  
-  plotData$` ` <- paste(rep(" ", 50), collapse = " ")
-  plotData$`Estimate \n[95% CI]` <- ifelse(is.na(plotData$SE), "",
-                                         sprintf("%.2f [%.2f, %.2f]",
-                                                 plotData$beta, plotData$lowerCI95, plotData$upperCI95))
-  plotData[,Setting := gsub(" - MAIN","",Setting)]
-  plotData[,Setting := gsub(" - SENS.*","",Setting)]
-  plotData[,Setting := paste0("    ",Setting)]
-  
-  dummy = data.table(Setting = unique(plotData$flag))
-  plotData = rbind(plotData,dummy, fill=T)
-  if(i==1){
-    plotData = plotData[c(21,1:4,22,5:8,23,9:12,24,13:16,25,17:20)]
-  }else{
-    plotData = plotData[c(17,1:4,18,5:8,19,9:12,20,13:16)]  
-  }
-  plotData[,Setting := gsub("SENS_","sens: ",Setting)]
-  plotData[,Setting := gsub("noSlope","no slope",Setting)]
-  plotData[,Setting := gsub("noVar","no variability",Setting)]
-  plotData[,Setting := gsub("RIsigma","RI sigma",Setting)]
-  plotData[,Setting := gsub("GBR3","data subset",Setting)]
-  plotData[is.na(flag),` ` := ""]
-  plotData[is.na(flag),`Estimate \n[95% CI]`:= ""]
-  plotData[is.na(flag),condF := ""]
-  
-  dummy = plotData$Setting
-  if(i==1){
-    dummy[!grepl("MV",dummy)] = "#FBE3D6"
-    dummy[grepl("MV",dummy)] = "#F2AA84"
-  }else if(i==2){
-    dummy[!grepl("MV",dummy)] = "#C2F1C8"
-    dummy[grepl("MV",dummy)] = "#47D45A"
-  }else if(i==3){
-    dummy[!grepl("MV",dummy)] = "#CAEEFB"
-    dummy[grepl("MV",dummy)] = "#61CBF4"
-  }
-  dummy2 = plotData$flag
-  dummy[is.na(dummy2)] = "white"
-  
-  tm1<- forest_theme(core=list(bg_params=list(fill = dummy)))
-  
-  myXlab = paste0("Causal effect of the ",myExposureTypes[i]," of EFW on BW")
-  setnames(plotData,"condF","(cond) \nF-stat")
-  setnames(plotData,"Setting", "Setting \n   MR approach")
-  
-  p2<- forest(plotData[,c(10,11,12,6)],
-              est = plotData$beta,
-              lower = plotData$lowerCI95, 
-              upper = plotData$upperCI95,
-              sizes = 0.5,
-              ci_column = 2,
-              ref_line = 0,
-              #title = myXlab,
-              theme = tm1)
-  
-  plot(p2)
-  
-  filename = paste0("../results/_figures/SupFigs/ForestPlot_",myExposureTypes[i],"_nom.png")
-  png(filename = filename,width = 1700, height = myHeight, res=200)
-  plot(p2)
-  dev.off()
-  
+  load(paste0("../results/",myFiles[i]))
+  MVMR = copy(MVMR_results)
+  #MVMR = MVMR[outcome == "UKB_BW"]
+  MVMR = MVMR[setting == "multivariate"]
+  MVMR = MVMR[threshold == "all_SNPs"]
+  MVMR[,flag := mySettings2[i]]
+  MVMR
 }
+
+MVMR = rbindlist(dumTab2)
+
+#' # Plotting ####
+#' ***
+#' ## Using EGG data ####
+#' 
+MVMR2 = copy(MVMR)
+MVMR2 = MVMR2[outcome == "EGG_BW",]
+setorder(MVMR2,flag)
+MVMR2[,rank := 2]
+dummy = data.table(exposure_type = unique(MVMR2$exposure_type),rank=1)
+data4 = rbind(MVMR2,dummy, fill=T)
+data4[,subgroup := paste0("   ", flag)]
+data4[is.na(threshold),subgroup := exposure_type]
+
+data4[,lowerCI95 := beta_IVW-1.96*SE_IVW]
+data4[,upperCI95 := beta_IVW+1.96*SE_IVW]
+data4$` ` <- paste(rep(" ", 50), collapse = " ")
+data4$`Estimate \n[95% CI]` <- ifelse(is.na(data4$SE_IVW), "",
+                                      sprintf("%.2f [%.2f, %.2f]",
+                                              data4$beta_IVW, data4$lowerCI95, data4$upperCI95))
+
+setorder(data4,exposure_type,rank)
+data4[exposure_type=="var" & is.na(setting),subgroup:= "variability"]
+data4[grepl("0",subgroup), subgroup := gsub("0","main analysis",subgroup)]
+data4[grepl("1A",subgroup), subgroup := gsub("1A","1A - no variability",subgroup)]
+data4[grepl("1B",subgroup), subgroup := gsub("1B","1B - no slope",subgroup)]
+data4[grepl("2",subgroup), subgroup := gsub("2","2 - GBR subset",subgroup)]
+
+dummy = c("white","#F2AA84", "#FBE3D6", "#FBE3D6", "#FBE3D6", 
+          "white","#47D45A", "#C2F1C8", "#C2F1C8", 
+          "white","#61CBF4", "#CAEEFB", "#CAEEFB" )
+tm1<- forest_theme(core=list(bg_params=list(fill = dummy)))
+
+myXlab =  "increase in BW (95% CI) per 1-SD increment EFW"
+
+data4[,condF := round(condFstat,1)]
+data4[,condF := as.character(condF)]
+data4[is.na(setting),condF := ""]
+setnames(data4,"condF","cond. \nF-stat")
+setnames(data4,"subgroup", "exposure type \n   MR approach")
+
+p2<- forest(data4[,c(17,20,21,22)],
+            est = data4$beta_IVW,
+            lower = data4$lowerCI95, 
+            upper = data4$upperCI95,
+            sizes = 0.5,
+            ci_column = 2,
+            ref_line = 0,
+            #title = myXlab,
+            xlab = myXlab,
+            xlim = c(-1,12),
+            theme = tm1)
+
+plot(p2)
+
+filename = paste0("../results/_figures/SupFigs/EFW_BW_EGGdata.png")
+png(filename = filename,width = 1900, height = 1000, res=200)
+plot(p2)
+dev.off()
+
+#' ## Using POPS data ####
+#' 
+MVMR2 = copy(MVMR)
+MVMR2 = MVMR2[outcome == "POPS_BW",]
+setorder(MVMR2,flag)
+MVMR2[,rank := 2]
+dummy = data.table(exposure_type = unique(MVMR2$exposure_type),rank=1)
+data4 = rbind(MVMR2,dummy, fill=T)
+data4[,subgroup := paste0("   ", flag)]
+data4[is.na(threshold),subgroup := exposure_type]
+
+data4[,lowerCI95 := beta_IVW-1.96*SE_IVW]
+data4[,upperCI95 := beta_IVW+1.96*SE_IVW]
+data4$` ` <- paste(rep(" ", 50), collapse = " ")
+data4$`Estimate \n[95% CI]` <- ifelse(is.na(data4$SE_IVW), "",
+                                      sprintf("%.2f [%.2f, %.2f]",
+                                              data4$beta_IVW, data4$lowerCI95, data4$upperCI95))
+
+setorder(data4,exposure_type,rank)
+data4[exposure_type=="var" & is.na(setting),subgroup:= "variability"]
+data4[grepl("0",subgroup), subgroup := gsub("0","main analysis",subgroup)]
+data4[grepl("1A",subgroup), subgroup := gsub("1A","1A - no variability",subgroup)]
+data4[grepl("1B",subgroup), subgroup := gsub("1B","1B - no slope",subgroup)]
+data4[grepl("2",subgroup), subgroup := gsub("2","2 - GBR subset",subgroup)]
+
+dummy = c("white","#F2AA84", "#FBE3D6", "#FBE3D6", "#FBE3D6", 
+          "white","#47D45A", "#C2F1C8", "#C2F1C8", 
+          "white","#61CBF4", "#CAEEFB", "#CAEEFB" )
+tm1<- forest_theme(core=list(bg_params=list(fill = dummy)))
+
+myXlab =  "increase in BW (95% CI) per 1-SD increment EFW"
+
+data4[,condF := round(condFstat,1)]
+data4[,condF := as.character(condF)]
+data4[is.na(setting),condF := ""]
+setnames(data4,"condF","cond. \nF-stat")
+setnames(data4,"subgroup", "exposure type \n   MR approach")
+
+p2<- forest(data4[,c(17,20,21,22)],
+            est = data4$beta_IVW,
+            lower = data4$lowerCI95, 
+            upper = data4$upperCI95,
+            sizes = 0.5,
+            ci_column = 2,
+            ref_line = 0,
+            #title = myXlab,
+            xlab = myXlab,
+            xlim = c(-1,8),
+            theme = tm1)
+
+plot(p2)
+
+filename = paste0("../results/_figures/SupFigs/EFW_BW_POPSdata.png")
+png(filename = filename,width = 1900, height = 1000, res=200)
+plot(p2)
+dev.off()
+
+#' ## Using POPS data ####
+#' 
+MVMR2 = copy(MVMR)
+MVMR2 = MVMR2[flag == "0",]
+setorder(MVMR2,flag)
+MVMR2[,rank := 2]
+dummy = data.table(exposure_type = unique(MVMR2$exposure_type),rank=1)
+data4 = rbind(MVMR2,dummy, fill=T)
+data4[,subgroup := paste0("   ", flag)]
+data4[is.na(threshold),subgroup := exposure_type]
+
+data4[,lowerCI95 := beta_IVW-1.96*SE_IVW]
+data4[,upperCI95 := beta_IVW+1.96*SE_IVW]
+data4$` ` <- paste(rep(" ", 50), collapse = " ")
+data4$`Estimate \n[95% CI]` <- ifelse(is.na(data4$SE_IVW), "",
+                                      sprintf("%.2f [%.2f, %.2f]",
+                                              data4$beta_IVW, data4$lowerCI95, data4$upperCI95))
+
+setorder(data4,exposure_type,rank)
+data4[exposure_type=="var" & is.na(setting),subgroup:= "variability"]
+data4[grepl("UKB",outcome), subgroup := gsub("0","outcome 1: UKB data",subgroup)]
+data4[grepl("EGG",outcome), subgroup := gsub("0","outcome 2: EGG data",subgroup)]
+data4[grepl("POPS",outcome), subgroup := gsub("0","outcome 3: POPS data",subgroup)]
+setorder(data4,exposure_type,rank,subgroup)
+
+dummy = c("white","#F2AA84", "#FBE3D6", "#FBE3D6", 
+          "white","#47D45A", "#C2F1C8", "#C2F1C8", 
+          "white","#61CBF4", "#CAEEFB", "#CAEEFB" )
+tm1<- forest_theme(core=list(bg_params=list(fill = dummy)))
+
+myXlab =  "increase in BW (95% CI) per 1-SD increment EFW"
+
+data4[,condF := round(condFstat,1)]
+data4[,condF := as.character(condF)]
+data4[is.na(setting),condF := ""]
+setnames(data4,"condF","cond. \nF-stat")
+setnames(data4,"subgroup", "exposure type \n   MR approach")
+
+p2<- forest(data4[,c(17,20,21,22)],
+            est = data4$beta_IVW,
+            lower = data4$lowerCI95, 
+            upper = data4$upperCI95,
+            sizes = 0.5,
+            ci_column = 2,
+            ref_line = 0,
+            #title = myXlab,
+            xlab = myXlab,
+            xlim = c(-1,11),
+            theme = tm1)
+
+plot(p2)
+
+filename = paste0("../results/_figures/SupFigs/EFW_BW_allOutcomes.png")
+png(filename = filename,width = 1900, height = 1000, res=200)
+plot(p2)
+dev.off()
+
+
 
 #' # SessionInfo ####
 #' ***

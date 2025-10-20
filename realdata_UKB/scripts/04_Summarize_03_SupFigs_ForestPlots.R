@@ -47,11 +47,12 @@ MVMR = rbindlist(dumTab2)
 
 #' # Plotting ####
 #' ***
-#' ## UKB ####
+#' ## Different Outcome data
 #' 
 MVMR2 = copy(MVMR)
-MVMR2 = MVMR2[outcome == "UKB"]
-MVMR2 = MVMR2[flag %in% c("0","1A","1B","2A")]
+MVMR2 = MVMR2[threshold == "all_SNPs",]
+MVMR2 = MVMR2[flag %in% c("0")]
+
 setorder(MVMR2,flag)
 MVMR2[,rank := 2]
 dummy = data.table(exposure_type = unique(MVMR2$exposure_type),rank=1)
@@ -68,14 +69,13 @@ data4$`Estimate \n[95% CI]` <- ifelse(is.na(data4$SE_IVW), "",
 
 setorder(data4,exposure_type,rank)
 data4[exposure_type=="var" & is.na(setting),subgroup:= "variability"]
-data4[grepl("0",subgroup), subgroup := gsub("0","main analysis",subgroup)]
-data4[grepl("1A",subgroup), subgroup := gsub("1A","1A - no variability",subgroup)]
-data4[grepl("1B",subgroup), subgroup := gsub("1B","1B - no slope",subgroup)]
-data4[grepl("2A",subgroup), subgroup := gsub("2A","2A - no statins",subgroup)]
+data4[grepl("Aragam",outcome), subgroup := gsub("0","main (Aragam outcome data)",subgroup)]
+data4[grepl("UKB",outcome), subgroup := gsub("0","sensitivity (UKB outcome data)",subgroup)]
+setorder(data4,exposure_type,rank,subgroup)
 
-dummy = c("white","#F2AA84", "#FBE3D6", "#FBE3D6", "#FBE3D6",
-          "white","#47D45A", "#C2F1C8", "#C2F1C8", 
-          "white","#61CBF4", "#CAEEFB", "#CAEEFB")
+dummy = c("white","#F2AA84", "#FBE3D6",
+          "white","#47D45A", "#C2F1C8", 
+          "white","#61CBF4", "#CAEEFB" )
 tm1<- forest_theme(core=list(bg_params=list(fill = dummy)))
 
 myXlab =  "logOR for CAD risk (95% CI) per 1-SD increment in TC levels, yearly increase, and variability"
@@ -95,20 +95,22 @@ p2<- forest(data4[,c(17,20,21,22)],
             ref_line = 0,
             #title = myXlab,
             xlab = myXlab,
+            xlim = c(-1,1),
             theme = tm1)
 
 plot(p2)
 
-filename = paste0("../results/_figures/SupFigs/TC_CAD_UKB.png")
-png(filename = filename,width = 1700, height = 900, res=200)
+filename = paste0("../results/_figures/SupFigs/ForestPlot_2v1_sampleMR.png")
+png(filename = filename,width = 1900, height = 700, res=200)
 plot(p2)
 dev.off()
 
-#' ## Main and different SNP selections ####
+#' ## Different exposure data
 MVMR2 = copy(MVMR)
-MVMR2 = MVMR2[outcome == "UKB"]
-MVMR2 = MVMR2[flag %in% c("0","3A","3B","3C")]
+MVMR2 = MVMR2[flag %in% c("0","2A","2B","2C")]
+MVMR2 = MVMR2[outcome == "Aragam"]
 MVMR2[,rank := 2]
+
 dummy = data.table(exposure_type = unique(MVMR2$exposure_type),rank=1)
 data4 = rbind(MVMR2,dummy, fill=T)
 data4[,subgroup := paste0("   ", flag)]
@@ -124,9 +126,9 @@ data4$`Estimate \n[95% CI]` <- ifelse(is.na(data4$SE_IVW), "",
 setorder(data4,exposure_type,rank)
 data4[exposure_type=="var" & is.na(setting),subgroup:= "variability"]
 data4[grepl("0",subgroup), subgroup := gsub("0","main analysis",subgroup)]
-data4[grepl("sens_SNPset1",ID), subgroup := gsub("3A","3A - GxE enriched",subgroup)]
-data4[grepl("sens_SNPset2",ID), subgroup := gsub("3A","3B - M and V independent",subgroup)]
-data4[grepl("sens_SNPset3",ID), subgroup := gsub("3A","3C - top20",subgroup)]
+data4[grepl("2A",subgroup), subgroup := gsub("2A","2A - no statins",subgroup)]
+data4[grepl("2B",subgroup), subgroup := gsub("2B","2B - after BL",subgroup)]
+data4[grepl("2C",subgroup), subgroup := gsub("2C","2C - before BL",subgroup)]
 
 dummy = c("white","#F2AA84", "#FBE3D6", "#FBE3D6", "#FBE3D6",
           "white","#47D45A", "#C2F1C8", "#C2F1C8", "#C2F1C8", 
@@ -150,20 +152,22 @@ p2<- forest(data4[,c(17,20,21,22)],
             ref_line = 0,
             #title = myXlab,
             xlab = myXlab,
+            xlim = c(-1,1),
             theme = tm1)
 
 plot(p2)
 
-filename = paste0("../results/_figures/SupFigs/TC_CAD_main_vs_SNPSelection.png")
+filename = paste0("../results/_figures/SupFigs/ForestPlot_SampleSetting_Aragam.png")
 png(filename = filename,width = 1900, height = 1000, res=200)
 plot(p2)
 dev.off()
 
-#' ## Both outcomes ###
+#' ## Different exposure data - 1 sample
 MVMR2 = copy(MVMR)
-MVMR2 = MVMR2[flag == "0",]
-setorder(MVMR2,flag)
+MVMR2 = MVMR2[flag %in% c("0","2A","2B","2C")]
+MVMR2 = MVMR2[outcome != "Aragam"]
 MVMR2[,rank := 2]
+
 dummy = data.table(exposure_type = unique(MVMR2$exposure_type),rank=1)
 data4 = rbind(MVMR2,dummy, fill=T)
 data4[,subgroup := paste0("   ", flag)]
@@ -178,13 +182,14 @@ data4$`Estimate \n[95% CI]` <- ifelse(is.na(data4$SE_IVW), "",
 
 setorder(data4,exposure_type,rank)
 data4[exposure_type=="var" & is.na(setting),subgroup:= "variability"]
-data4[grepl("Aragam",outcome), subgroup := gsub("0","outcome 1: Aragam et al. data",subgroup)]
-data4[grepl("UKB",outcome), subgroup := gsub("0","outcome 2: UKB data",subgroup)]
-setorder(data4,exposure_type,rank,subgroup)
+data4[grepl("0",subgroup), subgroup := gsub("0","main analysis",subgroup)]
+data4[grepl("2A",subgroup), subgroup := gsub("2A","2A - no statins",subgroup)]
+data4[grepl("2B",subgroup), subgroup := gsub("2B","2B - after BL",subgroup)]
+data4[grepl("2C",subgroup), subgroup := gsub("2C","2C - before BL",subgroup)]
 
-dummy = c("white","#F2AA84", "#FBE3D6", 
-          "white","#47D45A", "#C2F1C8", 
-          "white","#61CBF4", "#CAEEFB")
+dummy = c("white","#F2AA84", "#FBE3D6", "#FBE3D6", "#FBE3D6",
+          "white","#47D45A", "#C2F1C8", "#C2F1C8", "#C2F1C8", 
+          "white","#61CBF4", "#CAEEFB", "#CAEEFB", "#CAEEFB")
 tm1<- forest_theme(core=list(bg_params=list(fill = dummy)))
 
 myXlab =  "logOR for CAD risk (95% CI) per 1-SD increment in TC levels, yearly increase, and variability"
@@ -204,11 +209,12 @@ p2<- forest(data4[,c(17,20,21,22)],
             ref_line = 0,
             #title = myXlab,
             xlab = myXlab,
+            xlim = c(-1,1.5),
             theme = tm1)
 
 plot(p2)
 
-filename = paste0("../results/_figures/SupFigs/TC_CAD_allOutcomes.png")
+filename = paste0("../results/_figures/SupFigs/ForestPlot_SampleSetting_UKB.png")
 png(filename = filename,width = 1900, height = 1000, res=200)
 plot(p2)
 dev.off()

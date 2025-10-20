@@ -25,7 +25,7 @@ source("../../SourceFile.R")
 #' # Load data ####
 #' ***
 load("../results/_tables/SupplementalTables_GLGC.RData")
-tab2[flag == "SENS_sampleSet",flag := "SENS_sampleSet1"]
+tab2 = tab2[flag %in% c("0 - MAIN","2A - SENS - no statins","1A - SENS - no slope","1B - SENS - no variability")]
 myNames = names(tab2)[grepl("UKB_TC_beta",names(tab2))]
 
 data_wide = dcast(tab2, rsID ~ flag, value.var=myNames)
@@ -36,12 +36,12 @@ data_wide_matrix = as.matrix(data_wide[,-1])
 #' # Get correlation plot ####
 #' ***
 CorTab = cor(data_wide_matrix,use = "pairwise.complete.obs")
-filt1 = rownames(CorTab) %in% c("slope_SENS_noSlope","var_SENS_noVar") 
+filt1 = rownames(CorTab) %in% c("slope_1A - SENS - no slope","var_1B - SENS - no variability") 
 CorTab = CorTab[!filt1,!filt1]
 filt2 = grepl("ageCorr",rownames(CorTab))
 CorTab = CorTab[!filt2,!filt2]
 
-colnames(CorTab) = rep(" ",16)
+colnames(CorTab) = rep(" ",10)
 corrplot(CorTab,order = "hclust",
          #col= colorRampPalette(c("#7D0722","white", "#053061"))(10),
          tl.col = "black", tl.srt = 45)
@@ -56,9 +56,9 @@ dev.off()
 #' # Venn diagram ####
 #' ***
 source("../../helperfunctions/Venn_hk.R")
-mean = tab2[flag=="MAIN" & UKB_TC_pval_mean<5e-8,rsID]
-slope = tab2[flag=="MAIN" & UKB_TC_pval_slope<5e-8,rsID]
-var = tab2[flag=="MAIN" & UKB_TC_pval_var<5e-8,rsID]
+mean = tab2[flag=="0 - MAIN" & UKB_TC_pval_mean<5e-8,rsID]
+slope = tab2[flag=="0 - MAIN" & UKB_TC_pval_slope<5e-8,rsID]
+var = tab2[flag=="0 - MAIN" & UKB_TC_pval_var<5e-8,rsID]
 
 venn3(x1=mean,y1=slope,z1=var)
 

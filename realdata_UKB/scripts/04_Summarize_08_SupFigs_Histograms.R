@@ -34,7 +34,11 @@ ggp1 = ggplot(plotData, aes(x=N)) +
   geom_histogram( binwidth=0.5, fill="#69b3a2", color="#e9ecef", alpha=0.9) +
   labs(x="number of observations per individual") 
 ggp1
-ggsave(ggp1,file = "../results/_figures/SupFigs/Histogram_observations_main.png")
+
+filename = paste0("../results/_figures/SupFigs/Histogram_observations_main.png")
+png(filename = filename,width=1500,height=800,res = 200)
+plot(ggp1)
+dev.off()
 
 #' # Sensitivity check data set ####
 #' ***
@@ -44,7 +48,11 @@ ggp2 = ggplot(plotData, aes(x=N)) +
   geom_histogram( binwidth=0.5, fill="#69b3a2", color="#e9ecef", alpha=0.9) +
   labs(x="number of observations per individual") 
 ggp2
-ggsave(ggp2,file = "../results/_figures/SupFigs/Histogram_observations_sensitivity.png")
+
+filename = paste0("../results/_figures/SupFigs/Histogram_observations_sensitivity.png")
+png(filename = filename,width=1500,height=800,res = 200)
+plot(ggp2)
+dev.off()
 
 #' # SessionInfo ####
 #' ***

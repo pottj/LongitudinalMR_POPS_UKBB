@@ -89,7 +89,11 @@ source("../../SourceFile.R")
   
   # restrict to relevant columns
   tab1 = tab1[,c(2,3,21:28)]
+  
+  setnames(tab1,"setting","flag")
+  tab1[,flag := c("0 - MAIN","2A - SENS - no statins","2B - SENS - after BL","2C - SENS - before BL")]
   tab1
+  
 }
 
 #' # Get Sup Tab 2 ####
@@ -132,6 +136,16 @@ source("../../SourceFile.R")
   tab2[, UKB_TC_SE_slope_ageCorrected := UKB_TC_SE_slope * 55.654]
   tab2 = tab2[,c(1:16,45,46,17:44)]
   
+  tab2[flag == "MAIN",flag:="0 - MAIN"]
+  tab2[flag == "SENS_noSlope",flag:="1A - SENS - no slope"]
+  tab2[flag == "SENS_noVar",flag:="1B - SENS - no variability"]
+  tab2[flag == "SENS_sampleSet",flag:="2A - SENS - no statins"]
+  tab2[flag == "SENS_sampleSet2",flag:="2B - SENS - after BL"]
+  tab2[flag == "SENS_sampleSet3",flag:="2C - SENS - before BL"]
+  tab2[flag == "SENS_SNPset1",flag:="3A - SENS - GxE enriched SNPs"]
+  tab2[flag == "SENS_SNPset2",flag:="3B - SENS - mean and var indep."]
+  tab2[flag == "SENS_SNPset3",flag:="3C - SENS - top 20"]
+  
 }
 
 #' # Get Sup Tab 3 ####
@@ -169,8 +183,8 @@ source("../../SourceFile.R")
   x = c(1:8,x1,x2,x3)
   tab3 = tab3[,x,with=F]
   tab3[flag == "main",flag:="0 - MAIN"]
-  tab3[flag == "sens_noSlope",flag:="1B - SENS - no slope"]
-  tab3[flag == "sens_noVar",flag:="1A - SENS - no variability"]
+  tab3[flag == "sens_noSlope",flag:="1A - SENS - no slope"]
+  tab3[flag == "sens_noVar",flag:="1B - SENS - no variability"]
   tab3[flag == "sens_sampleSet1",flag:="2A - SENS - no statins"]
   tab3[flag == "sens_sampleSet2",flag:="2B - SENS - after BL"]
   tab3[flag == "sens_sampleSet3",flag:="2C - SENS - before BL"]
@@ -208,8 +222,8 @@ source("../../SourceFile.R")
   tab4 = rbindlist(dumTab4,fill=T)
   names(tab4)
   tab4[flag == "main",flag:="0 - MAIN"]
-  tab4[flag == "sens_noSlope",flag:="1B - SENS - no slope"]
-  tab4[flag == "sens_noVar",flag:="1A - SENS - no variability"]
+  tab4[flag == "sens_noSlope",flag:="1A - SENS - no slope"]
+  tab4[flag == "sens_noVar",flag:="1B - SENS - no variability"]
   tab4[flag == "sens_sampleSet1",flag:="2A - SENS - no statins"]
   tab4[flag == "sens_sampleSet2",flag:="2B - SENS - after BL"]
   tab4[flag == "sens_sampleSet3",flag:="2C - SENS - before BL"]

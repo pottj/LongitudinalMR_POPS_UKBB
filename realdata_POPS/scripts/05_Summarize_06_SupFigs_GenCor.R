@@ -34,7 +34,7 @@ data_wide_matrix = as.matrix(data_wide[,-1])
 #' # Get correlation plot ####
 #' ***
 CorTab = cor(data_wide_matrix,use = "pairwise.complete.obs")
-filt1 = rownames(CorTab) %in% c("slope_SENS_noSlope","var_SENS_noVar") 
+filt1 = rownames(CorTab) %in% c("slope_1A - SENS - no slope","var_1B - SENS - no variability") 
 CorTab = CorTab[!filt1,!filt1]
 filt2 = grepl("ageCorrected",rownames(CorTab))
 CorTab = CorTab[!filt2,!filt2]
@@ -54,9 +54,9 @@ dev.off()
 #' # Venn diagram ####
 #' ***
 source("../../helperfunctions/Venn_hk.R")
-mean = tab2[flag=="MAIN" & POPS_EFW_pval_mean<0.05,rsID]
-slope = tab2[flag=="MAIN" & POPS_EFW_pval_slope<0.05,rsID]
-var = tab2[flag=="MAIN" & POPS_EFW_pval_var<0.05,rsID]
+mean = tab2[flag=="0 - MAIN" & POPS_EFW_pval_mean<0.05,rsID]
+slope = tab2[flag=="0 - MAIN" & POPS_EFW_pval_slope<0.05,rsID]
+var = tab2[flag=="0 - MAIN" & POPS_EFW_pval_var<0.05,rsID]
 
 venn3(x1=mean,y1=slope,z1=var)
 

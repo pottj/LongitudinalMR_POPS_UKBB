@@ -222,6 +222,11 @@ source("../../SourceFile.R")
   tab2[, POPS_EFW_SE_slope_ageCorrected := POPS_EFW_SE_slope * 40.316]
   tab2 = tab2[,c(1:16,40,41,17:39)]
   
+  tab2[flag == "MAIN",flag:="0 - MAIN"]
+  tab2[flag == "SENS_GBR",flag:="2 - SENS - GBR3"]
+  tab2[flag == "SENS_noSlope",flag:="1A - SENS - no slope"]
+  tab2[flag == "SENS_noVar",flag:="1B - SENS - no variability"]  
+  setorder(tab2,flag)
 }
 
 #' # Get Sup Tab 3 ####
@@ -260,9 +265,10 @@ source("../../SourceFile.R")
   tab3 = tab3[,x,with=F]
   tab3[flag == "main",flag:="0 - MAIN"]
   tab3[flag == "sens_GBR",flag:="2 - SENS - GBR3"]
-  tab3[flag == "sens_noSlope",flag:="1B - SENS - no slope"]
-  tab3[flag == "sens_noVar",flag:="1A - SENS - no variability"]
+  tab3[flag == "sens_noSlope",flag:="1A - SENS - no slope"]
+  tab3[flag == "sens_noVar",flag:="1B - SENS - no variability"]
 
+  setorder(tab3,flag)
 }  
 
 #' # Get Sup Tab 4 ####
@@ -294,8 +300,10 @@ source("../../SourceFile.R")
   names(tab4)
   tab4[flag == "main",flag:="0 - MAIN"]
   tab4[flag == "sens_GBR",flag:="2 - SENS - GBR3"]
-  tab4[flag == "sens_noSlope",flag:="1B - SENS - no slope"]
-  tab4[flag == "sens_noVar",flag:="1A - SENS - no variability"]
+  tab4[flag == "sens_noSlope",flag:="1A - SENS - no slope"]
+  tab4[flag == "sens_noVar",flag:="1B - SENS - no variability"]
+
+  setorder(tab4,flag)
   
 }  
 

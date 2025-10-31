@@ -1,0 +1,13 @@
+scenario_NR	scenario_name	n_samples	n_times	AssocModelX	MVMRmethod	SNPsets	X_meanAge_bl	X_scanSteps	Y_ageAdd	Y_ageCorr
+0	main	10000	15	gamlssIA	IVW	2	0	4	10	T
+1A	sample_POPS	3000	5	gamlssIA	IVW	2	0	4	10	T
+1B	sample_UKB	17000	7	gamlssIA	IVW	2	20	3	10	T
+2A	genCor_3SNPsets	10000	15	gamlssIA	IVW	3	0	4	10	T
+2B	genCor_1SNPset	10000	15	gamlssIA	IVW	1	0	4	10	T
+3A	GAMLSS_noSlope	10000	15	gamlssNoIA	IVW	2	0	4	10	T
+3B	GAMLSS_noVar	10000	15	gamlssNoVar	IVW	2	0	4	10	T
+4A	GMM_main	10000	15	gamlssIA	GMM	2	0	4	10	T
+4B	GMM_1SNPset	10000	15	gamlssIA	GMM	1	0	4	10	T
+5A	AgeY_wrongCor	10000	15	gamlssIA	IVW	2	0	4	10	F
+5B	AgeY_younger1	10000	15	gamlssIA	IVW	2	0	4	-20	T
+5C	AgeY_younger2	10000	15	gamlssIA	IVW	2	0	4	-55	T

@@ -22,7 +22,7 @@ suppressPackageStartupMessages(library(ggplot2))
 #' ***
 variable_parameters = fread("../temp/parameters_variable.txt")
 variable_parameters[,NR := 1:dim(variable_parameters)[1]]
-myNames = paste(variable_parameters$NR,variable_parameters$scenario,sep="_")
+myNames = paste(variable_parameters$scenario_NR, variable_parameters$scenario_name,sep="_")
 
 fixed_parameters = fread("../temp/parameters_fixed.txt")
 Y_theta = fixed_parameters[parameter %in% paste0("Y_theta_",c("M","S","V")),value]
@@ -32,11 +32,11 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
   message("Working on scenario ",myNames[j]," (",j," of ",length(myNames),")")
   
   #load correlation info
-  myCors = list.files(path = paste0("../result/",myNames[j]),
+  myCors = list.files(path = paste0("../results/",myNames[j]),
                       pattern = "04_CorrelationSNPEffects",recursive = T)
   dumTab1 = foreach(i = 1:length(myCors))%do%{
     #i=1
-    load(paste0("../result/",myNames[j],"/",myCors[i]))
+    load(paste0("../results/",myNames[j],"/",myCors[i]))
     myCorTable[,dumID := paste(exposure,data1,data2,sep="_")]
     replicate_NR = gsub("Simulation_","",myCors[i])
     replicate_NR = gsub("/.*","",replicate_NR)
@@ -66,8 +66,8 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
   tab1[,exposure_type2 := dummy[seq(5,length(dummy),5)]]
   tab1[,exposure_types := paste(exposure_type1,exposure_type2,sep=" vs. ")]
   
-  tab1[,Sim_NR := variable_parameters$NR[j]]
-  tab1[,Sim_name := variable_parameters$scenario[j]]
+  tab1[,Sim_NR := variable_parameters$scenario_NR[j]]
+  tab1[,Sim_name := variable_parameters$scenario_name[j]]
   
   tab1
 }
@@ -75,16 +75,10 @@ dumTab0 = foreach(j = 1:length(myNames))%do%{
 myTab = rbindlist(dumTab0, fill=T)
 names(myTab)
 
-matchingTab = data.table(number1 = c(1:11),
-                         number2 = c("0","2B","2A","1A","1B","3A","3B","4A","4B","5A","5B"))
-matched = match(myTab$Sim_NR,matchingTab$number1)
-table(is.na(matched))
-myTab[,Sim_NR2 := matchingTab[matched,number2]]
-
 #' # Check correlation per combination ####
 #' ***
 
-outdir_results = "../result/_figures_genCor/"
+outdir_results = "../results/_figures_genCor/"
 if(dir.exists(outdir_results)==F){
   dir.create(outdir_results)
   message("Created figure folder ",outdir_results, " for genetic correlation")
@@ -95,7 +89,7 @@ myTypes = unique(myTab$exposure_types)
 
 # mean vs slope over all scenarios
 plot5 = ggplot(myTab[exposure_types==myTypes[1]], 
-               aes(x=Sim_NR2, y=mean_correlation, color = exposure)) +
+               aes(x=Sim_NR, y=mean_correlation, color = exposure)) +
   facet_wrap(~ exposure,scales = "free_y") +
   geom_hline(yintercept = 0,color="grey") +
   geom_hline(yintercept = -0.9,color="black",linetype="dashed") +
@@ -116,7 +110,7 @@ dev.off()
 
 # mean vs var over all scenarios
 plot5 = ggplot(myTab[exposure_types==myTypes[2]], 
-               aes(x=Sim_NR2, y=mean_correlation, color = exposure)) +
+               aes(x=Sim_NR, y=mean_correlation, color = exposure)) +
   facet_wrap(~ exposure,scales = "free_y") +
   geom_hline(yintercept = 0.5,color="grey",linetype="dotted") +
   geom_hline(yintercept = 0,color="black",linetype="dashed") +
@@ -137,7 +131,7 @@ dev.off()
 
 # slope vs var over all scenarios
 plot5 = ggplot(myTab[exposure_types==myTypes[3]], 
-               aes(x=Sim_NR2, y=mean_correlation, color = exposure)) +
+               aes(x=Sim_NR, y=mean_correlation, color = exposure)) +
   facet_wrap(~ exposure,scales = "free_y") +
   geom_hline(yintercept = -0.3,color="grey",linetype="dotted") +
   geom_hline(yintercept = 0,color="black",linetype="dashed") +
@@ -161,7 +155,7 @@ data_hlines = data.frame(exposure_types = unique(myTab$exposure_types),
                          mylines1 = c(-0.9,0,0),
                          mylines2 = c(-0.9,0.5,-0.3))
 plot5 = ggplot(myTab, 
-               aes(x=Sim_NR2, y=mean_correlation, color = exposure)) +
+               aes(x=Sim_NR, y=mean_correlation, color = exposure)) +
   facet_wrap(~ exposure_types,scales = "free_y") +
   geom_hline(data = data_hlines, aes(yintercept = mylines1),
              linetype="dashed", show.legend = FALSE) +
@@ -185,14 +179,14 @@ dev.off()
 
 #' # Save data ####
 #' ***
-outdir_results = "../result/_tables/"
+outdir_results = "../results/_tables/"
 if(dir.exists(outdir_results)==F){
   dir.create(outdir_results)
   message("Created table folder ",outdir_results, " for simulation summary")
 }else{
   message("Using pre-existing table folder ",outdir_results, " for simulation summary")
 }
-save(myTab,file=paste0("../result/_tables/Simulation_GeneticCorrelation.RData"))
+save(myTab,file=paste0("../results/_tables/Simulation_GeneticCorrelation.RData"))
 
 #' # Session Info ####
 #' ***

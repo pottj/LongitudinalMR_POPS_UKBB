@@ -20,12 +20,12 @@ suppressPackageStartupMessages(library(ggplot2))
 
 #' # Load data ####
 #' ***
-load(file="../result/_tables/SupTabs.RData")
+load(file="../results/_tables/SupTabs.RData")
 
 #' # Power plots ####
 #' ***
 #' 
-outdir_results = "../result/_MainFigures/"
+outdir_results = "../results/_MainFigures/"
 if(dir.exists(outdir_results)==F){
   dir.create(outdir_results)
 }
@@ -85,20 +85,21 @@ exposure_name <- c(
   X3_MV = "X^(MV)"
 )
 
+dumTab4[,dumID := paste(exposure, type, sep=" - ")]
 plot5 = ggplot(dumTab4, aes(x=type, y=bias, color = outcome)) +
-  facet_wrap(~ exposure,scales = "free_y",labeller = labeller(exposure = exposure_name)) +
+  facet_wrap(~ dumID,scales = "free") +
   geom_hline(yintercept = 0,color="grey") +
   geom_point(position=position_dodge(0.5),size=3) +
   geom_errorbar(aes(ymin=bias-1.96*bias_SE, ymax=bias+1.96*bias_SE), width=.2,
                 position=position_dodge(0.5)) +
   theme_bw(base_size = 15) +
-  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  #scale_x_discrete(guide = guide_axis(angle = 45)) +
   xlab("Exposure type") + ylab("Bias") +
   labs(color = "Outcome")
 plot5
 
 filename = paste0(outdir_results,"/Bias.png")
-png(filename = filename,width = 2000, height = 1200, res=200)
+png(filename = filename,width = 2000, height = 1600, res=200)
 print(plot5)
 dev.off()
 

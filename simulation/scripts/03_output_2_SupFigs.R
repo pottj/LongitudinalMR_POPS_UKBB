@@ -20,9 +20,9 @@ suppressPackageStartupMessages(library(ggplot2))
 
 #' # Load data ####
 #' ***
-load(file="../result/_tables/SupTabs.RData")
+load(file="../results/_tables/SupTabs.RData")
 
-outdir_results = "../result/_SupplementalFigures/"
+outdir_results = "../results/_SupplementalFigures/"
 if(dir.exists(outdir_results)==F){
   dir.create(outdir_results)
 }
@@ -139,7 +139,7 @@ myTab[exposure == "MV", exposure := "X3_MV"]
     labs(color = "Outcome")
   plot3
 
-  plot4 = ggplot(dumTab4_bias[Scenario_NR %in% c("0","4A","4B")], 
+  plot4 = ggplot(dumTab4_bias[Scenario_NR %in% c("0","4A","2B","4B")], 
                  aes(x=type, y=bias, color = outcome)) +
     facet_grid(Scenario_NR~exposure, labeller = labeller(
       exposure = exposure_name), scales = "free")+ 
@@ -153,7 +153,7 @@ myTab[exposure == "MV", exposure := "X3_MV"]
     labs(color = "Outcome")
   plot4
   
-  plot5 = ggplot(dumTab4_bias[Scenario_NR %in% c("0","5A","5B")], 
+  plot5 = ggplot(dumTab4_bias[Scenario_NR %in% c("0","5A","5B","5C")], 
                   aes(x=type, y=bias, color = outcome)) +
     facet_grid(Scenario_NR~exposure, labeller = labeller(
       exposure = exposure_name), scales = "free")+ 
@@ -183,12 +183,12 @@ myTab[exposure == "MV", exposure := "X3_MV"]
   dev.off()
   
   filename = paste0(outdir_results,"/Bias_Main_vs_MVMR.png")
-  png(filename = filename,width = 2400, height = 1600, res=200)
+  png(filename = filename,width = 2400, height = 1900, res=200)
   print(plot4)
   dev.off()
   
   filename = paste0(outdir_results,"/Bias_Main_vs_AgeMisSpec.png")
-  png(filename = filename,width = 2400, height = 1600, res=200)
+  png(filename = filename,width = 2400, height = 1900, res=200)
   print(plot5)
   dev.off()
   
@@ -232,7 +232,7 @@ myTab[exposure == "MV", exposure := "X3_MV"]
     theme(legend.position = "none")
   plot6
   
-  plot7 = ggplot(dumTab4_condF[condFStats_median<250,], 
+  plot7 = ggplot(dumTab4_condF[condFStats_median<150,], 
                   aes(x=Scenario_NR, y=condFStats_median, color = exposure)) +
     facet_grid(type~exposure, labeller = labeller(
       exposure = exposure_name), scales = "free")+ 
@@ -252,7 +252,7 @@ myTab[exposure == "MV", exposure := "X3_MV"]
   print(plot6)
   dev.off()
   
-  filename = paste0(outdir_results,"/CondF_lessThan250.png")
+  filename = paste0(outdir_results,"/CondF_lessThan150.png")
   png(filename = filename,width = 2400, height = 1600, res=200)
   print(plot7)
   dev.off()

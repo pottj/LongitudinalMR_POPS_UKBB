@@ -45,6 +45,7 @@ fixed_parameters = fread("../temp/parameters_fixed.txt")
 
 {
   n_times_default = fixed_parameters[parameter == "n_times_default",value]
+  n_sim = fixed_parameters[parameter == "n_sim",value]
   SNPs_NR = fixed_parameters[parameter == "SNPs_NR",value]
   SNPs_EAF = fixed_parameters[parameter == "SNPs_EAF",value]
   SNPs_mean = fixed_parameters[parameter %in% paste0("SNPs_mean_",c("M","S","V")),value]
@@ -55,6 +56,8 @@ fixed_parameters = fread("../temp/parameters_fixed.txt")
   SNPs_var[2] = SNPs_var[2]*10
   SNPs_centering = as.logical(fixed_parameters[parameter == "SNPs_centering",value])
   SNPs_Correct_ASs = as.logical(fixed_parameters[parameter == "SNPs_correct_AS",value])
+  gc = fixed_parameters[parameter %in% c("gc_MS","gc_MV","gc_SV"),value]
+  SNPs_factor = fixed_parameters[parameter %in% paste0("SNPs_factor_",c("M","S","V")),value]
   
   X_mean_R = fixed_parameters[parameter %in% paste0("X_mean_R",c("I","S")),value]
   X_var_R = fixed_parameters[parameter %in% paste0("X_var_R",c("I","S")),value]
@@ -76,22 +79,22 @@ fixed_parameters = fread("../temp/parameters_fixed.txt")
 
 #' ## Variable parameters ####
 variable_parameters = fread("../temp/parameters_variable.txt")
-variable_parameters[,NR := 1:dim(variable_parameters)[1]]
-variable_parameters = variable_parameters[2]
+variable_parameters = variable_parameters[4]
 
 {
   n_samples = variable_parameters$n_samples
   n_times_setting = variable_parameters$n_times
-  n_sim = variable_parameters$n_sim
-  gc = c(variable_parameters$gc_MS,variable_parameters$gc_MV,variable_parameters$gc_SV)
-  SNPs_factor = c(variable_parameters$SNPs_factor_M, variable_parameters$SNPs_factor_S, variable_parameters$SNPs_factor_V)
-  X_age_bl = variable_parameters$X_meanAge_bl
-  X_scanSteps = variable_parameters$X_scanSteps
-  
+  n_SNPsets = variable_parameters$SNPsets
   GAMLSS_model = variable_parameters$AssocModelX
   MVMR_model = variable_parameters$MVMRmethod 
-  scenario_name = variable_parameters$scenario
-  outfiles_prefix = paste(variable_parameters$NR,variable_parameters$scenario,sep="_")
+  X_age_bl = variable_parameters$X_meanAge_bl
+  X_scanSteps = variable_parameters$X_scanSteps
+  Y_ageAdd = variable_parameters$Y_ageAdd
+  Y_ageCorr = variable_parameters$Y_ageCorr
+  
+  scenario_name = variable_parameters$scenario_name
+  scenario_NR = variable_parameters$scenario_NR
+  outfiles_prefix = paste(scenario_NR,scenario_name,sep="_")
 }
 
 #' ## Additional parameters (for debugging)
@@ -100,7 +103,7 @@ do_plotting = F
 
 #' ## Create result directory ####
 {
-  outfiles_dir = "../result/"
+  outfiles_dir = "../results/"
   if(dir.exists(outfiles_dir)==F){
     dir.create(outfiles_dir)
     message("Created results folder: ",outfiles_dir)
@@ -216,15 +219,15 @@ SimTab = foreach(s = 1:n_sim)%dorng%{
     REff_SNPs[,3] = REff_SNPs[,3]/10
     
     #' Get filters for the different gc scenarios (correlation - shared SNPs; no correlation - distinct SNPs)
-    if(gc[1]==-0.9 & gc[2]==0){
+    if(n_SNPsets == 2){
       filtM = c(1:20)
       filtS = c(1:20)
       filtV = c(21:30)
-    }else if(gc[1]==0 & gc[2]==0){
+    }else if(n_SNPsets == 3){
       filtM = c(1:10)
       filtS = c(11:20)
       filtV = c(21:30)
-    }else if(gc[1]==-0.9 & gc[2]==0.5){
+    }else if(n_SNPsets == 1){
       filtM = c(1:30)
       filtS = c(1:30)
       filtV = c(1:30)
@@ -660,6 +663,13 @@ SimTab = foreach(s = 1:n_sim)%dorng%{
       dev.off()
       
     }
+    
+    #' Save data
+    if(save_data_perSim == T | s %in% counter){
+      save(MRTab,
+           file = paste0(outdir_sim, "09_MVMRresults.RData"))
+    }
+    
     
   }
   

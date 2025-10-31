@@ -43,23 +43,13 @@ suppressPackageStartupMessages(library(WriteXLS))
   tab1a = fread("../temp/parameters_fixed.txt")
   tab1b = fread("../temp/parameters_variable.txt")
   
-  dummy = tab1a[1,]
-  dummy[,parameter := "n_sim"]
-  dummy[,value := 500]
-  tab1a = rbind(dummy, tab1a)
-  
-  tab1b = tab1b[,-2]
-  tab1b[,scenario_NR := c("0","2B","2A","1A","1B","3A","3B","4A","4B","5A","5B")]
-  tab1b[,scenario_NR1 := c(1:11)]
-  setorder(tab1b,scenario_NR)
-  
 }
 
 #' # Get Sup Tab 2 ####
 #' ***
 #' 
 {
-  load("../result/_tables/Simulation_complete.RData")
+  load("../results/_tables/Simulation_complete.RData")
   head(myTab)
   
   # remove unnecessary columns: N_ (always 500), empSE_SE_ (I focus on the estimate + empSE)
@@ -79,16 +69,13 @@ suppressPackageStartupMessages(library(WriteXLS))
   setnames(tab2,"Sim_NR","Scenario_NR")
   setnames(tab2,"Sim_name","Scenario_name")
   
-  matched = match(tab2$Scenario_NR,tab1b$scenario_NR1)
-  tab2[,Scenario_NR := tab1b[matched,scenario_NR]]
-  setorder(tab2,Scenario_NR)
 }
 
 #' # Get Sup Tab 3 ####
 #' ***
 #' 
 {
-  load("../result/_tables/Simulation_GeneticCorrelation.RData")
+  load("../results/_tables/Simulation_GeneticCorrelation.RData")
   head(myTab)
   
   # remove unnecessary columns: N_ (always 500), empSE_SE_ (I focus on the estimate + empSE)
@@ -104,15 +91,12 @@ suppressPackageStartupMessages(library(WriteXLS))
   setnames(tab3,"Sim_NR","Scenario_NR")
   setnames(tab3,"Sim_name","Scenario_name")
   
-  matched = match(tab3$Scenario_NR,tab1b$scenario_NR1)
-  tab3[,Scenario_NR := tab1b[matched,scenario_NR]]
-  setorder(tab3,Scenario_NR)
 }
 
 #' # Save ####
 #' ***
-save(tab0,tab1a,tab1b,tab2,tab3,file="../result/_tables/SupTabs.RData")
-excel_fn = paste0("../result/_tables/SupTabs.xlsx")
+save(tab0,tab1a,tab1b,tab2,tab3,file="../results/_tables/SupTabs.RData")
+excel_fn = paste0("../results/_tables/SupTabs.xlsx")
 WriteXLS(c("tab0","tab1a","tab1b","tab2","tab3"),
          ExcelFileName=excel_fn,
          SheetNames=c("Content","Tab_S1a","Tab_S1b","Tab_S2","Tab_S3"),

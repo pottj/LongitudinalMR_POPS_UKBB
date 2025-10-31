@@ -50,7 +50,7 @@
 ## Note that resources (cores, memory, time) requested above are for each
 ## individual array task, NOT the total array.
 ## #SBATCH --array=1-4
-#SBATCH --array=5
+#SBATCH --array=3
 
 ##  - - - - - - - - - - - - - -
 

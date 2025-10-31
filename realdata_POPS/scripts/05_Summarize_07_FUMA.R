@@ -36,6 +36,7 @@ myTab[,table(minPvalType)]
 setorder(myTab,minPval)
 myTab = myTab[!duplicated(rsID)]
 myTab[,table(minPvalType,flag)]
+myTab[,table(minPvalType,POPS_EFW_phenotype)]
 
 setorder(myTab,chr,pos_b38)
 

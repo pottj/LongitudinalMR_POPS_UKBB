@@ -30,7 +30,7 @@ source("../../helperfunctions/MVMR_jp_POPS_plots.R")
 #' # Load data ####
 #' ***
 load("../temp/04_MVMRInput_MAIN.RData")
-load("../results/01_Prep_02_LD_filtered_EGG.RData")
+load("../results/01_Prep_02_LD_filtered.RData")
 
 #' # Run MVMR ####
 #' ***

@@ -38,6 +38,7 @@ dumTab2 = foreach(i = 1:length(myFiles))%do%{
   MVMR = MVMR[outcome == "UKB_BW"]
   MVMR = MVMR[setting == "multivariate"]
   MVMR = MVMR[threshold == "all_SNPs"]
+  MVMR = MVMR[exposure %in% c("logefwcomb")]
   MVMR[,flag := mySettings2[i]]
   MVMR
 }
@@ -46,7 +47,10 @@ MVMR = rbindlist(dumTab2)
 
 #' # Plotting ####
 #' ***
+#' All setting, exposure logefwcomb
+#' 
 MVMR2 = copy(MVMR)
+MVMR2 = MVMR2[exposure=="logefwcomb"]
 setorder(MVMR2,flag)
 MVMR2[,rank := 2]
 dummy = data.table(exposure_type = unique(MVMR2$exposure_type),rank=1)
@@ -66,20 +70,20 @@ data4[exposure_type=="var" & is.na(setting),subgroup:= "variability"]
 data4[grepl("0",subgroup), subgroup := gsub("0","main analysis",subgroup)]
 data4[grepl("1A",subgroup), subgroup := gsub("1A","1A - no slope",subgroup)]
 data4[grepl("1B",subgroup), subgroup := gsub("1B","1B - no variability",subgroup)]
-data4[grepl("2",subgroup), subgroup := gsub("2","2 - GBR3 subset",subgroup)]
+data4[grepl("2",subgroup), subgroup := gsub("2","2    - GBR3 subset",subgroup)]
 
 dummy = c("white","#F2AA84", "#FBE3D6", "#FBE3D6", "#FBE3D6", 
           "white","#47D45A", "#C2F1C8", "#C2F1C8", 
           "white","#61CBF4", "#CAEEFB", "#CAEEFB" )
 tm1<- forest_theme(core=list(bg_params=list(fill = dummy)))
 
-myXlab =  "increase in BW (95% CI) per 1-SD increment EFW"
+myXlab =  "increase in BW (95% CI) per (weekly) increase and variabilty in log(EFW)"
 
 data4[,condF := round(condFstat,1)]
 data4[,condF := as.character(condF)]
 data4[is.na(setting),condF := ""]
 setnames(data4,"condF","cond. \nF-stat")
-setnames(data4,"subgroup", "exposure type \n   MR approach")
+setnames(data4,"subgroup", "Exposure type \n   Setting")
 
 p2<- forest(data4[,c(17,20,21,22)],
             est = data4$beta_IVW,
@@ -89,17 +93,16 @@ p2<- forest(data4[,c(17,20,21,22)],
             ci_column = 2,
             ref_line = 0,
             #title = myXlab,
-            xlab = myXlab,
+            #xlab = myXlab,
             xlim = c(-1,6),
             theme = tm1)
 
 plot(p2)
 
-filename = paste0("../results/_figures/MainFigures/ForestPlot_POPS_main.png")
-png(filename = filename,width = 1900, height = 1000, res=200)
+filename = paste0("../results/_figures/MainFigures/ForestPlot_POPS_EFWlog.png")
+png(filename = filename,width = 1700, height = 800, res=200)
 plot(p2)
 dev.off()
-
 
 #' # SessionInfo ####
 #' ***

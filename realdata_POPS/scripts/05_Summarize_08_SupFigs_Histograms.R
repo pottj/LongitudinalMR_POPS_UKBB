@@ -27,8 +27,8 @@ source("../../SourceFile.R")
 
 #' # Main data set ####
 #' ***
-myGD_files = list.files(path = POPS_phenotypes,pattern = "01_Prep_04")
-loaded1 = load(paste0(POPS_phenotypes,myGD_files[1]))
+myGD_files = list.files(path = POPS_phenotypes_filtered,pattern = "01_Prep_04")
+loaded1 = load(paste0(POPS_phenotypes_filtered,myGD_files[1]))
 loaded1
 
 plotData = myTab_X[!is.na(efwcomb),.N,by=POPSID]

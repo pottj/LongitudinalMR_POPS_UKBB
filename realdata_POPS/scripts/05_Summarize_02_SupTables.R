@@ -54,16 +54,17 @@ source("../../SourceFile.R")
 #' - total sample size
 #' - sample size per time point
 #' - mean (SD) of EFW / BW measurements per time point
+#' - mean (SD) of EFW Z-score?
 #' - mean (SD) of gestational age per time point
 #' - Female % 
 #' - Smoking status mother % 
 #' - mean (SD) of mothers height 
 #' 
 {
-  myGD_files = list.files(path = POPS_phenotypes,pattern = "01_Prep_04")
-  loaded1 = load(paste0(POPS_phenotypes,myGD_files[1]))
+  myGD_files = list.files(path = POPS_phenotypes_filtered,pattern = "01_Prep_04")
+  loaded1 = load(paste0(POPS_phenotypes_filtered,myGD_files[1]))
   loaded1
-  loaded2 = load(paste0(POPS_phenotypes,myGD_files[2]))
+  loaded2 = load(paste0(POPS_phenotypes_filtered,myGD_files[2]))
   loaded2
   
   # filter for relevant samples 
@@ -80,6 +81,8 @@ source("../../SourceFile.R")
                      EFW_SD = sd(myTab_Y$pn_bw),
                      EFW_log_mean = mean(log(myTab_Y$pn_bw)),
                      EFW_log_SD = sd(log(myTab_Y$pn_bw)),
+                     EFW_Z_mean = mean(myTab_Y$BW_SDS_Br1990),
+                     EFW_Z_SD = sd(myTab_Y$BW_SDS_Br1990),
                      Age_mean = mean(myTab_Y$pn_ga_wk),
                      Age_SD = sd(myTab_Y$pn_ga_wk),
                      Female_absolute = dim(myTab_Y[pn_sex=="FEMALE",])[1],
@@ -102,6 +105,8 @@ source("../../SourceFile.R")
                      EFW_SD = myTab_X[scan==1,sd(efwcomb)],
                      EFW_log_mean = myTab_X[scan==1,mean(logefwcomb)],
                      EFW_log_SD = myTab_X[scan==1,sd(logefwcomb)],
+                     EFW_Z_mean = myTab_X[scan==1,mean(efwcombZv2)],
+                     EFW_Z_SD = myTab_X[scan==1,sd(efwcombZv2)],
                      Age_mean = myTab_X[scan==1,mean(ga)],
                      Age_SD = myTab_X[scan==1,sd(ga)] )
   
@@ -112,6 +117,8 @@ source("../../SourceFile.R")
                      EFW_SD = myTab_X[scan==2,sd(efwcomb)],
                      EFW_log_mean = myTab_X[scan==2,mean(logefwcomb)],
                      EFW_log_SD = myTab_X[scan==2,sd(logefwcomb)],
+                     EFW_Z_mean = myTab_X[scan==2,mean(efwcombZv2)],
+                     EFW_Z_SD = myTab_X[scan==2,sd(efwcombZv2)],
                      Age_mean = myTab_X[scan==2,mean(ga)],
                      Age_SD = myTab_X[scan==2,sd(ga)] )
   
@@ -122,6 +129,8 @@ source("../../SourceFile.R")
                      EFW_SD = myTab_X[scan==3,sd(efwcomb)],
                      EFW_log_mean = myTab_X[scan==3,mean(logefwcomb)],
                      EFW_log_SD = myTab_X[scan==3,sd(logefwcomb)],
+                     EFW_Z_mean = myTab_X[scan==3,mean(efwcombZv2)],
+                     EFW_Z_SD = myTab_X[scan==3,sd(efwcombZv2)],
                      Age_mean = myTab_X[scan==3,mean(ga)],
                      Age_SD = myTab_X[scan==3,sd(ga)] )
   
@@ -132,6 +141,8 @@ source("../../SourceFile.R")
   tab1[,EFW_SD := round(EFW_SD,1)]
   tab1[,EFW_log_mean := round(EFW_log_mean,2)]
   tab1[,EFW_log_SD := round(EFW_log_SD,2)]
+  tab1[,EFW_Z_mean := round(EFW_Z_mean,2)]
+  tab1[,EFW_Z_SD := round(EFW_Z_SD,2)]
   tab1[,Age_mean := round(Age_mean,1)]
   tab1[,Age_SD := round(Age_SD,1)]
   tab1[,Female_percent := round(Female_percent,3)*100]
@@ -145,6 +156,7 @@ source("../../SourceFile.R")
   # merge some columns
   tab1[,EFW := paste0(EFW_mean," (",EFW_SD,")")]
   tab1[,logEFW := paste0(EFW_log_mean," (",EFW_log_SD,")")]
+  tab1[,zEFW := paste0(EFW_Z_mean," (",EFW_Z_SD,")")]
   tab1[,Age := paste0(Age_mean, " (",Age_SD,")")]
   tab1[,Female := paste0(Female_absolute," (",Female_percent,")")]
   tab1[,M_Smoking0 := paste0(Smoking_status_never," (",Smoking_status_never_percent,")")]
@@ -154,7 +166,7 @@ source("../../SourceFile.R")
   tab1[,M_Height := paste0(Heigth_mean, " (",Heigth_SD,")")]
   
   # restrict to relevant columns
-  tab1 = tab1[,c(1,2,21:29)]
+  tab1 = tab1[,c(1,2,23:32)]
   tab1[timpoint!="time-fixed",Female := ""]
   tab1[timpoint!="time-fixed",M_Smoking0 := ""]
   tab1[timpoint!="time-fixed",M_Smoking1 := ""]
@@ -184,20 +196,19 @@ source("../../SourceFile.R")
   
   settings = gsub(".RData","",mySumStats)
   settings = gsub("02_SNPs_0._","",settings)
-  settings[grepl("RandomEffect",settings)] = "SENS_RIsigma"
   
   dumTab = foreach(i = 1:length(mySumStats))%do%{
     #i=1
     loaded2 = load(paste0("../results/",mySumStats[i]))
     tab2.2 = get(loaded2)
     tab2.2 = tab2.2[rsID %in% tab2$rsID,]
-    tab2.2 = tab2.2[phenotype == "logefwcomb",]
+    tab2.2 = tab2.2[phenotype %in% c("logefwcomb","efwcombZv2"),]
     stopifnot(tab2.2$rsID == tab2$rsID)
     names(tab2.2) = paste0("POPS_EFW_",names(tab2.2))
     
     tab2.3 = copy(tab2)
     x = dim(tab2.2)[2]
-    tab2.3 = cbind(tab2.3[,1:8],tab2.2[,8:x],tab2.3[,9:21])
+    tab2.3 = cbind(tab2.3[,1:8],tab2.2[,7:x],tab2.3[,9:21])
     tab2.3[,flag := settings[i]]
     
     load("../results/03_SNPs_01_MAIN_Assocs_outcome_nTIA.RData")
@@ -210,17 +221,17 @@ source("../../SourceFile.R")
     myAssocs_Y = myAssocs_Y[phenotype == "pn_bw",]
     stopifnot(myAssocs_Y$rsID == tab2.3$rsID)
     
-    tab2.3[,POPS_beta := myAssocs_Y$beta_mean]
-    tab2.3[,POPS_SD := myAssocs_Y$SE_mean]
-    tab2.3[,POPS_tval := myAssocs_Y$tval_mean]
-    tab2.3[,POPS_pval := myAssocs_Y$pval_mean]
+    tab2.3[,POPS_beta := rep(myAssocs_Y$beta_mean,2)]
+    tab2.3[,POPS_SD := rep(myAssocs_Y$SE_mean,2)]
+    tab2.3[,POPS_tval := rep(myAssocs_Y$tval_mean,2)]
+    tab2.3[,POPS_pval := rep(myAssocs_Y$pval_mean,2)]
     tab2.3
   }
   tab2 = rbindlist(dumTab,fill=T)
-  tab2 = tab2[,c(35,1:34,36:39)]
+  tab2 = tab2[,c(36,1:35,37:40)]
   tab2[, POPS_EFW_beta_slope_ageCorrected := POPS_EFW_beta_slope * 40.316]
   tab2[, POPS_EFW_SE_slope_ageCorrected := POPS_EFW_SE_slope * 40.316]
-  tab2 = tab2[,c(1:16,40,41,17:39)]
+  tab2 = tab2[,c(1:17,41,42,18:40)]
   
   tab2[flag == "MAIN",flag:="0 - MAIN"]
   tab2[flag == "SENS_GBR",flag:="2 - SENS - GBR3"]
@@ -241,7 +252,7 @@ source("../../SourceFile.R")
     load(paste0("../results/",myMVMR_results[i]))
     names(MVMR_results)
     MVMR_results = MVMR_results[setting == "multivariate",]
-    MVMR_results = MVMR_results[exposure == "logefwcomb",]
+    MVMR_results = MVMR_results[exposure %in% c("logefwcomb","efwcombZv2"),]
     MVMR_results = MVMR_results[outcome != "EGG_BW",]
     MVMR_results[outcome == "POPS_BW", setting := "1-sample"]
     MVMR_results[outcome != "POPS_BW", setting := "2-sample"]
@@ -251,7 +262,8 @@ source("../../SourceFile.R")
     names(MVMR_tab_wide) = gsub("IVW_","",names(MVMR_tab_wide))
     names(MVMR_tab_wide) = gsub("NR_SNPs_type","SNPs",names(MVMR_tab_wide))
     setnames(MVMR_tab_wide,"ID","flag")
-    MVMR_tab_wide[,exposure := "logEFW"]
+    MVMR_tab_wide[grepl("log",exposure),exposure := "EFW_log"]
+    MVMR_tab_wide[grepl("Z",exposure),exposure := "EFW_Zscore"]
     
     MVMR_tab_wide
     
@@ -267,7 +279,7 @@ source("../../SourceFile.R")
   tab3[flag == "sens_GBR",flag:="2 - SENS - GBR3"]
   tab3[flag == "sens_noSlope",flag:="1A - SENS - no slope"]
   tab3[flag == "sens_noVar",flag:="1B - SENS - no variability"]
-
+  
   setorder(tab3,flag)
 }  
 
@@ -283,7 +295,7 @@ source("../../SourceFile.R")
     load(paste0("../results/",myMVMR_results[i]))
     names(MVMR_results)
     MVMR_results = MVMR_results[setting == "univariate",]
-    MVMR_results = MVMR_results[exposure == "logefwcomb",]
+    MVMR_results = MVMR_results[exposure %in% c("logefwcomb","efwcombZv2"),]
     MVMR_results = MVMR_results[outcome != "EGG_BW",]
     MVMR_results[outcome == "POPS_BW", setting := "1-sample"]
     MVMR_results[outcome != "POPS_BW", setting := "2-sample"]
@@ -292,7 +304,8 @@ source("../../SourceFile.R")
     setnames(MVMR_results,"ID","flag")
     setnames(MVMR_results,"NR_SNPs_total","SNPs")
     MVMR_results = MVMR_results[,c(13,1,2,4,14,3,5,7:12)]
-    MVMR_results[,exposure := "logEFW"]
+    MVMR_results[grepl("log",exposure),exposure := "EFW_log"]
+    MVMR_results[grepl("Z",exposure),exposure := "EFW_Zscore"]
     MVMR_results
     
   }
@@ -302,7 +315,7 @@ source("../../SourceFile.R")
   tab4[flag == "sens_GBR",flag:="2 - SENS - GBR3"]
   tab4[flag == "sens_noSlope",flag:="1A - SENS - no slope"]
   tab4[flag == "sens_noVar",flag:="1B - SENS - no variability"]
-
+  
   setorder(tab4,flag)
   
 }  

@@ -26,8 +26,8 @@ source("../../SourceFile.R")
 
 #' # Load data ####
 #' ***
-myGD_files = list.files(path = POPS_phenotypes,pattern = "01_Prep_04")
-loaded1 = load(paste0(POPS_phenotypes,myGD_files[1]))
+myGD_files = list.files(path = POPS_phenotypes_filtered,pattern = "01_Prep_04")
+loaded1 = load(paste0(POPS_phenotypes_filtered,myGD_files[1]))
 loaded1
 
 myTab_X[,logefwcomb := log(efwcomb)]
@@ -60,6 +60,24 @@ png(filename = filename,width = 1800, height = 1000, res=200)
 plot(ggp2)
 dev.off()
 
+ggp3  = ggplot(plotData, aes(x=ga, y=efwcombZv2, group=POPSID,
+                             col=pn_sex,fill=pn_sex)) +
+  geom_line(aes(alpha=0.01)) + 
+  geom_point(shape = 21,color="black")+
+  labs(x="Gestational Age (weeks)", y="Estimated Foetal Weight (Z-score)") +
+  scale_fill_manual(values = c("darkred","steelblue"),
+                    labels = c("FEMALE", "MALE"))+
+  scale_colour_manual(values = c("darkred","steelblue"),
+                      labels = c("FEMALE", "MALE"))+
+  theme_classic() +
+  theme(legend.position = "none")
+ggp3
+
+filename = paste0("../results/_figures/SupFigs/Trajectory_EFWZ_MAIN.png")
+png(filename = filename,width = 1800, height = 1000, res=200)
+plot(ggp3)
+dev.off()
+
 #' # Get plot data ####
 #' ***
 myTab_X = myTab_X[POPSID %in% test1[N==3,POPSID]]
@@ -83,6 +101,24 @@ ggp2
 filename = paste0("../results/_figures/SupFigs/Trajectory_EFWL_SENS_sampleSet.png")
 png(filename = filename,width=1500,height=1200,res = 200)
 plot(ggp2)
+dev.off()
+
+ggp3  = ggplot(plotData, aes(x=ga, y=efwcombZv2, group=POPSID,
+                             col=pn_sex,fill=pn_sex)) +
+  geom_line(aes(alpha=0.01)) + 
+  geom_point(shape = 21,color="black")+
+  labs(x="Gestational Age (weeks)", y="Estimated Foetal Weight (Z-score)") +
+  scale_fill_manual(values = c("darkred","steelblue"),
+                    labels = c("FEMALE", "MALE"))+
+  scale_colour_manual(values = c("darkred","steelblue"),
+                      labels = c("FEMALE", "MALE"))+
+  theme_classic() +
+  theme(legend.position = "none")
+ggp3
+
+filename = paste0("../results/_figures/SupFigs/Trajectory_EFWZ_SENS_sampleSet.png")
+png(filename = filename,width=1500,height=1200,res = 200)
+plot(ggp3)
 dev.off()
 
 #' # SessionInfo ####

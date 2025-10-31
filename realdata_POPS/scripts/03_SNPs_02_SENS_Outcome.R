@@ -20,20 +20,18 @@
 rm(list = ls())
 time0<-Sys.time()
 
-source("../../SourceFile_HPC.R")
+source("../../SourceFile.R")
 .libPaths()
-
-tag = "EGG"
 
 #' # Load and prep PGS data ####
 #' ***
 #' Load genetic data (data from the PGS, not from GWAS Catalog)
-myGD_files = list.files(path = POPS_phenotypes,pattern = "01_Prep_04")
-loaded1 = load(paste0(POPS_phenotypes,myGD_files[1]))
+myGD_files = list.files(path = POPS_phenotypes_filtered,pattern = "01_Prep_04")
+loaded1 = load(paste0(POPS_phenotypes_filtered,myGD_files[1]))
 loaded1
-loaded2 = load(paste0(POPS_phenotypes,myGD_files[2]))
+loaded2 = load(paste0(POPS_phenotypes_filtered,myGD_files[2]))
 loaded2
-loaded3 = load(paste0(POPS_phenotypes,myGD_files[3]))
+loaded3 = load(paste0(POPS_phenotypes_filtered,myGD_files[3]))
 loaded3
 
 myScores = list.files(path="../results/",pattern = "01_Prep_02_SNPList")
@@ -70,6 +68,8 @@ names(myTab_Y)
 myOutcomes=names(myTab_Y)[c(12,15,16,18)]
 myOutcomes
 
+registerDoParallel(4)
+
 dumTab1 = foreach(j=1:length(myOutcomes))%do%{
   #j=1
   myOutcome = myOutcomes[j]
@@ -85,8 +85,6 @@ dumTab1 = foreach(j=1:length(myOutcomes))%do%{
   mySNPs = pvar$ID
   matched = match(data1$POPSID,psam$FID)
   table(is.na(matched))
-  
-  registerDoParallel(4)
   
   dumTab2 = foreach(i = 1:length(mySNPs))%dopar%{
   #dumTab2 = foreach(i = 1:100)%do%{

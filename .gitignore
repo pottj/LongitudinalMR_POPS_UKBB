@@ -50,33 +50,12 @@ rsconnect/
 
 # other stuff
 SourceFile.R
-SourceFile_HPC.R
-SourceFile_BSUlaptop.R
-_archive/
-_archive2/
 archive/
-temp/
+realdata_POPS/temp/
+realdata_UKB/temp/
 data/
 results/
-simulation/_test/
-simulation2/
-simulation/results_old/
-simulation_main/results_old2/
+tests/
 *.html
 *.out
 *.pdf
-SupplementalTables_*
-simulation_v2/
-simulation_v3/
-simulation_v4/
-realdata_v2/
-simulation_main/results_old/
-results_test1_do/
-results_test2_dopar/
-tables_figures/
-realdata_HR/
-realdata_PGS/
-realdata_TC/
-realdata_TC_sexStrat/
-_tests/
-simulation/result/

@@ -43,28 +43,25 @@
 rm(list = ls())
 time0<-Sys.time()
 
-source("../../SourceFile_HPC.R")
+source("../../SourceFile.R")
 .libPaths()
-
-tag = "EGG"
 
 #' # Load POS data ####
 #' ***
 #' ## Load genetic data ####
-myPC_files = list.files(path = POPS_phenotypes,pattern = "01_Prep_03")
-myPC_file = myPC_files[grepl(tag,myPC_files)]
-loaded1 = load(paste0(POPS_phenotypes,myPC_file))
+myPC_file = list.files(path = POPS_phenotypes_filtered,pattern = "01_Prep_03")
+loaded1 = load(paste0(POPS_phenotypes_filtered,myPC_file))
 loaded1
 
-myGD_files = list.files(path = POPS_phenotypes,pattern = "01_Prep_02")
-myGD_file = myGD_files[grepl("filtered_EGG",myGD_files)]
-loaded2 = load(paste0(POPS_phenotypes,myGD_file))
+myGD_files = list.files(path = POPS_phenotypes_filtered,pattern = "01_Prep_02")
+myGD_file = myGD_files[grepl("filtered",myGD_files)]
+loaded2 = load(paste0(POPS_phenotypes_filtered,myGD_file))
 loaded2
 pvar = pvar2
 geno_mat = geno_mat2
 
 myScores = list.files(path="../results/",pattern = "01_Prep_02_SNPList")
-myScore = myScores[grepl("filtered_EGG",myScores)]
+myScore = myScores[grepl("filtered",myScores)]
 loaded3 = load(paste0("../results/",myScore))
 SNPList = SNPList_filtered
 
@@ -306,15 +303,15 @@ dev.off()
 #' # Save data ####
 #' ***
 #' 
-save(myTab_Y,file = paste0(POPS_phenotypes,"/01_Prep_04_Outcome_",tag,".RData"))
-save(myTab_X,file = paste0(POPS_phenotypes,"/01_Prep_04_Exposure_",tag,".RData"))
+save(myTab_Y,file = paste0(POPS_phenotypes_filtered,"/01_Prep_04_Outcome.RData"))
+save(myTab_X,file = paste0(POPS_phenotypes_filtered,"/01_Prep_04_Exposure.RData"))
 
 psam = psam[FID %in% POPS_PCS$FID]
 filt = is.element(rownames(geno_mat),psam$FID)
 geno_mat = geno_mat[filt,]
 dim(geno_mat)
 save(psam,pvar,geno_mat, 
-     file = paste0(POPS_phenotypes,"/01_Prep_04_SNPData_",tag,".RData"))
+     file = paste0(POPS_phenotypes_filtered,"/01_Prep_04_SNPData.RData"))
 
 #' # Session Info ####
 #' ***

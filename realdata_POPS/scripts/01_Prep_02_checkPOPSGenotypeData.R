@@ -24,11 +24,10 @@
 rm(list = ls())
 time0<-Sys.time()
 
-source("../../SourceFile_HPC.R")
-source("../../helperfunctions/HWETest.R")
+source("../../SourceFile.R")
+source("../../simulation/helperfunctions/HWETest.R")
+source("../../helperfunctions/getSmallestDist.R")
 .libPaths()
-
-tag = "EGG"
 
 #' # Load data ####
 #' ***
@@ -236,17 +235,6 @@ table(pvar$comment_LD)
 myTab = copy(SNPList)
 setorder(myTab,p)
 
-getSmallestDist = function(x) {
-  if(length(x)>1){
-    y = c(x[2:length(x)], max(x)+1000000)
-    z = min(y-x)
-  }else{
-    z=1000000
-  }
-  return(z)
-}
-
-
 myCHR = unique(myTab$chr)
 result.22 = foreach(s2 = myCHR) %do% {
   # s2 = myCHR[1]
@@ -327,14 +315,14 @@ table(pvar2$comment_LD)
 
 #' # Save data ####
 #' ***
-save(pvar, psam, geno_mat, file = paste0(POPS_phenotypes,"/01_Prep_02_SNPData_",tag,".RData"))
-save(pvar2, psam, geno_mat2, file = paste0(POPS_phenotypes,"/01_Prep_02_SNPData_filtered_",tag,".RData"))
+save(pvar, psam, geno_mat, file = paste0(POPS_phenotypes_filtered,"/01_Prep_02_SNPData.RData"))
+save(pvar2, psam, geno_mat2, file = paste0(POPS_phenotypes_filtered,"/01_Prep_02_SNPData_filtered.RData"))
 
-save(HWETab, file= paste0("../results/01_Prep_02_HWE_",tag,".RData"))
-save(LDTab, file = paste0("../results/01_Prep_02_LD_",tag,".RData"))
-save(LDTab2, file = paste0("../results/01_Prep_02_LD_filtered_",tag,".RData"))
-save(SNPList, file = paste0("../results/01_Prep_02_SNPList_",tag,".RData"))
-save(SNPList_filtered, file = paste0("../results/01_Prep_02_SNPList_filtered_",tag,".RData"))
+save(HWETab, file= paste0("../results/01_Prep_02_HWE.RData"))
+save(LDTab, file = paste0("../results/01_Prep_02_LD.RData"))
+save(LDTab2, file = paste0("../results/01_Prep_02_LD_filtered.RData"))
+save(SNPList, file = paste0("../results/01_Prep_02_SNPList.RData"))
+save(SNPList_filtered, file = paste0("../results/01_Prep_02_SNPList_filtered.RData"))
 
 #' # Session Info ####
 #' ***

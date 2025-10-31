@@ -29,14 +29,14 @@
 rm(list = ls())
 time0<-Sys.time()
 
-source("../../SourceFile_HPC.R")
+source("../../SourceFile.R")
 .libPaths()
 suppressPackageStartupMessages(library(SNPlocs.Hsapiens.dbSNP150.GRCh38))
 source("../../helperfunctions/getSmallestDist.R")
 
 #' # Load EGG data ####
 #' ***
-EGG_data = fread(paste0(pathData,"/BW3_EUR_summary_stats.txt.gz"), header=TRUE, sep="\t")
+EGG_data = fread(EGG_BW, header=TRUE, sep="\t")
 n0 = dim(EGG_data)[1]
 head(EGG_data)
 names(EGG_data)[2] = "pos_b37"
@@ -96,7 +96,7 @@ n2 = dim(EGG_data)[1]
 
 #' # Extract SNPs in outcome data ####
 #' ***
-UKB_raw = fread(paste0(pathData,"20022_raw.gwas.imputed_v3.both_sexes.tsv.bgz"))
+UKB_raw = fread(UKB_BW)
 UKB_raw = UKB_raw[low_confidence_variant ==F,]
 table(is.element(EGG_data$dumID3,UKB_raw$variant))
 table(is.element(EGG_data$dumID4,UKB_raw$variant))

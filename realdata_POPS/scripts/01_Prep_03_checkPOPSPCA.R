@@ -29,19 +29,17 @@
 rm(list = ls())
 time0<-Sys.time()
 
-source("../../SourceFile_HPC.R")
+source("../../SourceFile.R")
 .libPaths()
-
-tag = "EGG"
 
 #' # Load data ####
 #' ***
 POPS_PCS = fread(paste0(POPS_SNP_data,"PCs_Fetal_3484_GBRLabel.txt"))
 POPS_PCS[,1:6]
 
-myGD_files = list.files(path = POPS_phenotypes,pattern = "01_Prep_02")
-myGD_file = myGD_files[grepl("filtered_EGG",myGD_files)]
-loaded2 = load(paste0(POPS_phenotypes,myGD_file))
+myGD_files = list.files(path = POPS_phenotypes_filtered,pattern = "01_Prep_02")
+myGD_file = myGD_files[grepl("filtered",myGD_files)]
+loaded2 = load(paste0(POPS_phenotypes_filtered,myGD_file))
 loaded2
 psam
 
@@ -184,7 +182,7 @@ dev.off()
 
 #' # Save data ####
 #' ***
-save(POPS_PCS, file = paste0(POPS_phenotypes,"/01_Prep_03_PCs_",tag,".RData"))
+save(POPS_PCS, file = paste0(POPS_phenotypes_filtered,"/01_Prep_03_PCs.RData"))
 
 #' # Session Info ####
 #' ***

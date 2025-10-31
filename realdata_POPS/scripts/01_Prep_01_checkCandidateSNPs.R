@@ -34,13 +34,13 @@
 rm(list = ls())
 time0<-Sys.time()
 
-source("../../SourceFile_HPC.R")
+source("../../SourceFile.R")
 .libPaths()
 suppressPackageStartupMessages(library(SNPlocs.Hsapiens.dbSNP150.GRCh38))
 
 #' # Load EGG data ####
 #' ***
-EGG_data = fread(paste0(pathData,"/BW3_EUR_summary_stats.txt.gz"), header=TRUE, sep="\t")
+EGG_data = fread(EGG_BW, header=TRUE, sep="\t")
 head(EGG_data)
 names(EGG_data)[2] = "pos_b37"
 min(EGG_data$p)
@@ -83,13 +83,12 @@ EGG_data[,dumID2 := paste0("chr",chr,":",pos_b38,":",other_allele,":",effect_all
 
 outFile1 = paste0(POPS_SNP_data,"01_Prep_01_SNPList_EGG_IDonly.txt")
 mySNPlist = c(EGG_data$dumID1,EGG_data$dumID2)
-write.table(mySNPlist, file = outFile1,col.names = F,row.names = F, quote = F)
+#write.table(mySNPlist, file = outFile1,col.names = F,row.names = F, quote = F)
 
-outFile2 = paste0("../results/01_Prep_01_SNPList_EGG.RData")
+outFile2 = paste0("../results/01_Prep_01_SNPList.RData")
 save(EGG_data, file = outFile2)
 
 #' # Session Info ####
 #' ***
 sessionInfo()
 message("\nTOTAL TIME : " ,round(difftime(Sys.time(),time0,units = "mins"),3)," minutes")
-

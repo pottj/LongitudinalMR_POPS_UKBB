@@ -24,20 +24,18 @@
 rm(list = ls())
 time0<-Sys.time()
 
-source("../../SourceFile_HPC.R")
+source("../../SourceFile.R")
 .libPaths()
-
-tag = "EGG"
 
 #' # Load and prep PGS data ####
 #' ***
 #' Load genetic data (data from the PGS, not from GWAS Catalog)
-myGD_files = list.files(path = POPS_phenotypes,pattern = "01_Prep_04")
-loaded1 = load(paste0(POPS_phenotypes,myGD_files[1]))
+myGD_files = list.files(path = POPS_phenotypes_filtered,pattern = "01_Prep_04")
+loaded1 = load(paste0(POPS_phenotypes_filtered,myGD_files[1]))
 loaded1
-loaded2 = load(paste0(POPS_phenotypes,myGD_files[2]))
+loaded2 = load(paste0(POPS_phenotypes_filtered,myGD_files[2]))
 loaded2
-loaded3 = load(paste0(POPS_phenotypes,myGD_files[3]))
+loaded3 = load(paste0(POPS_phenotypes_filtered,myGD_files[3]))
 loaded3
 
 myScores = list.files(path="../results/",pattern = "01_Prep_02_SNPList")
@@ -84,6 +82,8 @@ names(myTab_X)
 myExposures=names(myTab_X)[c(18,38,23,24)]
 myExposures
 
+registerDoParallel(as.numeric(Sys.getenv("SLURM_CPUS_PER_TASK")))
+
 dumTab1 = foreach(j=1:length(myExposures))%do%{
   #j=1
   myExposure = myExposures[j]
@@ -109,8 +109,6 @@ dumTab1 = foreach(j=1:length(myExposures))%do%{
   matched = match(data1$POPSID,psam$FID)
   table(is.na(matched))
   
-  registerDoParallel(as.numeric(Sys.getenv("SLURM_CPUS_PER_TASK")))
-  
   dumTab2 = foreach(i = 1:length(mySNPs))%dorng%{
     #dumTab2 = foreach(i = 1:length(mySNPs))%do%{
     #i=1
@@ -126,13 +124,11 @@ dumTab1 = foreach(j=1:length(myExposures))%do%{
     setcolorder(data2,myCols)
     data3 = na.omit(data2)
     
-    mod2 = gamlss(myX ~ myG + pn_sex + an_heightZ + an_smokstat + time +
-                    (myG + pn_sex + an_heightZ + an_smokstat):time + 
-                    ga2 + 
+    mod2 = gamlss(myX ~ myG + pn_sex + an_heightZ + an_smokstat + time + myG:time + ga2 + 
                     PC1 + PC2 + PC3 + PC4 + PC5 + random(x = as.factor(POPSID)),   
-                  sigma.formula = ~myG + time, 
+                  sigma.formula = ~myG + time + pn_sex + an_heightZ + an_smokstat, 
                   data = na.omit(data2), family = "NO")
-    
+
     dummy2 = summary(mod2)
     dummy2 = dummy2[grepl("myG",rownames(dummy2)),]
     

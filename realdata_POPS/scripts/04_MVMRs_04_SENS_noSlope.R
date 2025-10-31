@@ -33,7 +33,7 @@ source("../../helperfunctions/MVMR_jp_POPS.R")
 #' ***
 #' ## SNP info
 #' Get high quality SNPs only
-load("../results/01_Prep_02_LD_filtered_EGG.RData")
+load("../results/01_Prep_02_LD_filtered.RData")
 LDTab = copy(LDTab2)
 load("../results/01_Prep_05_SNPList.RData")
 
@@ -44,11 +44,10 @@ LDTab[,SNP2 := as.character(SNP2)]
 load("../results/02_SNPs_04_SENS_noSlope.RData")
 myAssocs_X = copy(myAssocs_X_gamlssIA)
 myAssocs_X = myAssocs_X[rsID %in% SNPList$rsID,]
-myAssocs_X = myAssocs_X[phenotype == "logefwcomb",]
 
 #' Check the GX associations
 # myAssocs_X[,cor.test(beta_mean,beta_slope)]
-myAssocs_X[,cor.test(beta_mean,beta_var)]
+myAssocs_X[,cor.test(beta_mean,beta_var),by=phenotype]
 # myAssocs_X[,cor.test(beta_slope,beta_var)]
 
 #' Transform into wide format
@@ -115,48 +114,56 @@ save(myAssocs_X_long,myAssocs_Y, file = paste0("../temp/04_MVMRInput_SENS_noSlop
 #' - all SNPs (including all non-significant ones)
 #' - nominal significant SNPs
 #' 
-myExposure = unique(myAssocs_X_long$phenotype)
+myExposures = unique(myAssocs_X_long$phenotype)
 myOutcomes = unique(myAssocs_Y$phenotype)
 myFlag = "sens_noSlope"
 myAssocs_X_long[,dumID := myFlag]
 
-dumTab3 = foreach(k = 1:length(myOutcomes))%do%{
-  #k=1
-  myOutcome = myOutcomes[k]
-  myAssocs_Y2 = copy(myAssocs_Y)
-  myAssocs_Y2 = myAssocs_Y2[phenotype == myOutcome,]
+dumTab2 = foreach(j = 1:length(myExposures))%do%{
+  #j=1
+  myExposure = myExposures[j]
+  myAssocs_X_long2 = copy(myAssocs_X_long)
+  myAssocs_X_long2 = myAssocs_X_long2[phenotype == myExposure,]
   
-  # do MVMRs
-  MVMR0 = MVMR_jp_POPS(data_exposure = myAssocs_X_long,
-                       data_outcome = myAssocs_Y2,
-                       exposure_name = myExposure, 
-                       outcome_name = myOutcome,
-                       flag = myFlag,
-                       GX_pval_treshold = 1,
-                       getPlot = F,
-                       corTab = LDTab,
-                       corTab_threshold = 0.1,sampleSize_GX = 2996,
-                       random = F,getCondF = T,getUni = T)
-  
-  MVMR2 = MVMR_jp_POPS(data_exposure = myAssocs_X_long,
-                       data_outcome = myAssocs_Y2,
-                       exposure_name = myExposure, 
-                       outcome_name = myOutcome,
-                       flag = myFlag,
-                       GX_pval_treshold = 0.05,
-                       getPlot = F,
-                       corTab = LDTab,
-                       corTab_threshold = 0.1,sampleSize_GX = 2996,
-                       random = F,getCondF = T,getUni = T)
-  
-  MVMR0[,threshold := "all_SNPs"]
-  MVMR2[,threshold := "nominal_SNPs"]
-  MVMR = rbind(MVMR0,MVMR2,fill=T)
-  MVMR
-  
+  dumTab3 = foreach(k = 1:length(myOutcomes))%do%{
+    #k=1
+    myOutcome = myOutcomes[k]
+    myAssocs_Y2 = copy(myAssocs_Y)
+    myAssocs_Y2 = myAssocs_Y2[phenotype == myOutcome,]
+    
+    # do MVMRs
+    MVMR0 = MVMR_jp_POPS(data_exposure = myAssocs_X_long2,
+                         data_outcome = myAssocs_Y2,
+                         exposure_name = myExposure, 
+                         outcome_name = myOutcome,
+                         flag = myFlag,
+                         GX_pval_treshold = 1,
+                         getPlot = F,
+                         corTab = LDTab,
+                         corTab_threshold = 0.1,sampleSize_GX = 2996,
+                         random = F,getCondF = T,getUni = T)
+    
+    MVMR2 = MVMR_jp_POPS(data_exposure = myAssocs_X_long2,
+                         data_outcome = myAssocs_Y2,
+                         exposure_name = myExposure, 
+                         outcome_name = myOutcome,
+                         flag = myFlag,
+                         GX_pval_treshold = 0.05,
+                         getPlot = F,
+                         corTab = LDTab,
+                         corTab_threshold = 0.1,sampleSize_GX = 2996,
+                         random = F,getCondF = T,getUni = T)
+    
+    MVMR0[,threshold := "all_SNPs"]
+    MVMR2[,threshold := "nominal_SNPs"]
+    MVMR = rbind(MVMR0,MVMR2,fill=T)
+    MVMR
+    
+  }
+  MVMR_results2 = rbindlist(dumTab3,fill = T)
+  MVMR_results2
 }
-
-MVMR_results = rbindlist(dumTab3,fill = T)
+MVMR_results = rbindlist(dumTab2,fill = T)
 save(MVMR_results,file = paste0("../results/04_MVMR_04_SENS_noSlope.RData"))
 
 #' # Session Info ####

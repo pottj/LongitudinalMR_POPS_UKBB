@@ -24,7 +24,7 @@ source("../../SourceFile.R")
 
 #' # Load data ####
 #' ***
-myFiles = list.files(path = pathData,pattern = "TC")
+myFiles = c(GLGC_TC_comb,GLGC_TC_females,GLGC_TC_males)
 myFiles
 
 dumTab1 = foreach(i = 1:length(myFiles))%do%{
@@ -33,7 +33,7 @@ dumTab1 = foreach(i = 1:length(myFiles))%do%{
   mySetting = gsub(".*_","",mySetting)
   message("Working on ",mySetting)
   
-  data = fread(paste0(pathData,myFiles[i]))
+  data = fread(myFiles[i])
   message("     Initial SNP number: ",dim(data)[1])
   
   # some filtering

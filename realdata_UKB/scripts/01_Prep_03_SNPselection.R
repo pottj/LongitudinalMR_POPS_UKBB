@@ -36,7 +36,7 @@ source("../../helperfunctions/getSmallestDist.R")
 
 #' # Load GLGC data ####
 #' ***
-GLGC_data = fread(paste0(pathData,"/TC_INV_EUR_HRC_1KGP3_others_ALL.meta.singlevar.results.gz"), header=TRUE, sep="\t")
+GLGC_data = fread(GLGC_TC_comb, header=TRUE, sep="\t")
 n0 = dim(GLGC_data)[1]
 head(GLGC_data)
 table(GLGC_data$CHROM)
@@ -101,16 +101,16 @@ n2 = dim(GLGC_data)[1]
 #' # Extract SNPs in outcome data ####
 #' ***
 #' ## 2-sample MR: Aragam et al (2022)
-Aragam = fread(paste0(pathData,"GCST90132314_buildGRCh37.tsv"))
-table(is.element(GLGC_data$dumID3,Aragam$markername))
-table(is.element(GLGC_data$dumID4,Aragam$markername))
+Aragam = fread(Aragam_CAD)
+table(is.element(GLGC_data$dumID3,Aragam$MarkerName))
+table(is.element(GLGC_data$dumID4,Aragam$MarkerName))
 
-Aragam = Aragam[markername %in% GLGC_data$dumID3 | markername %in% GLGC_data$dumID4,]
-GLGC_data = GLGC_data[dumID3 %in% Aragam$markername | dumID4 %in% Aragam$markername,]
+Aragam = Aragam[MarkerName %in% GLGC_data$dumID3 | MarkerName %in% GLGC_data$dumID4,]
+GLGC_data = GLGC_data[dumID3 %in% Aragam$MarkerName | dumID4 %in% Aragam$MarkerName,]
 n3 = dim(GLGC_data)[1]
 
 #' ## 1-sample MR: UKB (as reported in the FinnGen + UKB meta analysis)
-UKB_CAD = fread(paste0(pathData,"ukbb_summary_stats_I9_CORATHER_meta_out.tsv.gz"))
+UKB_CAD = fread(UKB_I9)
 table(is.element(GLGC_data$dumID5,UKB_CAD$SNP))
 table(is.element(GLGC_data$dumID6,UKB_CAD$SNP))
 
@@ -197,10 +197,10 @@ plot(GLGC_data2$EAF, pvar$ALT_FREQ)
 abline(0,1)
 
 #' ## Checking Aragam data
-Aragam = Aragam[markername %in% GLGC_data2$dumID3 | markername %in% GLGC_data2$dumID4,]
-Aragam[,EA := toupper(effect_allele)]
-Aragam[,OA := toupper(other_allele)]
-Aragam[,EAF := effect_allele_frequency]
+Aragam = Aragam[MarkerName %in% GLGC_data2$dumID3 | MarkerName %in% GLGC_data2$dumID4,]
+Aragam[,EA := toupper(Allele1)]
+Aragam[,OA := toupper(Allele2)]
+Aragam[,EAF := Freq1]
 
 table(GLGC_data2$effect_allele==Aragam$EA,GLGC_data2$other_allele==Aragam$OA)
 filt = GLGC_data2$effect_allele==Aragam$OA
@@ -210,7 +210,7 @@ Aragam[filt, effect_allele := OA]
 Aragam[, other_allele := OA]
 Aragam[filt, other_allele := EA]
 Aragam[filt, EAF := 1-EAF]
-Aragam[filt, beta := beta *(-1)]
+Aragam[filt, Effect := Effect *(-1)]
 
 table(GLGC_data2$effect_allele==Aragam$effect_allele, GLGC_data2$other_allele==Aragam$other_allele)
 plot(GLGC_data2$EAF, Aragam$EAF)
@@ -267,14 +267,14 @@ SNPList[, GLGC_tval := GLGC_data2$beta / GLGC_data2$SE]
 SNPList[, GLGC_logp := GLGC_data2$pvalue_neg_log10_GC]
 SNPList[, GLGC_sampleSize := GLGC_data2$N]
 
-SNPList[, Aragam_ID := Aragam$markername]
+SNPList[, Aragam_ID := Aragam$MarkerName]
 SNPList[, Aragam_EAF := Aragam$EAF]
-SNPList[, Aragam_beta := Aragam$beta]
-SNPList[, Aragam_SE := Aragam$standard_error]
-SNPList[, Aragam_tval := Aragam$beta / Aragam$standard_error]
-SNPList[, Aragam_pval := Aragam$p_value]
-SNPList[, Aragam_sampleSize := Aragam$n]
-SNPList[, Aragam_cases := Aragam$cases]
+SNPList[, Aragam_beta := Aragam$Effect]
+SNPList[, Aragam_SE := Aragam$StdErr]
+SNPList[, Aragam_tval := Aragam$Effect / Aragam$StdErr]
+SNPList[, Aragam_pval := Aragam$`P-value`]
+SNPList[, Aragam_sampleSize := Aragam$N]
+SNPList[, Aragam_cases := Aragam$Cases]
 
 SNPList[, UKB_ID := UKB_CAD$SNP]
 SNPList[, UKB_EAF := UKB_CAD$EAF]

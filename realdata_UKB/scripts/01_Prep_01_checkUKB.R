@@ -125,7 +125,7 @@ source("../../SourceFile.R")
   dim(myTab)
   
   #' Get medication coding
-  codingTable = data.table(read_xlsx(paste0(pathData,"/Wu_2019_SupplementalData1_modified.xlsx"),sheet=1))
+  codingTable = data.table(read_xlsx(UKB_medicationCoding,sheet=1))
   lipidLowering = codingTable[grepl("C10",ATC_Code),Coding]
   
   #' Collapse medication BL
@@ -149,7 +149,7 @@ source("../../SourceFile.R")
   myTab[,table(lipidLow_FU,sex)]
   
   #' Get CAD coding
-  codingTable = fread(paste0(pathData,"/UKB_coding19.tsv"))
+  codingTable = fread(UKB_ICDcoding)
   codingTable = codingTable[grepl("I20",meaning) | grepl("I21",meaning) | 
                               grepl("I22",meaning) | grepl("I23",meaning) | 
                               grepl("I24",meaning) | grepl("I25",meaning),]
@@ -192,7 +192,7 @@ source("../../SourceFile.R")
   myTab_GP_TC[,length(unique(eid))]
   
   #' Load coding table for primary care data (Denaxas et al, Supplementary Table 2)
-  codingTable = fread(paste0(pathData,"/Denaxas_2020_SupplementalTable2_modified.txt"))
+  codingTable = fread(UKB_GPcoding)
   codingTable[,table(duplicated(readcode))]
   
   #' Filter for reads from the TC coding

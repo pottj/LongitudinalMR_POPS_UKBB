@@ -25,7 +25,7 @@ source("../../SourceFile.R")
 #' # Load data ####
 #' ***
 load("../results/_tables/SupplementalTables_GLGC.RData")
-tab2 = tab2[flag %in% c("0 - MAIN","2A - SENS - no statins","1A - SENS - no slope","1B - SENS - no variability")]
+tab2 = tab2[flag %in% c("0 - MAIN","2 - SENS - no statins","1A - SENS - no slope","1B - SENS - no variability")]
 myNames = names(tab2)[grepl("UKB_TC_beta",names(tab2))]
 
 data_wide = dcast(tab2, rsID ~ flag, value.var=myNames)

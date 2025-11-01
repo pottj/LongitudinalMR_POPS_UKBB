@@ -88,10 +88,11 @@ source("../../SourceFile.R")
   tab1[,Age_1st_statin := paste0(Age_1st_statin_mean, " (",Age_1st_statin_SD,")")]
   
   # restrict to relevant columns
-  tab1 = tab1[,c(2,3,21:28)]
+  tab1 = tab1[,c(1,2,20:27)]
+  tab1 = tab1[1:2,]
   
   setnames(tab1,"setting","flag")
-  tab1[,flag := c("0 - MAIN","2A - SENS - no statins","2B - SENS - after BL","2C - SENS - before BL")]
+  tab1[,flag := c("0 - MAIN","2 - SENS - no statins")]
   tab1
   
 }
@@ -139,13 +140,8 @@ source("../../SourceFile.R")
   tab2[flag == "MAIN",flag:="0 - MAIN"]
   tab2[flag == "SENS_noSlope",flag:="1A - SENS - no slope"]
   tab2[flag == "SENS_noVar",flag:="1B - SENS - no variability"]
-  tab2[flag == "SENS_sampleSet",flag:="2A - SENS - no statins"]
-  tab2[flag == "SENS_sampleSet2",flag:="2B - SENS - after BL"]
-  tab2[flag == "SENS_sampleSet3",flag:="2C - SENS - before BL"]
-  tab2[flag == "SENS_SNPset1",flag:="3A - SENS - GxE enriched SNPs"]
-  tab2[flag == "SENS_SNPset2",flag:="3B - SENS - mean and var indep."]
-  tab2[flag == "SENS_SNPset3",flag:="3C - SENS - top 20"]
-  
+  tab2[flag == "SENS_sampleSet",flag:="2 - SENS - no statins"]
+
 }
 
 #' # Get Sup Tab 3 ####
@@ -185,12 +181,13 @@ source("../../SourceFile.R")
   tab3[flag == "main",flag:="0 - MAIN"]
   tab3[flag == "sens_noSlope",flag:="1A - SENS - no slope"]
   tab3[flag == "sens_noVar",flag:="1B - SENS - no variability"]
-  tab3[flag == "sens_sampleSet1",flag:="2A - SENS - no statins"]
-  tab3[flag == "sens_sampleSet2",flag:="2B - SENS - after BL"]
-  tab3[flag == "sens_sampleSet3",flag:="2C - SENS - before BL"]
-  tab3[flag == "sens_SNPset1",flag:="3A - SENS - GxE enriched SNPs"]
-  tab3[flag == "sens_SNPset2",flag:="3B - SENS - mean and var indep."]
-  tab3[flag == "sens_SNPset3",flag:="3C - SENS - top 20"]
+  tab3[flag == "sens_sampleSet",flag:="2 - SENS - no statins"]
+  tab3[flag == "sens_SNPset_distinct",flag:="3A - SENS - distinct SNP sets for M and V"]
+  tab3[flag == "sens_SNPset_top20",flag:="3B - SENS - top 20 for each M, S, and V"]
+  tab3[flag == "sens_SNPset_pleiotropy",flag:="3C - SENS - SNPs with pleiotropic effects"]
+  tab3[flag == "sens_SNPset_bioknown",flag:="3D - SENS - SNPs with plausible biology"]
+  tab3[flag == "sens_SNPset_sexIA",flag:="3E - SENS - SNPs with significant sex interaction"]
+  
   
 }  
 
@@ -224,12 +221,12 @@ source("../../SourceFile.R")
   tab4[flag == "main",flag:="0 - MAIN"]
   tab4[flag == "sens_noSlope",flag:="1A - SENS - no slope"]
   tab4[flag == "sens_noVar",flag:="1B - SENS - no variability"]
-  tab4[flag == "sens_sampleSet1",flag:="2A - SENS - no statins"]
-  tab4[flag == "sens_sampleSet2",flag:="2B - SENS - after BL"]
-  tab4[flag == "sens_sampleSet3",flag:="2C - SENS - before BL"]
-  tab4[flag == "sens_SNPset1",flag:="3A - SENS - GxE enriched SNPs"]
-  tab4[flag == "sens_SNPset2",flag:="3B - SENS - mean and var indep."]
-  tab4[flag == "sens_SNPset3",flag:="3C - SENS - top 20"]
+  tab4[flag == "sens_sampleSet",flag:="2 - SENS - no statins"]
+  tab4[flag == "sens_SNPset_distinct",flag:="3A - SENS - distinct SNP sets for M and V"]
+  tab4[flag == "sens_SNPset_top20",flag:="3B - SENS - top 20 for each M, S, and V"]
+  tab4[flag == "sens_SNPset_pleiotropy",flag:="3C - SENS - SNPs with pleiotropic effects"]
+  tab4[flag == "sens_SNPset_bioknown",flag:="3D - SENS - SNPs with plausible biology"]
+  tab4[flag == "sens_SNPset_sexIA",flag:="3E - SENS - SNPs with significant sex interaction"]
   
 }  
 

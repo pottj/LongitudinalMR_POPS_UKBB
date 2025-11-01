@@ -30,7 +30,7 @@ myFiles = list.files(path = "../results/", pattern = "03_MVMR")
 mySettings = gsub(".RData","",myFiles)
 mySettings = gsub("03_MVMR_0._","",mySettings)
 mySettings
-mySettings2 = c("0","1B","1A","2A","2B","2C","3A","3B","3C")
+mySettings2 = c("0","1B","1A","2","3")
 
 dumTab2 = foreach(i = 1:length(myFiles))%do%{
   #i=1
@@ -50,7 +50,7 @@ MVMR = rbindlist(dumTab2)
 #' ## Main, no slope/var, different sample set tests ####
 #' 
 MVMR2 = copy(MVMR)
-MVMR2 = MVMR2[flag %in% c("0","1A","1B","2A")]
+MVMR2 = MVMR2[flag %in% c("0","1A","1B","2")]
 MVMR2 = MVMR2[threshold == "all_SNPs"]
 
 setorder(MVMR2,flag)
@@ -72,7 +72,7 @@ data4[exposure_type=="var" & is.na(setting),subgroup:= "variability"]
 data4[grepl("0",subgroup), subgroup := gsub("0","main analysis",subgroup)]
 data4[grepl("1A",subgroup), subgroup := gsub("1A","1A - no slope",subgroup)]
 data4[grepl("1B",subgroup), subgroup := gsub("1B","1B - no variability",subgroup)]
-data4[grepl("2A",subgroup), subgroup := gsub("2A","2A - no statins",subgroup)]
+data4[grepl("2",subgroup), subgroup := gsub("2","2    - no statins",subgroup)]
 
 dummy = c("white","#F2AA84", "#FBE3D6", "#FBE3D6", "#FBE3D6",
           "white","#47D45A", "#C2F1C8", "#C2F1C8", 
@@ -85,7 +85,7 @@ data4[,condF := round(condFstat,1)]
 data4[,condF := as.character(condF)]
 data4[is.na(setting),condF := ""]
 setnames(data4,"condF","cond. \nF-stat")
-setnames(data4,"subgroup", "exposure type \n   MR approach")
+setnames(data4,"subgroup", "Exposure type \n   Setting")
 
 p2<- forest(data4[,c(17,20,21,22)],
             est = data4$beta_IVW,
@@ -95,69 +95,13 @@ p2<- forest(data4[,c(17,20,21,22)],
             ci_column = 2,
             ref_line = 0,
             #title = myXlab,
-            xlab = myXlab,
+            #xlab = myXlab,
             theme = tm1)
 
 plot(p2)
 
 filename = paste0("../results/_figures/MainFigures/ForestPlot_UKB_main.png")
-png(filename = filename,width = 1700, height = 900, res=200)
-plot(p2)
-dev.off()
-
-#' ## Main and different SNP selections ####
-MVMR2 = copy(MVMR)
-MVMR2 = MVMR2[(flag=="3A" & threshold=="gw_SNPs") | flag=="0"]
-
-MVMR2[,rank := 2]
-dummy = data.table(exposure_type = unique(MVMR2$exposure_type),rank=1)
-data4 = rbind(MVMR2,dummy, fill=T)
-data4[,subgroup := paste0("   ", flag)]
-data4[is.na(threshold),subgroup := exposure_type]
-
-data4[,lowerCI95 := beta_IVW-1.96*SE_IVW]
-data4[,upperCI95 := beta_IVW+1.96*SE_IVW]
-data4$` ` <- paste(rep(" ", 50), collapse = " ")
-data4$`Estimate \n[95% CI]` <- ifelse(is.na(data4$SE_IVW), "",
-                                      sprintf("%.2f [%.2f, %.2f]",
-                                              data4$beta_IVW, data4$lowerCI95, data4$upperCI95))
-
-setorder(data4,exposure_type,rank)
-data4[exposure_type=="var" & is.na(setting),subgroup:= "variability"]
-data4[ID =="main" & grepl("all",threshold), subgroup := gsub("0","main analysis",subgroup)]
-data4[ID =="main" & grepl("gw",threshold), subgroup := gsub("0","  SNP set 1: gw. sig. SNPs",subgroup)]
-data4[grepl("sens_SNPset1",ID), subgroup := gsub("3A","  SNP set 2: GxE enriched",subgroup)]
-data4[grepl("sens_SNPset2",ID), subgroup := gsub("3A","  SNP set 3: M and V independent",subgroup)]
-data4[grepl("sens_SNPset3",ID), subgroup := gsub("3A","  SNP set 4: top20",subgroup)]
-
-dummy = c("white","#F2AA84", "#FBE3D6", "#FBE3D6", "#FBE3D6", "#FBE3D6",
-          "white","#47D45A", "#C2F1C8", "#C2F1C8", "#C2F1C8", "#C2F1C8", 
-          "white","#61CBF4", "#CAEEFB", "#CAEEFB", "#CAEEFB", "#CAEEFB")
-tm1<- forest_theme(core=list(bg_params=list(fill = dummy)))
-
-myXlab =  "logOR for CAD risk (95% CI) per 1-SD increment in TC levels, yearly increase, and variability"
-
-data4[,condF := round(condFstat,1)]
-data4[,condF := as.character(condF)]
-data4[is.na(setting),condF := ""]
-setnames(data4,"condF","cond. \nF-stat")
-setnames(data4,"subgroup", "exposure type \n   MR approach")
-
-p2<- forest(data4[,c(17,20,21,22)],
-            est = data4$beta_IVW,
-            lower = data4$lowerCI95, 
-            upper = data4$upperCI95,
-            sizes = 0.5,
-            ci_column = 2,
-            ref_line = 0,
-            #title = myXlab,
-            xlab = myXlab,
-            theme = tm1)
-
-plot(p2)
-
-filename = paste0("../results/_figures/MainFigures/ForestPlot_UKB_SNPSelection.png")
-png(filename = filename,width = 2000, height = 1100, res=200)
+png(filename = filename,width = 1700, height = 800, res=200)
 plot(p2)
 dev.off()
 

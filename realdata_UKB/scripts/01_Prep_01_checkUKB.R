@@ -687,7 +687,8 @@ source("../../SourceFile.R")
   
   tab1 = rbind(tab1a,tab1b,tab1c,tab1d)
   tab1
-  write.table(tab1,file = "../results/01_Prep_01_summary.txt")
+  write.table(tab1,file = "../results/01_Prep_01_summary.txt",
+              col.names = T,row.names = F,quote = F,sep="\t")
 }
 
 #' ## Trajectory plot ####

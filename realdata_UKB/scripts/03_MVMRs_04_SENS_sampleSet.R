@@ -119,7 +119,7 @@ save(myAssocs_X_long,myAssocs_Y_long, file = paste0("../temp/03_MVMRInput_SENS_s
 #' 
 mySampleSize = c(46890)
 myOutcomes = unique(myAssocs_Y_long$type)
-myFlag = "sens_sampleSet1"
+myFlag = "sens_sampleSet"
 
 names(myAssocs_Y_long) = c("SNP", "phenotype","sampleSize","beta_mean","SE_mean","tval_mean","pval_mean" )
 
@@ -165,7 +165,7 @@ dumTab3 = foreach(k = 1:length(myOutcomes))%do%{
 }
 
 MVMR_results = rbindlist(dumTab3,fill = T)
-save(MVMR_results,file = paste0("../results/03_MVMR_04_SENS_sampleSet1.RData"))
+save(MVMR_results,file = paste0("../results/03_MVMR_04_SENS_sampleSet.RData"))
 
 #' # Session Info ####
 #' ***

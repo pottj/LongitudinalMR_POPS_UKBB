@@ -105,7 +105,7 @@ p2<- forest(data4[,c(17,20,21,22)],
 plot(p2)
 
 filename = paste0("../results/_figures/SupFigs/ForestPlot_2v1_sampleMR.png")
-png(filename = filename,width = 1900, height = 700, res=200)
+png(filename = filename,width = 1700, height = 650, res=200)
 plot(p2)
 dev.off()
 
@@ -164,7 +164,7 @@ p2<- forest(data4[,c(17,20,21,22)],
 plot(p2)
 
 filename = paste0("../results/_figures/SupFigs/ForestPlot_allVnom_SNPs.png")
-png(filename = filename,width = 1900, height = 700, res=200)
+png(filename = filename,width = 1850, height = 650, res=200)
 plot(p2)
 dev.off()
 
@@ -181,8 +181,6 @@ data4 = rbind(MVMR2,dummy, fill=T)
 data4[,subgroup := paste0("   ", flag, " - ",setting)]
 data4[,subgroup := gsub("0", "main", subgroup)]
 data4[,subgroup := gsub("1A", "no slope", subgroup)]
-data4[,subgroup := gsub("1B", "no variabiltity", subgroup)]
-data4[,subgroup := gsub("2", "no statins", subgroup)]
 data4[,subgroup := gsub("multivariate", "MVMR", subgroup)]
 data4[,subgroup := gsub("univariate", "     MR", subgroup)]
 data4[is.na(threshold),subgroup := exposure_type]

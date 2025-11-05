@@ -90,7 +90,7 @@ variable_parameters = variable_parameters[3]
   X_age_bl = variable_parameters$X_meanAge_bl
   X_scanSteps = variable_parameters$X_scanSteps
   Y_ageAdd = variable_parameters$Y_ageAdd
-  Y_ageCorr = variable_parameters$Y_ageCorr
+  Y_ageCorr = as.logical(variable_parameters$Y_ageCorr)
   
   scenario_name = variable_parameters$scenario_name
   scenario_NR = variable_parameters$scenario_NR
@@ -509,7 +509,7 @@ SimTab = foreach(s = 1:n_sim)%dorng%{
   {
     myTabY = copy(myTabY_temp)
     myMean = myTabX_long[scan==max(scan),mean(age)]
-    myMean = round(myMean,0)+10
+    myMean = round(myMean,0)+Y_ageAdd
     myTabY[,age := rnorm(n=n_samples,mean=myMean,sd=1)]
     
     myTabY[,Y1 := rnorm(n=n_samples,mean = Y_mean,sd = Y_var)]
@@ -580,6 +580,7 @@ SimTab = foreach(s = 1:n_sim)%dorng%{
   {
     #' Do age correction on GAMLSS results
     mean_age_outcome = myTabY[,mean(age)]
+    if(Y_ageCorr==F) mean_age_outcome = mean_age_outcome-30
     myTab_SNPAssocs_X_MSV[exposure=="slope", beta := beta*mean_age_outcome]
     myTab_SNPAssocs_X_MSV[exposure=="slope", SE := SE*mean_age_outcome]
     myTab_SNPAssocs_X_MS[exposure=="slope", beta := beta*mean_age_outcome]

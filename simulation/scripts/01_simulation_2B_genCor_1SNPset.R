@@ -90,7 +90,7 @@ variable_parameters = variable_parameters[5]
   X_age_bl = variable_parameters$X_meanAge_bl
   X_scanSteps = variable_parameters$X_scanSteps
   Y_ageAdd = variable_parameters$Y_ageAdd
-  Y_ageCorr = variable_parameters$Y_ageCorr
+  Y_ageCorr = as.logical(variable_parameters$Y_ageCorr)
   
   scenario_name = variable_parameters$scenario_name
   scenario_NR = variable_parameters$scenario_NR

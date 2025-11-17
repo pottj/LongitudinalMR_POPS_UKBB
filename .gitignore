@@ -59,3 +59,5 @@ tests/
 *.html
 *.out
 *.pdf
+!paper/*.pdf
+
